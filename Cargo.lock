@@ -776,13 +776,12 @@ dependencies = [
 [[package]]
 name = "curve25519-dalek"
 version = "2.1.0"
-source = "git+https://github.com/garious/curve25519-dalek?rev=60efef3553d6bf3d7f3b09b5f97acd54d72529ff#60efef3553d6bf3d7f3b09b5f97acd54d72529ff"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5d85653f070353a16313d0046f173f70d1aadd5b42600a14de626f0dfb3473a5"
 dependencies = [
- "borsh 0.7.1",
  "byteorder",
  "digest 0.8.1",
  "rand_core 0.5.1",
- "serde",
  "subtle 2.2.3",
  "zeroize",
 ]
@@ -790,12 +789,13 @@ dependencies = [
 [[package]]
 name = "curve25519-dalek"
 version = "2.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5d85653f070353a16313d0046f173f70d1aadd5b42600a14de626f0dfb3473a5"
+source = "git+https://github.com/garious/curve25519-dalek?rev=60efef3553d6bf3d7f3b09b5f97acd54d72529ff#60efef3553d6bf3d7f3b09b5f97acd54d72529ff"
 dependencies = [
+ "borsh 0.7.1",
  "byteorder",
  "digest 0.8.1",
  "rand_core 0.5.1",
+ "serde",
  "subtle 2.2.3",
  "zeroize",
 ]
@@ -3722,6 +3722,39 @@ dependencies = [
  "solana-logger",
  "solana-sdk",
  "spl-feature-proposal",
+]
+
+[[package]]
+name = "spl-hello-world-client"
+version = "0.1.0"
+dependencies = [
+ "base64 0.13.0",
+ "bincode",
+ "solana-client",
+ "solana-program",
+ "solana-sdk",
+ "spl-hello-world-escrow",
+ "spl-token 3.0.1",
+]
+
+[[package]]
+name = "spl-hello-world-escrow"
+version = "0.0.1"
+dependencies = [
+ "arrayref",
+ "assert_matches",
+ "log",
+ "num-derive",
+ "num-traits",
+ "proptest",
+ "serde",
+ "serde_yaml",
+ "solana-program",
+ "solana-program-test",
+ "solana-sdk",
+ "spl-token 3.0.1",
+ "thiserror",
+ "tokio 0.3.5",
 ]
 
 [[package]]
