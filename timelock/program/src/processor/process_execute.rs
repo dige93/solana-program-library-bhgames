@@ -11,7 +11,10 @@ use crate::{
         timelock_set::TimelockSet,
         timelock_state::TimelockState,
     },
-    utils::{assert_account_equiv, assert_executing, assert_initialized, execute, ExecuteParams},
+    utils::{
+        assert_account_equiv, assert_executing, assert_initialized, execute, unwrap_pubkey,
+        ExecuteParams,
+    },
 };
 use solana_program::{
     account_info::{next_account_info, AccountInfo},
@@ -56,12 +59,14 @@ pub fn process_execute(
         return Err(TimelockError::TooEarlyToExecute.into());
     }
 
+    let council_mint_seed = unwrap_pubkey(&timelock_config.council_mint);
+
     assert_account_equiv(timelock_state_account_info, &timelock_set.state)?;
     assert_account_equiv(timelock_config_account_info, &timelock_set.config)?;
     let seeds = &[
         program_id.as_ref(),
         timelock_config.governance_mint.as_ref(),
-        timelock_config.council_mint.as_ref(),
+        council_mint_seed.as_ref(),
         timelock_config.program.as_ref(),
     ];
     let (governance_authority, bump_seed) = Pubkey::find_program_address(seeds, program_id);
@@ -114,12 +119,14 @@ pub fn process_execute(
             Err(_) => return Err(TimelockError::InstructionUnpackError.into()),
         };
 
+    let council_mint_seed = unwrap_pubkey(&timelock_config.council_mint);
+
     execute(ExecuteParams {
         instruction,
         authority_signer_seeds: &[
             program_id.as_ref(),
             timelock_config.governance_mint.as_ref(),
-            timelock_config.council_mint.as_ref(),
+            council_mint_seed.as_ref(),
             timelock_config.program.as_ref(),
             &[bump_seed],
         ],

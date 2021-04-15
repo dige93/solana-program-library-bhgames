@@ -15,7 +15,40 @@ use solana_program::{
     system_instruction::create_account,
     sysvar::rent::Rent,
 };
+
+use std::str::FromStr;
+
 use spl_token::state::Account;
+
+/// Pubkey used as None value placeholder
+pub fn none_pubkey() -> Pubkey {
+    Pubkey::from_str("11111111111111111111111111111111").unwrap()
+}
+
+/// unpacks
+pub fn unpack_option_pubkey(pubkey_array: &[u8; 32]) -> Option<Pubkey> {
+    let pubkey = Pubkey::new_from_array(*pubkey_array);
+    wrap_pubkey(pubkey)
+}
+
+/// packs
+pub fn pack_option_pubkey(src: Option<Pubkey>, dst: &mut [u8; 32]) {
+    let pubkey = src.unwrap_or(none_pubkey());
+    dst.copy_from_slice(pubkey.as_ref())
+}
+
+/// Wraps pubkey
+pub fn wrap_pubkey(pubkey: Pubkey) -> Option<Pubkey> {
+    if pubkey == none_pubkey() {
+        return None;
+    }
+    Some(pubkey)
+}
+
+/// Unwraps pubkey
+pub fn unwrap_pubkey(option_pubkey: &Option<Pubkey>) -> Pubkey {
+    option_pubkey.unwrap_or(none_pubkey())
+}
 
 /* TODO come back to this conundrum later..
 
@@ -254,7 +287,7 @@ pub fn get_mint_supply(account_info: &AccountInfo) -> Result<u64, ProgramError> 
     Ok(u64::from_le_bytes(*bytes))
 }
 
-/// cheap method to just get supply off a mint without unpacking whole object
+/// cheap method to just get mint_authority off a mint without unpacking whole object
 pub fn get_mint_authority(account_info: &AccountInfo) -> Result<Pubkey, ProgramError> {
     // In token program, 36, 8, 1, 1 is the layout, where the first 36 is mint_authority
     // so we start at 0.

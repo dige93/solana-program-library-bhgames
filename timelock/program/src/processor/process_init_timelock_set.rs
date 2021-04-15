@@ -1,6 +1,8 @@
 //! Program state processor
 
-use crate::utils::{assert_account_owner, assert_mint_authority, assert_mint_owner_program};
+use crate::utils::{
+    assert_account_owner, assert_mint_authority, assert_mint_owner_program, unwrap_pubkey,
+};
 use crate::{
     error::TimelockError,
     state::{
@@ -175,7 +177,7 @@ pub fn process_init_timelock_set(
     )?;
 
     if source_holding_mint != timelock_config.governance_mint
-        && source_holding_mint != timelock_config.council_mint
+        && source_holding_mint != unwrap_pubkey(&timelock_config.council_mint)
     {
         return Err(TimelockError::AccountsShouldMatch.into());
     }

@@ -1,5 +1,6 @@
 use super::enums::{ConsensusAlgorithm, ExecutionType, TimelockType, VotingEntryRule};
 use super::UNINITIALIZED_VERSION;
+use crate::utils::{pack_option_pubkey, unpack_option_pubkey};
 use arrayref::{array_mut_ref, array_ref, array_refs, mut_array_refs};
 use solana_program::{
     program_error::ProgramError,
@@ -29,7 +30,7 @@ pub struct TimelockConfig {
     /// Governance mint
     pub governance_mint: Pubkey,
     /// Council mint
-    pub council_mint: Pubkey,
+    pub council_mint: Option<Pubkey>,
     /// Program ID that is tied to this config (optional)
     pub program: Pubkey,
     /// Time limit in slots for proposal to be open to voting
@@ -50,6 +51,7 @@ impl IsInitialized for TimelockConfig {
 /// Len of timelock config
 pub const TIMELOCK_CONFIG_LEN: usize =
     1 + 1 + 1 + 1 + 1 + 8 + 32 + 32 + 32 + 8 + CONFIG_NAME_LENGTH + 4 + 296;
+
 impl Pack for TimelockConfig {
     const LEN: usize = 1 + 1 + 1 + 1 + 1 + 8 + 32 + 32 + 32 + 8 + CONFIG_NAME_LENGTH + 4 + 296;
     /// Unpacks a byte buffer into a [TimelockProgram](struct.TimelockProgram.html).
@@ -119,7 +121,8 @@ impl Pack for TimelockConfig {
                 },
                 minimum_slot_waiting_period,
                 governance_mint: Pubkey::new_from_array(*governance_mint),
-                council_mint: Pubkey::new_from_array(*council_mint),
+
+                council_mint: unpack_option_pubkey(council_mint),
                 program: Pubkey::new_from_array(*program),
                 time_limit,
                 name: *name,
@@ -183,7 +186,7 @@ impl Pack for TimelockConfig {
         .to_le_bytes();
         *minimum_slot_waiting_period = self.minimum_slot_waiting_period.to_le_bytes();
         governance_mint.copy_from_slice(self.governance_mint.as_ref());
-        council_mint.copy_from_slice(self.council_mint.as_ref());
+        pack_option_pubkey(self.council_mint, council_mint);
         program.copy_from_slice(self.program.as_ref());
         *time_limit = self.time_limit.to_le_bytes();
         name.copy_from_slice(self.name.as_ref());
