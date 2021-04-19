@@ -22,6 +22,9 @@ members = [
   "token/cli",
   "token/program",
   "governance/program",
+  "governance/proposal-loader-cli",
+  "hello-world-escrow/program",
+  "hello-world-escrow/cli",
   "utils/cgen",
   "utils/test-client"
 ]
