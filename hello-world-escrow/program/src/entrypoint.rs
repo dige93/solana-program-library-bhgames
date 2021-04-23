@@ -3,18 +3,9 @@
 #![cfg(all(target_arch = "bpf", not(feature = "no-entrypoint")))]
 
 use solana_program::{
-    account_info::AccountInfo,
-    decode_error::DecodeError,
-    entrypoint,
-    entrypoint::ProgramResult,
-    msg,
-    program::invoke_signed,
-    program_error::PrintProgramError,
-    program_error::ProgramError,
-    program_pack::{IsInitialized, Pack},
-    pubkey::Pubkey,
+    account_info::AccountInfo, entrypoint, entrypoint::ProgramResult, msg,
+    program_error::PrintProgramError, pubkey::Pubkey,
 };
-use std::{convert::TryInto, mem::size_of};
 
 use crate::instruction::{release_escrow, seed_escrow, HelloWorldError, HelloWorldInstruction};
 
