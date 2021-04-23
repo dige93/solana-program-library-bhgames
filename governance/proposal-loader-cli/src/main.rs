@@ -1,31 +1,23 @@
 use bincode::serialize;
 use solana_client::{
-    client_error::ClientError, rpc_client::RpcClient, rpc_config::RpcSendTransactionConfig,
+    rpc_client::RpcClient, rpc_config::RpcSendTransactionConfig,
     rpc_request::MAX_GET_SIGNATURE_STATUSES_QUERY_ITEMS,
 };
 
-use solana_client::{client_error::Result as ClientResult, rpc_response::RpcLeaderSchedule};
+use solana_client::rpc_response::RpcLeaderSchedule;
 use solana_program::{
     bpf_loader_upgradeable::{self, UpgradeableLoaderState},
     epoch_schedule::Slot,
-    fee_calculator::FeeCalculator,
-    loader_upgradeable_instruction::UpgradeableLoaderInstruction,
     message::Message,
     msg,
-    native_token::lamports_to_sol,
-    program_pack::Pack,
-    system_instruction::{self, SystemError},
-    sysvar,
 };
 
 use solana_client::rpc_response::RpcContactInfo;
 use solana_sdk::{
     commitment_config::CommitmentConfig,
-    instruction::{AccountMeta, Instruction, InstructionError},
     pubkey::Pubkey,
     signature::{read_keypair_file, Keypair, Signer},
     signers::Signers,
-    system_instruction::create_account,
     transaction::Transaction,
 };
 use solana_transaction_status::TransactionConfirmationStatus;
@@ -37,43 +29,32 @@ use std::{
     time::Duration,
 };
 
-use spl_token;
+solana_program::declare_id!("BPFLoaderUpgradeab1e11111111111111111111111");
+
 use std::{error, str::FromStr, time::Instant};
 // -------- UPDATE START -------
-const CLUSTER_ADDRESS: &str = "https://devnet.solana.com";
-const KEYPAIR_PATH: &str = "/Users/jprince/.config/solana/id.json";
+const CLUSTER_ADDRESS: &str = "http://127.0.0.1:8899";
+const GOVERNANCE_PROGRAM_ID: &str = "2uWrXQ3tMurqTLe3Dmue6DzasUGV9UPqK7AK7HzS7v3D";
+const PAYER_KEY_PATH: &str = "/Users/SebastianBor/.config/solana/wallet.json";
 
-solana_program::declare_id!("BPFLoaderUpgradeab1e11111111111111111111111");
-const BUFFER_PATH: &str = "/Users/jprince/.config/solana/bpf_place.json";
-const DEPLOY_PATH: &str =
-    "/Users/jprince/Documents/other/solana-program-library/target/deploy/spl_hello_world_escrow.so";
-const TIMELOCK_PROGRAM_ID: &str = "kJC6ipYWmLrGgnXCNJMpqgbFDSqjBpsKLzdqcifi8Tj";
-const GOVERNANCE_MINT_ID: &str = "kg4VmAyWebKQ7Aimgnv4xmFkA7yBGL3TCWKE7cXLQzC";
-const COUNCIL_MINT_ID: &str = "2NSitSXJdhw7Fyw7xcD6DbjvxDR6fgXsLoPAfen8LoVi";
-const PROGRAM_ID: &str = "5o45iw6s89iGPAg25yGTT8RFFJnbGcLyvxhSXLsqF4Cf";
+const BUFFER_KEY_PATH: &str = "/Users/SebastianBor/.config/solana/bpf_place.json";
+const GOVERNED_PROGRAM_PATH: &str =    "/Users/SebastianBor/gitHub/solana-program-library-bhgames/target/deploy/spl_hello_world_escrow.so";
+const GOVERNED_PROGRAM_ID: &str = "9XijmPdNLBsZRmddZWJ2ua3U2Ch29b4iCj9S3aSASC5A";
+
 // -------- UPDATE END ---------
 
 pub fn main() {
     let client = RpcClient::new(CLUSTER_ADDRESS.to_owned());
 
-    let payer = read_keypair_file(KEYPAIR_PATH).unwrap();
-    let buffer_key = read_keypair_file(BUFFER_PATH).unwrap();
-    let bytes = std::fs::read(DEPLOY_PATH).unwrap();
+    let payer = read_keypair_file(PAYER_KEY_PATH).unwrap();
+    let buffer_key = read_keypair_file(BUFFER_KEY_PATH).unwrap();
+    let bytes = std::fs::read(GOVERNED_PROGRAM_PATH).unwrap();
 
-    let timelock_program_id = Pubkey::from_str(TIMELOCK_PROGRAM_ID).unwrap();
-    let program_id = Pubkey::from_str(PROGRAM_ID).unwrap();
-    let governance_mint_id = Pubkey::from_str(GOVERNANCE_MINT_ID).unwrap();
-    let council_mint_id = Pubkey::from_str(COUNCIL_MINT_ID).unwrap();
+    let timelock_program_id = Pubkey::from_str(GOVERNANCE_PROGRAM_ID).unwrap();
+    let program_id = Pubkey::from_str(GOVERNED_PROGRAM_ID).unwrap();
 
-    let (authority_key, bump_seed) = Pubkey::find_program_address(
-        &[
-            timelock_program_id.as_ref(),
-            governance_mint_id.as_ref(),
-            council_mint_id.as_ref(),
-            program_id.as_ref(),
-        ],
-        &timelock_program_id,
-    );
+    let (authority_key, _) =
+        Pubkey::find_program_address(&[b"governance", program_id.as_ref()], &timelock_program_id);
     let final_message = do_process_program_partial_upgrade(
         &client,
         &bytes.as_slice(),
@@ -95,7 +76,7 @@ fn do_process_program_partial_upgrade(
     rpc_client: &RpcClient,
     program_data: &[u8],
     program_id: &Pubkey,
-    user: &Keypair,
+    payer: &Keypair,
     buffer: &Keypair,
     timelock_authority: &Pubkey,
 ) -> Message {
@@ -107,17 +88,17 @@ fn do_process_program_partial_upgrade(
         .unwrap();
 
     // Build messages to calculate fees
-    let mut create_messages: Vec<Message> = vec![Message::new(
+    let create_messages: Vec<Message> = vec![Message::new(
         &bpf_loader_upgradeable::create_buffer(
-            &user.pubkey(),
+            &payer.pubkey(),
             &buffer.pubkey(),
-            &user.pubkey(),
+            &payer.pubkey(),
             minimum_balance,
             data_len,
         )
         .unwrap()
         .as_slice(),
-        Some(&user.pubkey()),
+        Some(&payer.pubkey()),
     )];
 
     let mut write_messages: Vec<Message> = vec![];
@@ -125,11 +106,11 @@ fn do_process_program_partial_upgrade(
         write_messages.push(Message::new(
             &[bpf_loader_upgradeable::write(
                 &buffer.pubkey(),
-                &user.pubkey(),
+                &payer.pubkey(),
                 (i * DATA_CHUNK_SIZE) as u32,
                 chunk.to_vec(),
             )],
-            Some(&user.pubkey()),
+            Some(&payer.pubkey()),
         ));
     }
 
@@ -137,18 +118,18 @@ fn do_process_program_partial_upgrade(
         Message::new(
             &[bpf_loader_upgradeable::set_buffer_authority(
                 &buffer.pubkey(),
-                &user.pubkey(),
+                &payer.pubkey(),
                 &timelock_authority,
             )],
-            Some(&user.pubkey()),
+            Some(&payer.pubkey()),
         ),
         Message::new(
             &[bpf_loader_upgradeable::set_upgrade_authority(
                 &program_id,
-                &user.pubkey(),
+                &payer.pubkey(),
                 Some(timelock_authority),
             )],
-            Some(&user.pubkey()),
+            Some(&payer.pubkey()),
         ),
     ];
 
@@ -159,7 +140,7 @@ fn do_process_program_partial_upgrade(
             &timelock_authority,
             &timelock_authority,
         )],
-        Some(&user.pubkey()),
+        Some(&payer.pubkey()),
     );
     send_deploy_messages(
         &rpc_client,
@@ -167,7 +148,7 @@ fn do_process_program_partial_upgrade(
         &write_messages,
         &set_authority_messages,
         &buffer,
-        &user,
+        &payer,
     )
     .unwrap();
     return final_message;
