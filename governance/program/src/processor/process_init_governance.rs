@@ -1,9 +1,9 @@
 //! Program state processor
+use crate::utils::create_account_raw;
 use crate::{
     error::GovernanceError,
     state::enums::{ExecutionType, GovernanceAccountType, GovernanceType, VotingEntryRule},
     state::governance::{Governance, GOVERNANCE_NAME_LENGTH},
-    utils::assert_uninitialized,
     PROGRAM_AUTHORITY_SEED,
 };
 use solana_program::{
@@ -31,42 +31,64 @@ pub fn process_init_governance(
     let governed_program_account_info = next_account_info(account_info_iter)?;
     let governance_mint_account_info = next_account_info(account_info_iter)?;
 
+    let payer_account_info = next_account_info(account_info_iter)?; // 4
+    let system_account_info = next_account_info(account_info_iter)?; // 5
+
     let (council_mint, _) = next_account_info(account_info_iter)
         .map(|acc| (Some(*acc.key), acc.key.as_ref()))
         .unwrap_or((None, &[]));
 
-    let seeds = &[
+    let mut seeds = vec![
         PROGRAM_AUTHORITY_SEED,
         governed_program_account_info.key.as_ref(),
     ];
-    let (governance_key, _) = Pubkey::find_program_address(seeds, program_id);
+    let (governance_key, bump_seed) = Pubkey::find_program_address(&seeds[..], program_id);
     if governance_account_info.key != &governance_key {
         return Err(GovernanceError::InvalidGovernanceKey.into());
     }
-    let mut new_governance: Governance = assert_uninitialized(governance_account_info)?;
-    new_governance.account_type = GovernanceAccountType::Governance;
-    new_governance.name = name;
-    new_governance.minimum_slot_waiting_period = minimum_slot_waiting_period;
-    new_governance.time_limit = time_limit;
-    new_governance.program = *governed_program_account_info.key;
-    new_governance.governance_mint = *governance_mint_account_info.key;
 
-    new_governance.council_mint = council_mint;
+    let bump = &[bump_seed];
+    seeds.push(bump);
+    let authority_signer_seeds = &seeds[..];
 
-    new_governance.vote_threshold = vote_threshold;
-    new_governance.execution_type = match execution_type {
-        0 => ExecutionType::Independent,
-        _ => ExecutionType::Independent,
-    };
+    create_account_raw::<Governance>(
+        &[
+            payer_account_info.clone(),
+            governance_account_info.clone(),
+            system_account_info.clone(),
+        ],
+        &governance_key,
+        payer_account_info.key,
+        program_id,
+        authority_signer_seeds,
+    )?;
 
-    new_governance.governance_type = match governance_type {
-        0 => GovernanceType::Governance,
-        _ => GovernanceType::Governance,
-    };
+    let new_governance = Governance {
+        account_type: GovernanceAccountType::Governance,
+        name,
+        minimum_slot_waiting_period,
+        time_limit,
+        program: *governed_program_account_info.key,
+        governance_mint: *governance_mint_account_info.key,
 
-    new_governance.voting_entry_rule = match voting_entry_rule {
-        0 => VotingEntryRule::Anytime,
-        _ => VotingEntryRule::Anytime,
+        council_mint: council_mint,
+
+        vote_threshold: vote_threshold,
+        execution_type: match execution_type {
+            0 => ExecutionType::Independent,
+            _ => ExecutionType::Independent,
+        },
+
+        governance_type: match governance_type {
+            0 => GovernanceType::Governance,
+            _ => GovernanceType::Governance,
+        },
+
+        voting_entry_rule: match voting_entry_rule {
+            0 => VotingEntryRule::Anytime,
+            _ => VotingEntryRule::Anytime,
+        },
+        count: 0,
     };
 
     Governance::pack(
