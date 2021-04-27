@@ -245,9 +245,14 @@ pub enum GovernanceInstruction {
     ///   0. `[writable]` Governance account. The account pubkey needs to be set to PDA with the following seeds:
     ///           1) 'governance' const prefix, 2) Governed Program account key
     ///   1. `[]` Account of the Program governed by this Governance account
-    ///   2. `[]` Governance mint that this Governance uses
-    ///   3. `[]` Council mint that this Governance uses [Optional]
-    InitGovernance {
+    ///   2. `[writable]` Program Data account of the Program governed by this Governance account
+    ///   3. `[signer]` Current Upgrade Authority account of the Program governed by this Governance account
+    ///   4. `[]` Governance mint that this Governance uses
+    ///   5. `[signer]` Payer
+    ///   6. `[]` System account.
+    ///   7. `[]` bpf_upgrade_loader account.
+    ///   8. `[]` Council mint that this Governance uses [Optional]
+    CreateGovernance {
         /// Vote threshold in % required to tip the vote
         vote_threshold: u8,
         /// Execution type
@@ -263,16 +268,6 @@ pub enum GovernanceInstruction {
         /// Optional name
         name: [u8; GOVERNANCE_NAME_LENGTH],
     },
-
-    ///   0. `[]` Governance account. The account pubkey needs to be set to PDA with the following seeds:
-    ///           1) 'governance' const prefix, 2) Governed Program account key
-    ///   1. `[]` Account of the Program governed by this Governance account
-    ///   2. `[writable]` Program Data account of the Program governed by this Governance account
-    ///   3. `[signer]` Current Upgrade Authority account of the Program governed by this Governance account
-    ///   4. `[signer]` Payer
-    ///   5. `[]` System account.
-    ///   6. `[]` bpf_upgrade_loader account.
-    CreateEmptyGovernance,
 
     ///   0. `[]` Governance voting record key. Needs to be set with pubkey set to PDA with seeds of the
     ///           program account key, proposal key, your voting account key.
@@ -342,7 +337,7 @@ impl GovernanceInstruction {
                 let mut name = [0u8; GOVERNANCE_NAME_LENGTH];
                 name[..(GOVERNANCE_NAME_LENGTH - 1)]
                     .clone_from_slice(&rest[..(GOVERNANCE_NAME_LENGTH - 1)]);
-                Self::InitGovernance {
+                Self::CreateGovernance {
                     vote_threshold,
                     execution_type,
                     governance_type,
@@ -370,8 +365,7 @@ impl GovernanceInstruction {
                     voting_token_amount,
                 }
             }
-            14 => Self::CreateEmptyGovernance,
-            15 => Self::CreateEmptyGovernanceVotingRecord,
+            14 => Self::CreateEmptyGovernanceVotingRecord,
             _ => return Err(GovernanceError::InstructionUnpackError.into()),
         })
     }
@@ -473,7 +467,7 @@ impl GovernanceInstruction {
                 buf.extend_from_slice(&yes_voting_token_amount.to_le_bytes());
                 buf.extend_from_slice(&no_voting_token_amount.to_le_bytes());
             }
-            Self::InitGovernance {
+            Self::CreateGovernance {
                 vote_threshold,
                 execution_type,
                 governance_type,
@@ -509,8 +503,7 @@ impl GovernanceInstruction {
                 buf.push(13);
                 buf.extend_from_slice(&voting_token_amount.to_le_bytes());
             }
-            Self::CreateEmptyGovernance => buf.push(14),
-            Self::CreateEmptyGovernanceVotingRecord => buf.push(15),
+            Self::CreateEmptyGovernanceVotingRecord => buf.push(14),
         }
         buf
     }

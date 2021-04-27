@@ -1,11 +1,10 @@
 pub mod process_add_custom_single_signer_transaction;
 pub mod process_add_signer;
-pub mod process_create_empty_governance;
 pub mod process_create_empty_governance_voting_record;
+pub mod process_create_governance;
 pub mod process_delete_proposal;
 pub mod process_deposit_source_tokens;
 pub mod process_execute;
-pub mod process_init_governance;
 pub mod process_init_proposal;
 pub mod process_remove_signer;
 pub mod process_remove_transaction;
@@ -17,12 +16,11 @@ pub mod process_withdraw_voting_tokens;
 use crate::instruction::GovernanceInstruction;
 use process_add_custom_single_signer_transaction::process_add_custom_single_signer_transaction;
 use process_add_signer::process_add_signer;
-use process_create_empty_governance::process_create_empty_governance;
 use process_create_empty_governance_voting_record::process_create_empty_governance_voting_record;
+use process_create_governance::process_create_governance;
 use process_delete_proposal::process_delete_proposal;
 use process_deposit_source_tokens::process_deposit_source_tokens;
 use process_execute::process_execute;
-use process_init_governance::process_init_governance;
 use process_init_proposal::process_init_proposal;
 use process_remove_signer::process_remove_signer;
 use process_remove_transaction::process_remove_transaction;
@@ -93,7 +91,7 @@ pub fn process_instruction(
                 no_voting_token_amount,
             )
         }
-        GovernanceInstruction::InitGovernance {
+        GovernanceInstruction::CreateGovernance {
             vote_threshold,
             execution_type,
             governance_type,
@@ -103,7 +101,7 @@ pub fn process_instruction(
             name,
         } => {
             msg!("Instruction: Initialize Governance");
-            process_init_governance(
+            process_create_governance(
                 program_id,
                 accounts,
                 vote_threshold,
@@ -132,10 +130,6 @@ pub fn process_instruction(
         } => {
             msg!("Instruction: Withdraw Voting Tokens");
             process_withdraw_voting_tokens(program_id, accounts, voting_token_amount)
-        }
-        GovernanceInstruction::CreateEmptyGovernance => {
-            msg!("Instruction: Create Empty Governance");
-            process_create_empty_governance(program_id, accounts)
         }
 
         GovernanceInstruction::CreateEmptyGovernanceVotingRecord => {
