@@ -47,8 +47,6 @@ pub fn process_init_proposal(
     let voting_validation_account_info = next_account_info(account_info_iter)?; //10
     let destination_admin_account_info = next_account_info(account_info_iter)?; //11
     let destination_sig_account_info = next_account_info(account_info_iter)?; //12
-    let yes_voting_dump_account_info = next_account_info(account_info_iter)?; //13
-    let no_voting_dump_account_info = next_account_info(account_info_iter)?; //14
     let source_holding_account_info = next_account_info(account_info_iter)?; //15
     let source_mint_account_info = next_account_info(account_info_iter)?; //16
     let governance_program_authority_info = next_account_info(account_info_iter)?; //17
@@ -71,8 +69,7 @@ pub fn process_init_proposal(
     new_proposal.source_mint = *source_mint_account_info.key;
     new_proposal.signatory_mint = *signatory_mint_account_info.key;
     new_proposal.source_holding = *source_holding_account_info.key;
-    new_proposal.yes_voting_dump = *yes_voting_dump_account_info.key;
-    new_proposal.no_voting_dump = *no_voting_dump_account_info.key;
+
     new_proposal.admin_validation = *admin_validation_account_info.key;
     new_proposal.voting_validation = *voting_validation_account_info.key;
     new_proposal.signatory_validation = *signatory_validation_account_info.key;
@@ -125,8 +122,6 @@ pub fn process_init_proposal(
     )?;
     assert_account_mint(admin_validation_account_info, admin_mint_account_info)?;
     assert_account_mint(voting_validation_account_info, voting_mint_account_info)?;
-    assert_account_mint(yes_voting_dump_account_info, yes_voting_mint_account_info)?;
-    assert_account_mint(no_voting_dump_account_info, no_voting_mint_account_info)?;
     assert_account_mint(source_holding_account_info, source_mint_account_info)?;
 
     assert_account_owner(
@@ -141,14 +136,7 @@ pub fn process_init_proposal(
         voting_validation_account_info,
         governance_program_authority_info.key,
     )?;
-    assert_account_owner(
-        yes_voting_dump_account_info,
-        governance_program_authority_info.key,
-    )?;
-    assert_account_owner(
-        no_voting_dump_account_info,
-        governance_program_authority_info.key,
-    )?;
+
     assert_account_owner(
         source_holding_account_info,
         governance_program_authority_info.key,

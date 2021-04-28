@@ -53,12 +53,6 @@ pub struct Proposal {
 
     /// Source mint - either governance or council mint from Governance
     pub source_mint: Pubkey,
-
-    /// Yes Voting dump account for exchanged vote tokens
-    pub yes_voting_dump: Pubkey,
-
-    /// No Voting dump account for exchanged vote tokens
-    pub no_voting_dump: Pubkey,
 }
 
 impl Sealed for Proposal {}
@@ -68,9 +62,9 @@ impl IsInitialized for Proposal {
     }
 }
 
-const PROPOSAL_LEN: usize = 1 + 32 * 15 + 300;
+const PROPOSAL_LEN: usize = 1 + 32 * 13 + 300;
 impl Pack for Proposal {
-    const LEN: usize = 1 + 32 * 15 + 300;
+    const LEN: usize = 1 + 32 * 13 + 300;
     /// Unpacks a byte buffer into a Proposal account data
     fn unpack_from_slice(input: &[u8]) -> Result<Self, ProgramError> {
         let input = array_ref![input, 0, PROPOSAL_LEN];
@@ -91,10 +85,8 @@ impl Pack for Proposal {
             admin_validation,
             voting_validation,
             source_holding,
-            yes_voting_dump,
-            no_voting_dump,
             _padding,
-        ) = array_refs![input, 1, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 300];
+        ) = array_refs![input, 1, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 300];
         let account_type = u8::from_le_bytes(*account_type_value);
 
         let account_type = match account_type {
@@ -117,8 +109,6 @@ impl Pack for Proposal {
             admin_validation: Pubkey::new_from_array(*admin_validation),
             voting_validation: Pubkey::new_from_array(*voting_validation),
             source_holding: Pubkey::new_from_array(*source_holding),
-            yes_voting_dump: Pubkey::new_from_array(*yes_voting_dump),
-            no_voting_dump: Pubkey::new_from_array(*no_voting_dump),
         })
     }
 
@@ -140,12 +130,8 @@ impl Pack for Proposal {
             admin_validation,
             voting_validation,
             source_holding,
-            yes_voting_dump,
-            no_voting_dump,
             _padding,
-        ) = mut_array_refs![
-            output, 1, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 300
-        ];
+        ) = mut_array_refs![output, 1, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 300];
 
         *account_type_value = match self.account_type {
             GovernanceAccountType::Uninitialized => 0_u8,
@@ -167,8 +153,6 @@ impl Pack for Proposal {
         admin_validation.copy_from_slice(self.admin_validation.as_ref());
         voting_validation.copy_from_slice(self.voting_validation.as_ref());
         source_holding.copy_from_slice(self.source_holding.as_ref());
-        yes_voting_dump.copy_from_slice(self.yes_voting_dump.as_ref());
-        no_voting_dump.copy_from_slice(self.no_voting_dump.as_ref());
     }
 
     fn get_packed_len() -> usize {

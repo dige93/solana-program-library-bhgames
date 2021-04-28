@@ -3,7 +3,7 @@
 use crate::{
     error::GovernanceError,
     state::governance_voting_record::GovernanceVotingRecord,
-    state::{enums::ProposalStateStatus, proposal::Proposal, proposal_state::ProposalState},
+    state::proposal::Proposal,
     utils::{
         assert_account_equiv, assert_initialized, assert_token_program_is_correct, spl_token_burn,
         spl_token_transfer, TokenBurnParams, TokenTransferParams,
@@ -32,8 +32,7 @@ pub fn process_withdraw_voting_tokens(
     let no_voting_account_info = next_account_info(account_info_iter)?;
     let user_account_info = next_account_info(account_info_iter)?;
     let source_holding_account_info = next_account_info(account_info_iter)?;
-    let yes_voting_dump_account_info = next_account_info(account_info_iter)?;
-    let no_voting_dump_account_info = next_account_info(account_info_iter)?;
+
     let voting_mint_account_info = next_account_info(account_info_iter)?;
     let yes_voting_mint_account_info = next_account_info(account_info_iter)?;
     let no_voting_mint_account_info = next_account_info(account_info_iter)?;
@@ -45,7 +44,6 @@ pub fn process_withdraw_voting_tokens(
     let governance_program_authority_info = next_account_info(account_info_iter)?;
     let token_program_account_info = next_account_info(account_info_iter)?;
 
-    let proposal_state: ProposalState = assert_initialized(proposal_state_account_info)?;
     let proposal: Proposal = assert_initialized(proposal_account_info)?;
     assert_token_program_is_correct(&proposal, token_program_account_info)?;
     // Using assert_account_equiv not workable here due to cost of stack size on this method.
@@ -54,8 +52,6 @@ pub fn process_withdraw_voting_tokens(
     assert_account_equiv(voting_mint_account_info, &proposal.voting_mint)?;
     assert_account_equiv(yes_voting_mint_account_info, &proposal.yes_voting_mint)?;
     assert_account_equiv(no_voting_mint_account_info, &proposal.no_voting_mint)?;
-    assert_account_equiv(yes_voting_dump_account_info, &proposal.yes_voting_dump)?;
-    assert_account_equiv(no_voting_dump_account_info, &proposal.no_voting_dump)?;
     assert_account_equiv(source_holding_account_info, &proposal.source_holding)?;
 
     let voting_account: Account = assert_initialized(voting_account_info)?;
@@ -154,25 +150,15 @@ pub fn process_withdraw_voting_tokens(
         }
 
         if amount_to_transfer > 0 {
-            if proposal_state.status == ProposalStateStatus::Voting {
-                spl_token_burn(TokenBurnParams {
-                    mint: yes_voting_mint_account_info.clone(),
-                    amount: amount_to_transfer,
-                    authority: transfer_authority_info.clone(),
-                    authority_signer_seeds,
-                    token_program: token_program_account_info.clone(),
-                    source: yes_voting_account_info.clone(),
-                })?;
-            } else {
-                spl_token_transfer(TokenTransferParams {
-                    source: yes_voting_account_info.clone(),
-                    destination: yes_voting_dump_account_info.clone(),
-                    amount: amount_to_transfer,
-                    authority: transfer_authority_info.clone(),
-                    authority_signer_seeds,
-                    token_program: token_program_account_info.clone(),
-                })?;
-            }
+            spl_token_burn(TokenBurnParams {
+                mint: yes_voting_mint_account_info.clone(),
+                amount: amount_to_transfer,
+                authority: transfer_authority_info.clone(),
+                authority_signer_seeds,
+                token_program: token_program_account_info.clone(),
+                source: yes_voting_account_info.clone(),
+            })?;
+
             voting_record.yes_count = match voting_record.yes_count.checked_sub(amount_to_transfer)
             {
                 Some(val) => val,
@@ -183,25 +169,15 @@ pub fn process_withdraw_voting_tokens(
 
     if no_voting_account.amount > 0 && voting_fuel_tank > 0 {
         // whatever is left, no account gets by default
-        if proposal_state.status == ProposalStateStatus::Voting {
-            spl_token_burn(TokenBurnParams {
-                mint: no_voting_mint_account_info.clone(),
-                amount: voting_fuel_tank,
-                authority: transfer_authority_info.clone(),
-                authority_signer_seeds,
-                token_program: token_program_account_info.clone(),
-                source: no_voting_account_info.clone(),
-            })?;
-        } else {
-            spl_token_transfer(TokenTransferParams {
-                source: no_voting_account_info.clone(),
-                destination: no_voting_dump_account_info.clone(),
-                amount: voting_fuel_tank,
-                authority: transfer_authority_info.clone(),
-                authority_signer_seeds,
-                token_program: token_program_account_info.clone(),
-            })?;
-        }
+
+        spl_token_burn(TokenBurnParams {
+            mint: no_voting_mint_account_info.clone(),
+            amount: voting_fuel_tank,
+            authority: transfer_authority_info.clone(),
+            authority_signer_seeds,
+            token_program: token_program_account_info.clone(),
+            source: no_voting_account_info.clone(),
+        })?;
         voting_record.no_count = match voting_record.no_count.checked_sub(voting_fuel_tank) {
             Some(val) => val,
             None => return Err(GovernanceError::NumericalOverflow.into()),
