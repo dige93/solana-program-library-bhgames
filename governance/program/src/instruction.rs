@@ -270,7 +270,6 @@ pub enum GovernanceInstruction {
     ///   1. `[]` Proposal key
     ///   2. `[]` Your voting account
     ///   3. `[]` Payer
-    ///   4. `[]` Governance program pub key
     ///   5. `[]` System account.
     CreateEmptyGovernanceVoteRecord,
 }
