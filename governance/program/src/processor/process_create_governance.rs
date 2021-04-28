@@ -3,7 +3,7 @@ use crate::utils::assert_program_upgrade_authority;
 use crate::utils::create_account_raw;
 use crate::{
     error::GovernanceError,
-    state::enums::{ExecutionType, GovernanceAccountType, GovernanceType, VotingEntryRule},
+    state::enums::GovernanceAccountType,
     state::governance::{Governance, GOVERNANCE_NAME_LENGTH},
     PROGRAM_AUTHORITY_SEED,
 };
@@ -20,9 +20,7 @@ pub fn process_create_governance(
     program_id: &Pubkey,
     accounts: &[AccountInfo],
     vote_threshold: u8,
-    execution_type: u8,
-    governance_type: u8,
-    voting_entry_rule: u8,
+
     minimum_slot_waiting_period: u64,
     time_limit: u64,
     name: [u8; GOVERNANCE_NAME_LENGTH],
@@ -104,20 +102,7 @@ pub fn process_create_governance(
         council_mint: council_mint,
 
         vote_threshold: vote_threshold,
-        execution_type: match execution_type {
-            0 => ExecutionType::Independent,
-            _ => ExecutionType::Independent,
-        },
 
-        governance_type: match governance_type {
-            0 => GovernanceType::Governance,
-            _ => GovernanceType::Governance,
-        },
-
-        voting_entry_rule: match voting_entry_rule {
-            0 => VotingEntryRule::Anytime,
-            _ => VotingEntryRule::Anytime,
-        },
         count: 0,
     };
 

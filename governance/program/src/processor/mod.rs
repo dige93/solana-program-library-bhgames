@@ -93,9 +93,6 @@ pub fn process_instruction(
         }
         GovernanceInstruction::CreateGovernance {
             vote_threshold,
-            execution_type,
-            governance_type,
-            voting_entry_rule,
             minimum_slot_waiting_period,
             time_limit,
             name,
@@ -105,9 +102,6 @@ pub fn process_instruction(
                 program_id,
                 accounts,
                 vote_threshold,
-                execution_type,
-                governance_type,
-                voting_entry_rule,
                 minimum_slot_waiting_period,
                 time_limit,
                 name,

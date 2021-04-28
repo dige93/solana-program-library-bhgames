@@ -26,19 +26,6 @@ impl Default for GovernanceAccountType {
     }
 }
 
-/// What type of execution a Proposal is
-#[derive(Clone, Debug, PartialEq)]
-pub enum ExecutionType {
-    /// Each transaction is independent of the other
-    Independent,
-}
-
-impl Default for ExecutionType {
-    fn default() -> Self {
-        ExecutionType::Independent
-    }
-}
-
 /// What state a Proposal is in
 #[derive(Clone, Debug, PartialEq)]
 pub enum ProposalStateStatus {
@@ -63,31 +50,5 @@ pub enum ProposalStateStatus {
 impl Default for ProposalStateStatus {
     fn default() -> Self {
         ProposalStateStatus::Draft
-    }
-}
-
-/// What type a Governance is
-#[derive(Clone, Debug, PartialEq)]
-pub enum GovernanceType {
-    /// Meaning voters deposit their tokens from outside mint and "govern" the proposal
-    Governance,
-}
-
-impl Default for GovernanceType {
-    fn default() -> Self {
-        GovernanceType::Governance
-    }
-}
-
-/// Rules for voters entering the Proposal
-#[derive(Clone, Debug, PartialEq)]
-pub enum VotingEntryRule {
-    /// Meaning voters can enter at any point in time
-    Anytime,
-}
-
-impl Default for VotingEntryRule {
-    fn default() -> Self {
-        VotingEntryRule::Anytime
     }
 }

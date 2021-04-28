@@ -1,8 +1,5 @@
 use crate::{
-    state::{
-        enums::GovernanceAccountType,
-        enums::{ExecutionType, GovernanceType, VotingEntryRule},
-    },
+    state::enums::GovernanceAccountType,
     utils::{pack_option_key, unpack_option_key},
 };
 
@@ -22,12 +19,7 @@ pub struct Governance {
     pub account_type: GovernanceAccountType,
     /// Voting threshold in % required to tip the vote
     pub vote_threshold: u8,
-    /// Execution type
-    pub execution_type: ExecutionType,
-    /// Governance Type
-    pub governance_type: GovernanceType,
-    /// Voting entry rule
-    pub voting_entry_rule: VotingEntryRule,
+
     /// Minimum slot time-distance from creation of proposal for an instruction to be placed
     pub minimum_slot_waiting_period: u64,
     /// Governance mint
@@ -52,11 +44,10 @@ impl IsInitialized for Governance {
 }
 
 /// Len of Governance
-pub const GOVERNANCE_LEN: usize =
-    1 + 1 + 1 + 1 + 1 + 8 + 32 + 33 + 32 + 8 + GOVERNANCE_NAME_LENGTH + 4 + 295;
+pub const GOVERNANCE_LEN: usize = 1 + 1 + 8 + 32 + 33 + 32 + 8 + GOVERNANCE_NAME_LENGTH + 4 + 295;
 
 impl Pack for Governance {
-    const LEN: usize = 1 + 1 + 1 + 1 + 1 + 8 + 32 + 33 + 32 + 8 + GOVERNANCE_NAME_LENGTH + 4 + 295;
+    const LEN: usize = 1 + 1 + 8 + 32 + 33 + 32 + 8 + GOVERNANCE_NAME_LENGTH + 4 + 295;
     /// Unpacks a byte buffer into Governance account data
     fn unpack_from_slice(input: &[u8]) -> Result<Self, ProgramError> {
         let input = array_ref![input, 0, GOVERNANCE_LEN];
@@ -65,9 +56,6 @@ impl Pack for Governance {
         let (
             account_type_value,
             vote_threshold,
-            execution_type,
-            governance_type,
-            voting_entry_rule,
             minimum_slot_waiting_period,
             governance_mint,
             council_mint_option,
@@ -78,9 +66,6 @@ impl Pack for Governance {
             _padding,
         ) = array_refs![
             input,
-            1,
-            1,
-            1,
             1,
             1,
             8,
@@ -94,9 +79,6 @@ impl Pack for Governance {
         ];
         let account_type = u8::from_le_bytes(*account_type_value);
         let vote_threshold = u8::from_le_bytes(*vote_threshold);
-        let execution_type = u8::from_le_bytes(*execution_type);
-        let governance_type = u8::from_le_bytes(*governance_type);
-        let voting_entry_rule = u8::from_le_bytes(*voting_entry_rule);
         let minimum_slot_waiting_period = u64::from_le_bytes(*minimum_slot_waiting_period);
         let time_limit = u64::from_le_bytes(*time_limit);
         let count = u32::from_le_bytes(*count);
@@ -110,18 +92,7 @@ impl Pack for Governance {
         Ok(Self {
             account_type,
             vote_threshold,
-            execution_type: match execution_type {
-                0 => ExecutionType::Independent,
-                _ => ExecutionType::Independent,
-            },
-            governance_type: match governance_type {
-                0 => GovernanceType::Governance,
-                _ => GovernanceType::Governance,
-            },
-            voting_entry_rule: match voting_entry_rule {
-                0 => VotingEntryRule::Anytime,
-                _ => VotingEntryRule::Anytime,
-            },
+
             minimum_slot_waiting_period,
             governance_mint: Pubkey::new_from_array(*governance_mint),
 
@@ -140,9 +111,6 @@ impl Pack for Governance {
         let (
             account_type_value,
             vote_threshold,
-            execution_type,
-            governance_type,
-            voting_entry_rule,
             minimum_slot_waiting_period,
             governance_mint,
             council_mint_option,
@@ -153,9 +121,6 @@ impl Pack for Governance {
             _padding,
         ) = mut_array_refs![
             output,
-            1,
-            1,
-            1,
             1,
             1,
             8,
@@ -176,18 +141,6 @@ impl Pack for Governance {
 
         *vote_threshold = self.vote_threshold.to_le_bytes();
 
-        *execution_type = match self.execution_type {
-            ExecutionType::Independent => 0_u8,
-        }
-        .to_le_bytes();
-        *governance_type = match self.governance_type {
-            GovernanceType::Governance => 0_u8,
-        }
-        .to_le_bytes();
-        *voting_entry_rule = match self.voting_entry_rule {
-            VotingEntryRule::Anytime => 0_u8,
-        }
-        .to_le_bytes();
         *minimum_slot_waiting_period = self.minimum_slot_waiting_period.to_le_bytes();
         governance_mint.copy_from_slice(self.governance_mint.as_ref());
 
