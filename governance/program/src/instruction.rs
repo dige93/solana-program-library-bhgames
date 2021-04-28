@@ -1,3 +1,4 @@
+use crate::state::enums::Vote;
 use std::{convert::TryInto, mem::size_of};
 
 use solana_program::program_error::ProgramError;
@@ -178,10 +179,8 @@ pub enum GovernanceInstruction {
     ///   14. `[]` Token program account.
     ///   15. `[]` Clock sysvar.
     Vote {
-        /// How many voting tokens to burn yes
-        yes_voting_token_amount: u64,
-        /// How many voting tokens to burn no
-        no_voting_token_amount: u64,
+        /// Casted vote
+        vote: Vote,
     },
 
     /// Executes a command in the Proposal
@@ -309,13 +308,18 @@ impl GovernanceInstruction {
             7 => Self::DeleteProposal,
             8 => Self::SignProposal,
             9 => {
-                let (yes_voting_token_amount, rest) = Self::unpack_u64(rest)?;
-                let (no_voting_token_amount, _) = Self::unpack_u64(rest)?;
+                let (yes_vote_amount, rest) = Self::unpack_u64(rest)?;
+                let (no_vote_amount, _) = Self::unpack_u64(rest)?;
 
-                Self::Vote {
-                    yes_voting_token_amount,
-                    no_voting_token_amount,
-                }
+                let vote = if yes_vote_amount > 0 {
+                    Vote::Yes(yes_vote_amount)
+                } else if no_vote_amount > 0 {
+                    Vote::No(no_vote_amount)
+                } else {
+                    return Err(GovernanceError::InstructionUnpackError.into());
+                };
+
+                Self::Vote { vote }
             }
 
             10 => {
@@ -442,13 +446,21 @@ impl GovernanceInstruction {
             }
             Self::DeleteProposal => buf.push(7),
             Self::SignProposal => buf.push(8),
-            Self::Vote {
-                yes_voting_token_amount,
-                no_voting_token_amount,
-            } => {
+            Self::Vote { vote } => {
                 buf.push(9);
-                buf.extend_from_slice(&yes_voting_token_amount.to_le_bytes());
-                buf.extend_from_slice(&no_voting_token_amount.to_le_bytes());
+
+                let yes_vote_amount = match vote {
+                    Vote::Yes(amount) => *amount,
+                    _ => 0_u64,
+                };
+
+                let no_vote_amount = match vote {
+                    Vote::No(amount) => *amount,
+                    _ => 0,
+                };
+
+                buf.extend_from_slice(&yes_vote_amount.to_le_bytes());
+                buf.extend_from_slice(&no_vote_amount.to_le_bytes());
             }
             Self::CreateGovernance {
                 vote_threshold,

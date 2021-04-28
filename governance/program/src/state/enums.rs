@@ -53,3 +53,13 @@ impl Default for ProposalStateStatus {
         ProposalStateStatus::Draft
     }
 }
+
+/// Vote  with number of votes
+#[derive(Clone, Debug, PartialEq)]
+pub enum Vote {
+    /// Yes vote
+    Yes(u64),
+
+    /// No vote
+    No(u64),
+}

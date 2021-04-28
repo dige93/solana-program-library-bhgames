@@ -1,4 +1,5 @@
 //! Program state processor
+use crate::state::enums::Vote;
 use crate::{
     error::GovernanceError,
     state::{
@@ -23,12 +24,7 @@ use solana_program::{
 use spl_token::state::Account;
 
 /// Vote on the Proposal
-pub fn process_vote(
-    program_id: &Pubkey,
-    accounts: &[AccountInfo],
-    yes_voting_token_amount: u64,
-    no_voting_token_amount: u64,
-) -> ProgramResult {
+pub fn process_vote(program_id: &Pubkey, accounts: &[AccountInfo], vote: Vote) -> ProgramResult {
     let account_info_iter = &mut accounts.iter();
     let voting_record_account_info = next_account_info(account_info_iter)?; // 0
     let proposal_state_account_info = next_account_info(account_info_iter)?; // 1
@@ -76,8 +72,18 @@ pub fn process_vote(
 
     let total_ever_existed = source_mint_supply;
 
+    let yes_vote_amount = match vote {
+        Vote::Yes(amount) => amount,
+        _ => 0_u64,
+    };
+
+    let no_vote_amount = match vote {
+        Vote::No(amount) => amount,
+        _ => 0_u64,
+    };
+
     let mut now_remaining_in_no_column = source_mint_supply
-        .checked_sub(yes_voting_token_amount)
+        .checked_sub(yes_vote_amount)
         .ok_or(GovernanceError::NumericalOverflow)?;
 
     now_remaining_in_no_column = now_remaining_in_no_column
@@ -91,7 +97,7 @@ pub fn process_vote(
     // The act of voting proves you are able to vote. No need to assert permission here.
     spl_token_burn(TokenBurnParams {
         mint: voting_mint_account_info.clone(),
-        amount: yes_voting_token_amount + no_voting_token_amount,
+        amount: yes_vote_amount + no_vote_amount,
         authority: transfer_authority_info.clone(),
         authority_signer_seeds,
         token_program: token_program_account_info.clone(),
@@ -101,7 +107,7 @@ pub fn process_vote(
     spl_token_mint_to(TokenMintToParams {
         mint: yes_voting_mint_account_info.clone(),
         destination: yes_voting_account_info.clone(),
-        amount: yes_voting_token_amount,
+        amount: yes_vote_amount,
         authority: governance_program_authority_info.clone(),
         authority_signer_seeds,
         token_program: token_program_account_info.clone(),
@@ -110,7 +116,7 @@ pub fn process_vote(
     spl_token_mint_to(TokenMintToParams {
         mint: no_voting_mint_account_info.clone(),
         destination: no_voting_account_info.clone(),
-        amount: no_voting_token_amount,
+        amount: no_vote_amount,
         authority: governance_program_authority_info.clone(),
         authority_signer_seeds,
         token_program: token_program_account_info.clone(),
@@ -155,15 +161,15 @@ pub fn process_vote(
     let mut voting_record: GovernanceVoteRecord =
         GovernanceVoteRecord::unpack_unchecked(&voting_record_account_info.data.borrow())?;
 
-    voting_record.yes_count = match yes_vote_acct.amount.checked_add(yes_voting_token_amount) {
+    voting_record.yes_count = match yes_vote_acct.amount.checked_add(yes_vote_amount) {
         Some(val) => val,
         None => return Err(GovernanceError::NumericalOverflow.into()),
     };
-    voting_record.no_count = match no_vote_acct.amount.checked_add(no_voting_token_amount) {
+    voting_record.no_count = match no_vote_acct.amount.checked_add(no_vote_amount) {
         Some(val) => val,
         None => return Err(GovernanceError::NumericalOverflow.into()),
     };
-    let total_change = match yes_voting_token_amount.checked_add(no_voting_token_amount) {
+    let total_change = match yes_vote_amount.checked_add(no_vote_amount) {
         Some(val) => val,
         None => return Err(GovernanceError::NumericalOverflow.into()),
     };

@@ -79,17 +79,9 @@ pub fn process_instruction(
             msg!("Instruction: Sign");
             process_sign(program_id, accounts)
         }
-        GovernanceInstruction::Vote {
-            yes_voting_token_amount,
-            no_voting_token_amount,
-        } => {
+        GovernanceInstruction::Vote { vote } => {
             msg!("Instruction: Vote");
-            process_vote(
-                program_id,
-                accounts,
-                yes_voting_token_amount,
-                no_voting_token_amount,
-            )
+            process_vote(program_id, accounts, vote)
         }
         GovernanceInstruction::CreateGovernance {
             vote_threshold,
