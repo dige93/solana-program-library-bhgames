@@ -107,11 +107,9 @@ pub fn process_instruction(
                 name,
             )
         }
-        GovernanceInstruction::Execute {
-            number_of_extra_accounts,
-        } => {
+        GovernanceInstruction::Execute => {
             msg!("Instruction: Execute");
-            process_execute(program_id, accounts, number_of_extra_accounts)
+            process_execute(program_id, accounts)
         }
         GovernanceInstruction::DepositSourceTokens {
             voting_token_amount,

@@ -24,11 +24,7 @@ use solana_program::{
 };
 
 /// Execute an instruction
-pub fn process_execute(
-    program_id: &Pubkey,
-    accounts: &[AccountInfo],
-    number_of_extra_accounts: u8,
-) -> ProgramResult {
+pub fn process_execute(program_id: &Pubkey, accounts: &[AccountInfo]) -> ProgramResult {
     let account_info_iter = &mut accounts.iter();
     let transaction_account_info = next_account_info(account_info_iter)?;
     let proposal_state_account_info = next_account_info(account_info_iter)?;
@@ -61,25 +57,31 @@ pub fn process_execute(
     let mut seeds = vec![PROGRAM_AUTHORITY_SEED, governance.program.as_ref()];
 
     let (governance_authority, bump_seed) = Pubkey::find_program_address(&seeds[..], program_id);
+
     let mut account_infos: Vec<AccountInfo> = vec![];
-    if number_of_extra_accounts > (MAX_ACCOUNTS_ALLOWED - 2) as u8 {
-        return Err(GovernanceError::TooManyAccountsInInstruction.into());
-    }
+
     let mut added_authority = false;
 
-    for _ in 0..number_of_extra_accounts {
-        let next_account = next_account_info(account_info_iter)?.clone();
-        if next_account.data_len() == GOVERNANCE_LEN {
-            // You better be initialized, and if you are, you better at least be mine...
-            let _nefarious_governance: Governance = assert_initialized(&next_account)?;
-            assert_account_equiv(&next_account, &proposal.governance)?;
-            added_authority = true;
-
-            if next_account.key != &governance_authority {
-                return Err(GovernanceError::InvalidGovernanceKey.into());
+    loop {
+        if let Ok(next_account) = next_account_info(account_info_iter) {
+            // TODO: Review this check. Can't we just check for the governance key and allow other governance accounts?
+            if next_account.data_len() == GOVERNANCE_LEN {
+                // You better be initialized, and if you are, you better at least be mine...
+                let _nefarious_governance: Governance = assert_initialized(&next_account)?;
+                assert_account_equiv(&next_account, &proposal.governance)?;
+                added_authority = true;
+                if next_account.key != &governance_authority {
+                    return Err(GovernanceError::InvalidGovernanceKey.into());
+                }
             }
+            account_infos.push(next_account.clone());
+        } else {
+            break;
         }
-        account_infos.push(next_account);
+    }
+
+    if account_infos.len() > (MAX_ACCOUNTS_ALLOWED - 2) {
+        return Err(GovernanceError::TooManyAccountsInInstruction.into());
     }
 
     account_infos.push(program_to_invoke_info.clone());

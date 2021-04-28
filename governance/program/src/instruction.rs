@@ -194,10 +194,7 @@ pub enum GovernanceInstruction {
     ///   5. `[]` Governance program account pub key.
     ///   6. `[]` Clock sysvar.
     ///   7+ Any extra accounts that are part of the instruction, in order
-    Execute {
-        /// Number of extra accounts
-        number_of_extra_accounts: u8,
-    },
+    Execute,
 
     /// [Requires tokens of the Governance mint or Council mint depending on type of Proposal]
     /// Deposits voting tokens to be used during the voting process in a Proposal.
@@ -336,12 +333,7 @@ impl GovernanceInstruction {
                     time_limit,
                 }
             }
-            11 => {
-                let (number_of_extra_accounts, _) = Self::unpack_u8(rest)?;
-                Self::Execute {
-                    number_of_extra_accounts,
-                }
-            }
+            11 => Self::Execute,
             12 => {
                 let (voting_token_amount, _) = Self::unpack_u64(rest)?;
                 Self::DepositSourceTokens {
@@ -470,11 +462,8 @@ impl GovernanceInstruction {
                 buf.extend_from_slice(&time_limit.to_le_bytes());
                 buf.extend_from_slice(name);
             }
-            Self::Execute {
-                number_of_extra_accounts,
-            } => {
+            Self::Execute => {
                 buf.push(11);
-                buf.extend_from_slice(&number_of_extra_accounts.to_le_bytes());
             }
             Self::DepositSourceTokens {
                 voting_token_amount,
