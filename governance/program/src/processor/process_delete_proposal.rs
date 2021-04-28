@@ -30,7 +30,7 @@ pub fn process_delete_proposal(program_id: &Pubkey, accounts: &[AccountInfo]) ->
 
     assert_account_equiv(admin_validation_account_info, &proposal.admin_validation)?;
     assert_account_equiv(proposal_state_account_info, &proposal.state)?;
-    assert_token_program_is_correct(&proposal, token_program_info)?;
+    assert_token_program_is_correct(token_program_info)?;
     assert_not_in_voting_or_executing(&proposal_state)?;
     assert_is_permissioned(
         program_id,

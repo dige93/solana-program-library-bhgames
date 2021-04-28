@@ -133,11 +133,8 @@ pub fn assert_proper_signatory_mint(
 }
 
 /// Asserts token_program is correct program
-pub fn assert_token_program_is_correct(
-    governance_program: &Proposal,
-    token_program_info: &AccountInfo,
-) -> ProgramResult {
-    if &governance_program.token_program_id != token_program_info.key {
+pub fn assert_token_program_is_correct(token_program_info: &AccountInfo) -> ProgramResult {
+    if &spl_token::id() != token_program_info.key {
         return Err(GovernanceError::InvalidTokenProgram.into());
     };
 

@@ -35,7 +35,7 @@ pub fn process_remove_signer(program_id: &Pubkey, accounts: &[AccountInfo]) -> P
     assert_account_equiv(proposal_state_account_info, &proposal.state)?;
     assert_account_equiv(signatory_mint_info, &proposal.signatory_mint)?;
     assert_account_equiv(admin_validation_account_info, &proposal.admin_validation)?;
-    assert_token_program_is_correct(&proposal, token_program_account_info)?;
+    assert_token_program_is_correct(token_program_account_info)?;
     assert_draft(&proposal_state)?;
     assert_is_permissioned(
         program_id,

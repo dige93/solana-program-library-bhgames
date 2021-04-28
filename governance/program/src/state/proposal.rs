@@ -13,16 +13,13 @@ pub struct Proposal {
     /// Governance account type
     pub account_type: GovernanceAccountType,
 
-    /// Governance the Proposal belongs to
+    /// Governance account the Proposal belongs to
     pub governance: Pubkey,
 
-    /// Token program used
-    pub token_program_id: Pubkey,
-
-    /// state values
+    /// Proposal State account
     pub state: Pubkey,
 
-    /// Mint that creates signatory tokens of this instruction
+    /// Mint that creates signatory tokens of this Proposal
     /// If there are outstanding signatory tokens, then cannot leave draft state. Signatories must burn tokens (ie agree
     /// to move instruction to voting state) and bring mint to net 0 tokens outstanding. Each signatory gets 1 (serves as flag)
     pub signatory_mint: Pubkey,
@@ -30,7 +27,7 @@ pub struct Proposal {
     /// Admin ownership mint. One token is minted, can be used to grant admin status to a new person.
     pub admin_mint: Pubkey,
 
-    /// Mint that creates voting tokens of this instruction
+    /// Mint that creates voting tokens of this Proposal
     pub vote_mint: Pubkey,
 
     /// Mint that creates evidence of voting YES via token creation
@@ -48,10 +45,10 @@ pub struct Proposal {
     /// Used to validate voting tokens in a round trip transfer
     pub vote_validation: Pubkey,
 
-    /// Source token holding account
+    /// Source Token Holding account
     pub source_holding: Pubkey,
 
-    /// Source mint - either governance or council mint from Governance
+    /// Source Mint - either governance or council mint from Governance
     pub source_mint: Pubkey,
 }
 
@@ -62,9 +59,9 @@ impl IsInitialized for Proposal {
     }
 }
 
-const PROPOSAL_LEN: usize = 1 + 32 * 13 + 300;
+const PROPOSAL_LEN: usize = 1 + 32 * 12 + 300;
 impl Pack for Proposal {
-    const LEN: usize = 1 + 32 * 13 + 300;
+    const LEN: usize = 1 + 32 * 12 + 300;
     /// Unpacks a byte buffer into a Proposal account data
     fn unpack_from_slice(input: &[u8]) -> Result<Self, ProgramError> {
         let input = array_ref![input, 0, PROPOSAL_LEN];
@@ -73,7 +70,6 @@ impl Pack for Proposal {
         let (
             account_type_value,
             governance,
-            token_program_id,
             state,
             signatory_mint,
             admin_mint,
@@ -86,7 +82,7 @@ impl Pack for Proposal {
             vote_validation,
             source_holding,
             _padding,
-        ) = array_refs![input, 1, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 300];
+        ) = array_refs![input, 1, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 300];
         let account_type = u8::from_le_bytes(*account_type_value);
 
         let account_type = match account_type {
@@ -97,7 +93,6 @@ impl Pack for Proposal {
         Ok(Self {
             account_type,
             governance: Pubkey::new_from_array(*governance),
-            token_program_id: Pubkey::new_from_array(*token_program_id),
             state: Pubkey::new_from_array(*state),
             signatory_mint: Pubkey::new_from_array(*signatory_mint),
             admin_mint: Pubkey::new_from_array(*admin_mint),
@@ -118,7 +113,6 @@ impl Pack for Proposal {
         let (
             account_type_value,
             governance,
-            token_program_id,
             state,
             signatory_mint,
             admin_mint,
@@ -131,7 +125,7 @@ impl Pack for Proposal {
             vote_validation,
             source_holding,
             _padding,
-        ) = mut_array_refs![output, 1, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 300];
+        ) = mut_array_refs![output, 1, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 300];
 
         *account_type_value = match self.account_type {
             GovernanceAccountType::Uninitialized => 0_u8,
@@ -141,7 +135,6 @@ impl Pack for Proposal {
         .to_le_bytes();
 
         governance.copy_from_slice(self.governance.as_ref());
-        token_program_id.copy_from_slice(self.token_program_id.as_ref());
         state.copy_from_slice(self.state.as_ref());
         signatory_mint.copy_from_slice(self.signatory_mint.as_ref());
         admin_mint.copy_from_slice(self.admin_mint.as_ref());

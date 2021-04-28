@@ -45,7 +45,7 @@ pub fn process_withdraw_voting_tokens(
     let token_program_account_info = next_account_info(account_info_iter)?;
 
     let proposal: Proposal = assert_initialized(proposal_account_info)?;
-    assert_token_program_is_correct(&proposal, token_program_account_info)?;
+    assert_token_program_is_correct(token_program_account_info)?;
     // Using assert_account_equiv not workable here due to cost of stack size on this method.
 
     assert_account_equiv(proposal_state_account_info, &proposal.state)?;

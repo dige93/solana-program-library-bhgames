@@ -36,7 +36,7 @@ pub fn process_deposit_source_tokens(
     let token_program_account_info = next_account_info(account_info_iter)?;
 
     let proposal: Proposal = assert_initialized(proposal_account_info)?;
-    assert_token_program_is_correct(&proposal, token_program_account_info)?;
+    assert_token_program_is_correct(token_program_account_info)?;
 
     assert_account_equiv(source_holding_account_info, &proposal.source_holding)?;
     assert_account_equiv(voting_mint_account_info, &proposal.vote_mint)?;

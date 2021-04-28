@@ -29,7 +29,7 @@ pub fn process_remove_transaction(program_id: &Pubkey, accounts: &[AccountInfo])
 
     let mut proposal_state: ProposalState = assert_initialized(proposal_state_account_info)?;
     let proposal: Proposal = assert_initialized(proposal_account_info)?;
-    assert_token_program_is_correct(&proposal, token_program_account_info)?;
+    assert_token_program_is_correct(token_program_account_info)?;
     assert_account_equiv(proposal_state_account_info, &proposal.state)?;
     assert_account_equiv(
         signatory_validation_account_info,

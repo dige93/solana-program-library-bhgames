@@ -61,7 +61,7 @@ pub fn process_add_custom_single_signer_transaction(
     )?;
     assert_account_equiv(proposal_state_account_info, &proposal.state)?;
     assert_draft(&proposal_state)?;
-    assert_token_program_is_correct(&proposal, token_program_account_info)?;
+    assert_token_program_is_correct(token_program_account_info)?;
     assert_is_permissioned(
         program_id,
         signatory_account_info,
