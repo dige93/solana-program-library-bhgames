@@ -157,9 +157,9 @@ pub enum GovernanceError {
     #[error("Numerical overflow")]
     NumericalOverflow,
 
-    /// Invalid Governance Record Key, must use program account id, proposal key, and voting account as tuple seed
-    #[error("Invalid Governance Record Key, must use program account id, proposal key, and voting account as tuple seed")]
-    InvalidGovernanceVotingRecord,
+    /// Invalid Governance Vote Record Key, must use program account id, proposal key, and voting account as tuple seed
+    #[error("Invalid Governance Vote Record Key, must use program account id, proposal key, and voting account as tuple seed")]
+    InvalidGovernanceVoteRecord,
 }
 
 impl PrintProgramError for GovernanceError {

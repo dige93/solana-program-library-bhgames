@@ -5,7 +5,7 @@ use solana_program::program_error::ProgramError;
 use crate::{
     error::GovernanceError,
     state::{
-        custom_single_signer_transaction::INSTRUCTION_LIMIT,
+        custom_single_signer_transaction::MAX_INSTRUCTION_DATA,
         governance::GOVERNANCE_NAME_LENGTH,
         proposal_state::{DESC_SIZE, NAME_SIZE},
     },
@@ -59,7 +59,7 @@ pub enum GovernanceInstruction {
     ///   7. `[]` Transfer authority
     ///   8. `[]` Governance program mint authority (pda of seed with Proposal key)
     ///   9. '[]` Token program id.
-    AddSigner,
+    AddSignatory,
 
     /// [Requires Admin token]
     /// Removes a signer from the set.
@@ -73,7 +73,7 @@ pub enum GovernanceInstruction {
     ///   6. `[]` Transfer authority
     ///   7. `[]` Governance program mint authority (pda of seed with Proposal key)
     ///   8. '[]` Token program id.
-    RemoveSigner,
+    RemoveSignatory,
 
     /// [Requires Signatory token]
     /// Adds a Transaction to the Proposal Max of 5 of any Transaction type. More than 5 will throw error.
@@ -92,9 +92,9 @@ pub enum GovernanceInstruction {
     ///   9. `[]` Token program account.
     AddCustomSingleSignerTransaction {
         /// Slot during which this will run
-        slot: u64,
+        delay_slots: u64,
         /// Instruction
-        instruction: [u8; INSTRUCTION_LIMIT],
+        instruction: [u8; MAX_INSTRUCTION_DATA],
         /// Position in transaction array
         position: u8,
         /// Point in instruction array where 0 padding begins - inclusive, index should be where actual instruction ends, not where 0s begin
@@ -125,9 +125,9 @@ pub enum GovernanceInstruction {
     ///   6. `[]` Transfer authority.
     ///   7. `[]` Governance mint authority (pda with seed of Proposal key)
     ///   8. `[]` Token program account.
-    UpdateTransactionSlot {
+    UpdateTransactionDelaySlots {
         /// On what slot this transaction slot will now run
-        slot: u64,
+        delay_slots: u64,
     },
 
     /// [Requires Admin token]
@@ -154,7 +154,7 @@ pub enum GovernanceInstruction {
     ///   5. `[]` Governance mint authority (pda of seed Proposal key)
     ///   7. `[]` Token program account.
     ///   8. `[]` Clock sysvar.
-    Sign,
+    SignProposal,
 
     /// [Requires Voting tokens]
     /// Burns voting tokens, indicating you approve and/or disapprove of running this set of transactions. If you tip the consensus,
@@ -265,14 +265,14 @@ pub enum GovernanceInstruction {
         name: [u8; GOVERNANCE_NAME_LENGTH],
     },
 
-    ///   0. `[]` Governance voting record key. Needs to be set with pubkey set to PDA with seeds of the
+    ///   0. `[]` Governance vote record key. Needs to be set with pubkey set to PDA with seeds of the
     ///           program account key, proposal key, your voting account key.
     ///   1. `[]` Proposal key
     ///   2. `[]` Your voting account
     ///   3. `[]` Payer
     ///   4. `[]` Governance program pub key
     ///   5. `[]` System account.
-    CreateEmptyGovernanceVotingRecord,
+    CreateEmptyGovernanceVoteRecord,
 }
 
 impl GovernanceInstruction {
@@ -291,15 +291,15 @@ impl GovernanceInstruction {
                 name[..(NAME_SIZE - 1)].clone_from_slice(&input_name[..(NAME_SIZE - 1)]);
                 Self::InitProposal { desc_link, name }
             }
-            2 => Self::AddSigner,
-            3 => Self::RemoveSigner,
+            2 => Self::AddSignatory,
+            3 => Self::RemoveSignatory,
             4 => {
-                let (slot, rest) = Self::unpack_u64(rest)?;
+                let (delay_slots, rest) = Self::unpack_u64(rest)?;
                 let (instruction, rest) = Self::unpack_instructions(rest)?;
                 let (position, rest) = Self::unpack_u8(rest)?;
                 let (instruction_end_index, _) = Self::unpack_u16(rest)?;
                 Self::AddCustomSingleSignerTransaction {
-                    slot,
+                    delay_slots,
                     instruction,
                     position,
                     instruction_end_index,
@@ -307,11 +307,11 @@ impl GovernanceInstruction {
             }
             5 => Self::RemoveTransaction,
             6 => {
-                let (slot, _) = Self::unpack_u64(rest)?;
-                Self::UpdateTransactionSlot { slot }
+                let (delay_slots, _) = Self::unpack_u64(rest)?;
+                Self::UpdateTransactionDelaySlots { delay_slots }
             }
             7 => Self::DeleteProposal,
-            8 => Self::Sign,
+            8 => Self::SignProposal,
             9 => {
                 let (yes_voting_token_amount, rest) = Self::unpack_u64(rest)?;
                 let (no_voting_token_amount, _) = Self::unpack_u64(rest)?;
@@ -355,7 +355,7 @@ impl GovernanceInstruction {
                     voting_token_amount,
                 }
             }
-            14 => Self::CreateEmptyGovernanceVotingRecord,
+            14 => Self::CreateEmptyGovernanceVoteRecord,
             _ => return Err(GovernanceError::InstructionUnpackError.into()),
         })
     }
@@ -388,16 +388,18 @@ impl GovernanceInstruction {
         }
     }
 
-    fn unpack_instructions(input: &[u8]) -> Result<([u8; INSTRUCTION_LIMIT], &[u8]), ProgramError> {
+    fn unpack_instructions(
+        input: &[u8],
+    ) -> Result<([u8; MAX_INSTRUCTION_DATA], &[u8]), ProgramError> {
         if !input.is_empty() {
-            if input.len() < INSTRUCTION_LIMIT {
+            if input.len() < MAX_INSTRUCTION_DATA {
                 return Err(GovernanceError::InstructionUnpackError.into());
             }
 
-            let (input_instruction, rest) = input.split_at(INSTRUCTION_LIMIT);
-            let mut instruction = [0u8; INSTRUCTION_LIMIT];
-            instruction[..(INSTRUCTION_LIMIT - 1)]
-                .clone_from_slice(&input_instruction[..(INSTRUCTION_LIMIT - 1)]);
+            let (input_instruction, rest) = input.split_at(MAX_INSTRUCTION_DATA);
+            let mut instruction = [0u8; MAX_INSTRUCTION_DATA];
+            instruction[..(MAX_INSTRUCTION_DATA - 1)]
+                .clone_from_slice(&input_instruction[..(MAX_INSTRUCTION_DATA - 1)]);
             Ok((instruction, rest))
         } else {
             Err(GovernanceError::InstructionUnpackError.into())
@@ -428,27 +430,27 @@ impl GovernanceInstruction {
                 buf.extend_from_slice(desc_link);
                 buf.extend_from_slice(name);
             }
-            Self::AddSigner => buf.push(2),
-            Self::RemoveSigner => buf.push(3),
+            Self::AddSignatory => buf.push(2),
+            Self::RemoveSignatory => buf.push(3),
             Self::AddCustomSingleSignerTransaction {
-                slot,
+                delay_slots,
                 instruction,
                 position,
                 instruction_end_index,
             } => {
                 buf.push(4);
-                buf.extend_from_slice(&slot.to_le_bytes());
+                buf.extend_from_slice(&delay_slots.to_le_bytes());
                 buf.extend_from_slice(instruction);
                 buf.extend_from_slice(&position.to_le_bytes());
                 buf.extend_from_slice(&instruction_end_index.to_le_bytes());
             }
             Self::RemoveTransaction {} => buf.push(5),
-            Self::UpdateTransactionSlot { slot } => {
+            Self::UpdateTransactionDelaySlots { delay_slots } => {
                 buf.push(6);
-                buf.extend_from_slice(&slot.to_le_bytes());
+                buf.extend_from_slice(&delay_slots.to_le_bytes());
             }
             Self::DeleteProposal => buf.push(7),
-            Self::Sign => buf.push(8),
+            Self::SignProposal => buf.push(8),
             Self::Vote {
                 yes_voting_token_amount,
                 no_voting_token_amount,
@@ -487,7 +489,7 @@ impl GovernanceInstruction {
                 buf.push(13);
                 buf.extend_from_slice(&voting_token_amount.to_le_bytes());
             }
-            Self::CreateEmptyGovernanceVotingRecord => buf.push(14),
+            Self::CreateEmptyGovernanceVoteRecord => buf.push(14),
         }
         buf
     }

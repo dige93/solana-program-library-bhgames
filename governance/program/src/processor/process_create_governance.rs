@@ -27,26 +27,23 @@ pub fn process_create_governance(
 ) -> ProgramResult {
     let account_info_iter = &mut accounts.iter();
 
-    let governance_account_info = next_account_info(account_info_iter)?; // 1
-    let governed_program_account_info = next_account_info(account_info_iter)?; //2
-    let governed_program_data_account_info = next_account_info(account_info_iter)?; // 3
-    let governed_program_upgrade_authority_account_info = next_account_info(account_info_iter)?; // 4
-    let governance_mint_account_info = next_account_info(account_info_iter)?; //5
+    let governance_info = next_account_info(account_info_iter)?; // 1
+    let governed_program_info = next_account_info(account_info_iter)?; //2
+    let governed_program_data_info = next_account_info(account_info_iter)?; // 3
+    let governed_program_upgrade_authority_info = next_account_info(account_info_iter)?; // 4
+    let governance_mint_info = next_account_info(account_info_iter)?; //5
 
-    let payer_account_info = next_account_info(account_info_iter)?; // 6
-    let system_account_info = next_account_info(account_info_iter)?; // 7
+    let payer_info = next_account_info(account_info_iter)?; // 6
+    let system_info = next_account_info(account_info_iter)?; // 7
     let _bpf_upgrade_loader_account_info = next_account_info(account_info_iter)?; // 8
 
-    let council_mint = next_account_info(account_info_iter) // 9?
+    let council_mint_key = next_account_info(account_info_iter) // 9?
         .map(|acc| Some(*acc.key))
         .unwrap_or(None);
 
-    let mut seeds = vec![
-        PROGRAM_AUTHORITY_SEED,
-        governed_program_account_info.key.as_ref(),
-    ];
+    let mut seeds = vec![PROGRAM_AUTHORITY_SEED, governed_program_info.key.as_ref()];
     let (governance_key, bump_seed) = Pubkey::find_program_address(&seeds[..], program_id);
-    if governance_account_info.key != &governance_key {
+    if governance_info.key != &governance_key {
         return Err(GovernanceError::InvalidGovernanceKey.into());
     }
 
@@ -55,9 +52,9 @@ pub fn process_create_governance(
     // After governance is created upgrade authority can be transferred to governance using CLI call.
     assert_program_upgrade_authority(
         &governance_key,
-        governed_program_account_info.key,
-        governed_program_data_account_info,
-        governed_program_upgrade_authority_account_info,
+        governed_program_info.key,
+        governed_program_data_info,
+        governed_program_upgrade_authority_info,
     )?;
 
     // TODO: Uncomment once PR to allow set_upgrade_authority via CPI calls is released  https://github.com/solana-labs/solana/pull/16676
@@ -81,12 +78,12 @@ pub fn process_create_governance(
 
     create_account_raw::<Governance>(
         &[
-            payer_account_info.clone(),
-            governance_account_info.clone(),
-            system_account_info.clone(),
+            payer_info.clone(),
+            governance_info.clone(),
+            system_info.clone(),
         ],
         &governance_key,
-        payer_account_info.key,
+        payer_info.key,
         program_id,
         &seeds[..],
     )?;
@@ -96,17 +93,17 @@ pub fn process_create_governance(
         name,
         minimum_slot_waiting_period,
         time_limit,
-        program: *governed_program_account_info.key,
-        governance_mint: *governance_mint_account_info.key,
+        program: *governed_program_info.key,
+        governance_mint: *governance_mint_info.key,
 
-        council_mint: council_mint,
+        council_mint: council_mint_key,
 
         vote_threshold: vote_threshold,
 
-        count: 0,
+        proposal_count: 0,
     };
 
-    Governance::pack(governance, &mut governance_account_info.data.borrow_mut())?;
+    Governance::pack(governance, &mut governance_info.data.borrow_mut())?;
 
     Ok(())
 }

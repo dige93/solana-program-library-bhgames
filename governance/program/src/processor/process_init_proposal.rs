@@ -63,15 +63,15 @@ pub fn process_init_proposal(
     new_proposal.token_program_id = *token_program_info.key;
     new_proposal.state = *proposal_state_account_info.key;
     new_proposal.admin_mint = *admin_mint_account_info.key;
-    new_proposal.voting_mint = *voting_mint_account_info.key;
-    new_proposal.yes_voting_mint = *yes_voting_mint_account_info.key;
-    new_proposal.no_voting_mint = *no_voting_mint_account_info.key;
+    new_proposal.vote_mint = *voting_mint_account_info.key;
+    new_proposal.yes_vote_mint = *yes_voting_mint_account_info.key;
+    new_proposal.no_vote_mint = *no_voting_mint_account_info.key;
     new_proposal.source_mint = *source_mint_account_info.key;
     new_proposal.signatory_mint = *signatory_mint_account_info.key;
     new_proposal.source_holding = *source_holding_account_info.key;
 
     new_proposal.admin_validation = *admin_validation_account_info.key;
-    new_proposal.voting_validation = *voting_validation_account_info.key;
+    new_proposal.vote_validation = *voting_validation_account_info.key;
     new_proposal.signatory_validation = *signatory_validation_account_info.key;
 
     new_proposal_state.account_type = GovernanceAccountType::ProposalState;
@@ -81,7 +81,7 @@ pub fn process_init_proposal(
     new_proposal_state.total_signing_tokens_minted = 1;
     new_proposal_state.number_of_executed_transactions = 0;
     new_proposal_state.number_of_transactions = 0;
-    governance.count = match governance.count.checked_add(1) {
+    governance.proposal_count = match governance.proposal_count.checked_add(1) {
         Some(val) => val,
         None => return Err(GovernanceError::NumericalOverflow.into()),
     };

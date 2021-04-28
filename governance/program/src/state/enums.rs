@@ -1,10 +1,10 @@
-/// Defines all persistent struct types and their versions
+/// Defines all Governance accounts types
 #[derive(Clone, Debug, PartialEq)]
 pub enum GovernanceAccountType {
     /// 0 - Default uninitialized account state
     Uninitialized,
 
-    /// 1 - Governance configuration account
+    /// 1 - Governance account
     Governance,
 
     /// 2 - Proposal account for Governance account. A single Governance account can have multiple Proposal accounts
@@ -31,6 +31,7 @@ impl Default for GovernanceAccountType {
 pub enum ProposalStateStatus {
     /// Draft
     Draft,
+
     /// Taking votes
     Voting,
 

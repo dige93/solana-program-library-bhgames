@@ -7,10 +7,10 @@ use solana_program::{
 
 use crate::state::enums::GovernanceAccountType;
 
-/// Single instance of a Governance proposal
+/// Governance Proposal
 #[derive(Clone)]
 pub struct Proposal {
-    /// Account type
+    /// Governance account type
     pub account_type: GovernanceAccountType,
 
     /// Governance the Proposal belongs to
@@ -31,13 +31,13 @@ pub struct Proposal {
     pub admin_mint: Pubkey,
 
     /// Mint that creates voting tokens of this instruction
-    pub voting_mint: Pubkey,
+    pub vote_mint: Pubkey,
 
     /// Mint that creates evidence of voting YES via token creation
-    pub yes_voting_mint: Pubkey,
+    pub yes_vote_mint: Pubkey,
 
     /// Mint that creates evidence of voting NO via token creation
-    pub no_voting_mint: Pubkey,
+    pub no_vote_mint: Pubkey,
 
     /// Used to validate signatory tokens in a round trip transfer
     pub signatory_validation: Pubkey,
@@ -46,7 +46,7 @@ pub struct Proposal {
     pub admin_validation: Pubkey,
 
     /// Used to validate voting tokens in a round trip transfer
-    pub voting_validation: Pubkey,
+    pub vote_validation: Pubkey,
 
     /// Source token holding account
     pub source_holding: Pubkey,
@@ -77,13 +77,13 @@ impl Pack for Proposal {
             state,
             signatory_mint,
             admin_mint,
-            voting_mint,
+            vote_mint,
             yes_voting_mint,
             no_voting_mint,
             source_mint,
             signatory_validation,
             admin_validation,
-            voting_validation,
+            vote_validation,
             source_holding,
             _padding,
         ) = array_refs![input, 1, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 300];
@@ -101,13 +101,13 @@ impl Pack for Proposal {
             state: Pubkey::new_from_array(*state),
             signatory_mint: Pubkey::new_from_array(*signatory_mint),
             admin_mint: Pubkey::new_from_array(*admin_mint),
-            voting_mint: Pubkey::new_from_array(*voting_mint),
-            yes_voting_mint: Pubkey::new_from_array(*yes_voting_mint),
-            no_voting_mint: Pubkey::new_from_array(*no_voting_mint),
+            vote_mint: Pubkey::new_from_array(*vote_mint),
+            yes_vote_mint: Pubkey::new_from_array(*yes_voting_mint),
+            no_vote_mint: Pubkey::new_from_array(*no_voting_mint),
             source_mint: Pubkey::new_from_array(*source_mint),
             signatory_validation: Pubkey::new_from_array(*signatory_validation),
             admin_validation: Pubkey::new_from_array(*admin_validation),
-            voting_validation: Pubkey::new_from_array(*voting_validation),
+            vote_validation: Pubkey::new_from_array(*vote_validation),
             source_holding: Pubkey::new_from_array(*source_holding),
         })
     }
@@ -128,7 +128,7 @@ impl Pack for Proposal {
             source_mint,
             signatory_validation,
             admin_validation,
-            voting_validation,
+            vote_validation,
             source_holding,
             _padding,
         ) = mut_array_refs![output, 1, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 300];
@@ -145,13 +145,13 @@ impl Pack for Proposal {
         state.copy_from_slice(self.state.as_ref());
         signatory_mint.copy_from_slice(self.signatory_mint.as_ref());
         admin_mint.copy_from_slice(self.admin_mint.as_ref());
-        voting_mint.copy_from_slice(self.voting_mint.as_ref());
-        yes_voting_mint.copy_from_slice(self.yes_voting_mint.as_ref());
-        no_voting_mint.copy_from_slice(self.no_voting_mint.as_ref());
+        voting_mint.copy_from_slice(self.vote_mint.as_ref());
+        yes_voting_mint.copy_from_slice(self.yes_vote_mint.as_ref());
+        no_voting_mint.copy_from_slice(self.no_vote_mint.as_ref());
         source_mint.copy_from_slice(self.source_mint.as_ref());
         signatory_validation.copy_from_slice(self.signatory_validation.as_ref());
         admin_validation.copy_from_slice(self.admin_validation.as_ref());
-        voting_validation.copy_from_slice(self.voting_validation.as_ref());
+        vote_validation.copy_from_slice(self.vote_validation.as_ref());
         source_holding.copy_from_slice(self.source_holding.as_ref());
     }
 

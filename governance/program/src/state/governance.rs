@@ -17,23 +17,30 @@ pub const GOVERNANCE_NAME_LENGTH: usize = 32;
 pub struct Governance {
     /// Account type
     pub account_type: GovernanceAccountType,
+
     /// Voting threshold in % required to tip the vote
     pub vote_threshold: u8,
 
     /// Minimum slot time-distance from creation of proposal for an instruction to be placed
     pub minimum_slot_waiting_period: u64,
+
     /// Governance mint
     pub governance_mint: Pubkey,
+
     /// Council mint
     pub council_mint: Option<Pubkey>,
-    /// Program ID that is tied to this Governance (optional)
+
+    /// Program ID that is governed by this Governance
     pub program: Pubkey,
+
     /// Time limit in slots for proposal to be open to voting
     pub time_limit: u64,
+
     /// Optional name
     pub name: [u8; GOVERNANCE_NAME_LENGTH],
+
     /// Running count of proposals
-    pub count: u32,
+    pub proposal_count: u32,
 }
 
 impl Sealed for Governance {}
@@ -62,7 +69,7 @@ impl Pack for Governance {
             program,
             time_limit,
             name,
-            count,
+            proposal_count,
             _padding,
         ) = array_refs![
             input,
@@ -81,7 +88,7 @@ impl Pack for Governance {
         let vote_threshold = u8::from_le_bytes(*vote_threshold);
         let minimum_slot_waiting_period = u64::from_le_bytes(*minimum_slot_waiting_period);
         let time_limit = u64::from_le_bytes(*time_limit);
-        let count = u32::from_le_bytes(*count);
+        let proposal_count = u32::from_le_bytes(*proposal_count);
 
         let account_type = match account_type {
             0 => GovernanceAccountType::Uninitialized,
@@ -101,7 +108,7 @@ impl Pack for Governance {
             program: Pubkey::new_from_array(*program),
             time_limit,
             name: *name,
-            count,
+            proposal_count,
         })
     }
 
@@ -117,7 +124,7 @@ impl Pack for Governance {
             program,
             time_limit,
             name,
-            count,
+            proposal_count,
             _padding,
         ) = mut_array_refs![
             output,
@@ -149,7 +156,7 @@ impl Pack for Governance {
         program.copy_from_slice(self.program.as_ref());
         *time_limit = self.time_limit.to_le_bytes();
         name.copy_from_slice(self.name.as_ref());
-        *count = self.count.to_le_bytes();
+        *proposal_count = self.proposal_count.to_le_bytes();
     }
 
     fn get_packed_len() -> usize {

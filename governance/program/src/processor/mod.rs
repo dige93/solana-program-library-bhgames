@@ -42,23 +42,23 @@ pub fn process_instruction(
             msg!("Instruction: Init Proposal");
             process_init_proposal(program_id, accounts, name, desc_link)
         }
-        GovernanceInstruction::AddSigner => {
+        GovernanceInstruction::AddSignatory => {
             msg!("Instruction: Add Signer");
             process_add_signer(program_id, accounts)
         }
-        GovernanceInstruction::RemoveSigner => {
+        GovernanceInstruction::RemoveSignatory => {
             msg!("Instruction: Remove Signer");
             process_remove_signer(program_id, accounts)
         }
         GovernanceInstruction::AddCustomSingleSignerTransaction {
-            slot,
+            delay_slots,
             instruction,
             position,
             instruction_end_index,
         } => process_add_custom_single_signer_transaction(
             program_id,
             accounts,
-            slot,
+            delay_slots,
             instruction,
             position,
             instruction_end_index,
@@ -67,15 +67,15 @@ pub fn process_instruction(
             msg!("Instruction: Remove Transaction");
             process_remove_transaction(program_id, accounts)
         }
-        GovernanceInstruction::UpdateTransactionSlot { slot } => {
+        GovernanceInstruction::UpdateTransactionDelaySlots { delay_slots } => {
             msg!("Instruction: Update Transaction Slot");
-            process_update_transaction_slot(program_id, accounts, slot)
+            process_update_transaction_slot(program_id, accounts, delay_slots)
         }
         GovernanceInstruction::DeleteProposal => {
             msg!("Instruction: Delete Proposal");
             process_delete_proposal(program_id, accounts)
         }
-        GovernanceInstruction::Sign => {
+        GovernanceInstruction::SignProposal => {
             msg!("Instruction: Sign");
             process_sign(program_id, accounts)
         }
@@ -126,7 +126,7 @@ pub fn process_instruction(
             process_withdraw_voting_tokens(program_id, accounts, voting_token_amount)
         }
 
-        GovernanceInstruction::CreateEmptyGovernanceVotingRecord => {
+        GovernanceInstruction::CreateEmptyGovernanceVoteRecord => {
             msg!("Instruction: Create Empty Governance Voting Record");
             process_create_empty_governance_voting_record(program_id, accounts)
         }

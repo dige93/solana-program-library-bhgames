@@ -1,7 +1,7 @@
 //! Program state processor
 
 use crate::{
-    state::governance_voting_record::GovernanceVotingRecord, utils::create_account_raw,
+    state::governance_vote_record::GovernanceVoteRecord, utils::create_account_raw,
     PROGRAM_AUTHORITY_SEED,
 };
 use solana_program::{
@@ -35,7 +35,7 @@ pub fn process_create_empty_governance_voting_record(
     seeds.push(bump);
     let authority_signer_seeds = &seeds[..];
 
-    create_account_raw::<GovernanceVotingRecord>(
+    create_account_raw::<GovernanceVoteRecord>(
         &[
             payer_account_info.clone(),
             governance_program_info.clone(),

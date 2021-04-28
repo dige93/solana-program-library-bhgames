@@ -51,7 +51,7 @@ pub fn process_execute(
         None => return Err(GovernanceError::NumericalOverflow.into()),
     };
 
-    if time_elapsed < transaction.slot {
+    if time_elapsed < transaction.delay_slots {
         return Err(GovernanceError::TooEarlyToExecute.into());
     }
 

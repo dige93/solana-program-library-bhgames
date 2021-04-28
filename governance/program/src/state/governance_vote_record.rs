@@ -6,29 +6,30 @@ use solana_program::{
     pubkey::Pubkey,
 };
 
-/// STRUCT VERSION
-pub const GOVERNANCE_VOTING_RECORD_VERSION: u8 = 1;
-/// Governance Voting Record
+/// Governance Vote Record
 #[derive(Clone, Debug, Default, PartialEq)]
-pub struct GovernanceVotingRecord {
-    /// Account type
+pub struct GovernanceVoteRecord {
+    /// Governance account type
     pub account_type: GovernanceAccountType,
 
-    /// proposal
+    /// Proposal account
     pub proposal: Pubkey,
-    /// owner
-    pub owner: Pubkey,
+
+    /// The user who casted this vote
+    pub voter: Pubkey,
 
     /// How many votes were unspent
     pub undecided_count: u64,
+
     /// How many votes were spent yes
     pub yes_count: u64,
+
     /// How many votes were spent no
     pub no_count: u64,
 }
 
-impl Sealed for GovernanceVotingRecord {}
-impl IsInitialized for GovernanceVotingRecord {
+impl Sealed for GovernanceVoteRecord {}
+impl IsInitialized for GovernanceVoteRecord {
     fn is_initialized(&self) -> bool {
         self.account_type != GovernanceAccountType::Uninitialized
     }
@@ -36,13 +37,13 @@ impl IsInitialized for GovernanceVotingRecord {
 
 /// Len of governance voting record
 pub const GOVERNANCE_VOTING_RECORD_LEN: usize = 32 + 32 + 1 + 8 + 8 + 8 + 100;
-impl Pack for GovernanceVotingRecord {
+impl Pack for GovernanceVoteRecord {
     const LEN: usize = 32 + 32 + 1 + 8 + 8 + 8 + 100;
-    /// Unpacks a byte buffer into a GovernanceVotingRecord
+    /// Unpacks a byte buffer into a GovernanceVoteRecord
     fn unpack_from_slice(input: &[u8]) -> Result<Self, ProgramError> {
         let input = array_ref![input, 0, GOVERNANCE_VOTING_RECORD_LEN];
         #[allow(clippy::ptr_offset_with_cast)]
-        let (account_type_value, proposal, owner, undecided_count, yes_count, no_count, _padding) =
+        let (account_type_value, proposal, voter, undecided_count, yes_count, no_count, _padding) =
             array_refs![input, 1, 32, 32, 8, 8, 8, 100];
         let account_type = u8::from_le_bytes(*account_type_value);
         let undecided_count = u64::from_le_bytes(*undecided_count);
@@ -57,7 +58,7 @@ impl Pack for GovernanceVotingRecord {
         Ok(Self {
             account_type,
             proposal: Pubkey::new_from_array(*proposal),
-            owner: Pubkey::new_from_array(*owner),
+            voter: Pubkey::new_from_array(*voter),
 
             undecided_count,
             yes_count,
@@ -68,7 +69,7 @@ impl Pack for GovernanceVotingRecord {
     fn pack_into_slice(&self, output: &mut [u8]) {
         let output = array_mut_ref![output, 0, GOVERNANCE_VOTING_RECORD_LEN];
         #[allow(clippy::ptr_offset_with_cast)]
-        let (account_type_value, proposal, owner, undecided_count, yes_count, no_count, _padding) =
+        let (account_type_value, proposal, voter, undecided_count, yes_count, no_count, _padding) =
             mut_array_refs![output, 1, 32, 32, 8, 8, 8, 100];
 
         *account_type_value = match self.account_type {
@@ -79,7 +80,7 @@ impl Pack for GovernanceVotingRecord {
         .to_le_bytes();
 
         proposal.copy_from_slice(self.proposal.as_ref());
-        owner.copy_from_slice(self.owner.as_ref());
+        voter.copy_from_slice(self.voter.as_ref());
 
         *undecided_count = self.undecided_count.to_le_bytes();
         *yes_count = self.yes_count.to_le_bytes();

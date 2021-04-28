@@ -2,7 +2,7 @@
 use crate::{
     error::GovernanceError,
     state::{
-        custom_single_signer_transaction::{CustomSingleSignerTransaction, INSTRUCTION_LIMIT},
+        custom_single_signer_transaction::{CustomSingleSignerTransaction, MAX_INSTRUCTION_DATA},
         enums::GovernanceAccountType,
         governance::Governance,
         proposal::Proposal,
@@ -24,8 +24,8 @@ use solana_program::{
 pub fn process_add_custom_single_signer_transaction(
     program_id: &Pubkey,
     accounts: &[AccountInfo],
-    slot: u64,
-    instruction: [u8; INSTRUCTION_LIMIT],
+    delay_slots: u64,
+    instruction: [u8; MAX_INSTRUCTION_DATA],
     position: u8,
     instruction_end_index: u16,
 ) -> ProgramResult {
@@ -51,7 +51,7 @@ pub fn process_add_custom_single_signer_transaction(
         return Err(GovernanceError::TooHighPositionInTxnArrayError.into());
     }
 
-    if instruction_end_index as usize >= INSTRUCTION_LIMIT as usize {
+    if instruction_end_index as usize >= MAX_INSTRUCTION_DATA as usize {
         return Err(GovernanceError::InvalidInstructionEndIndex.into());
     }
 
@@ -72,12 +72,12 @@ pub fn process_add_custom_single_signer_transaction(
         governance_mint_authority_info,
     )?;
 
-    if slot < governance.minimum_slot_waiting_period {
+    if delay_slots < governance.minimum_slot_waiting_period {
         return Err(GovernanceError::MustBeAboveMinimumWaitingPeriod.into());
     };
 
     proposal_txn.account_type = GovernanceAccountType::CustomSingleSignerTransaction;
-    proposal_txn.slot = slot;
+    proposal_txn.delay_slots = delay_slots;
     proposal_txn.instruction = instruction;
     proposal_txn.instruction_end_index = instruction_end_index;
     proposal_state.transactions[position as usize] = *proposal_txn_account_info.key;

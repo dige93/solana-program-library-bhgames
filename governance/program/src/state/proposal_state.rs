@@ -17,19 +17,19 @@ pub const NAME_SIZE: usize = 32;
 /// Proposal state
 #[derive(Clone)]
 pub struct ProposalState {
-    /// Account type
+    /// Governance account type
     pub account_type: GovernanceAccountType,
 
-    /// Proposal key
+    /// Proposal account
     pub proposal: Pubkey,
 
-    /// Current state of the invoked instruction account
+    /// Current status of the proposal
     pub status: ProposalStateStatus,
 
     /// Total signatory tokens minted, for use comparing to supply remaining during draft period
     pub total_signing_tokens_minted: u64,
 
-    /// Link to proposal
+    /// Link to proposal's description
     pub desc_link: [u8; DESC_SIZE],
 
     /// Proposal name

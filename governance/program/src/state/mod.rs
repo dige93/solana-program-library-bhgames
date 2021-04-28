@@ -13,8 +13,8 @@ pub mod proposal;
 /// Proposal state
 pub mod proposal_state;
 
-/// Governance Voting Record
-pub mod governance_voting_record;
+/// Governance Vote Record
+pub mod governance_vote_record;
 
 /// Upgradable loader state
 pub mod upgradable_loader_state;

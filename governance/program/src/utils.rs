@@ -324,21 +324,21 @@ pub fn assert_initialized<T: Pack + IsInitialized>(
 pub fn assert_program_upgrade_authority(
     governance_key: &Pubkey,
     program_key: &Pubkey,
-    program_data_account_info: &AccountInfo,
-    program_upgrade_authority_account_info: &AccountInfo,
+    program_data_info: &AccountInfo,
+    program_upgrade_authority_info: &AccountInfo,
 ) -> Result<(), ProgramError> {
-    if program_data_account_info.owner != &bpf_loader_upgradeable::id() {
+    if program_data_info.owner != &bpf_loader_upgradeable::id() {
         return Err(ProgramError::IncorrectProgramId);
     }
 
     let (program_data_account_key, _) =
         Pubkey::find_program_address(&[program_key.as_ref()], &bpf_loader_upgradeable::id());
 
-    if program_data_account_key != *program_data_account_info.key {
+    if program_data_account_key != *program_data_info.key {
         return Err(GovernanceError::InvalidProgramDataAccountKey.into());
     }
 
-    let upgrade_authority = match deserialize(&program_data_account_info.data.borrow())
+    let upgrade_authority = match deserialize(&program_data_info.data.borrow())
         .map_err(|_| GovernanceError::InvalidProgramDataAccountData)?
     {
         UpgradeableLoaderState::ProgramData {
@@ -351,10 +351,10 @@ pub fn assert_program_upgrade_authority(
     match upgrade_authority {
         Some(upgrade_authority) => {
             if upgrade_authority != *governance_key {
-                if upgrade_authority != *program_upgrade_authority_account_info.key {
+                if upgrade_authority != *program_upgrade_authority_info.key {
                     return Err(GovernanceError::InvalidUpgradeAuthority.into());
                 }
-                if !program_upgrade_authority_account_info.is_signer {
+                if !program_upgrade_authority_info.is_signer {
                     return Err(GovernanceError::UpgradeAuthorityMustSign.into());
                 }
             }

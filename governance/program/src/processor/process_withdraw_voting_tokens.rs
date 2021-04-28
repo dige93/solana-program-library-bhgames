@@ -2,7 +2,7 @@
 
 use crate::{
     error::GovernanceError,
-    state::governance_voting_record::GovernanceVotingRecord,
+    state::governance_vote_record::GovernanceVoteRecord,
     state::proposal::Proposal,
     utils::{
         assert_account_equiv, assert_initialized, assert_token_program_is_correct, spl_token_burn,
@@ -49,9 +49,9 @@ pub fn process_withdraw_voting_tokens(
     // Using assert_account_equiv not workable here due to cost of stack size on this method.
 
     assert_account_equiv(proposal_state_account_info, &proposal.state)?;
-    assert_account_equiv(voting_mint_account_info, &proposal.voting_mint)?;
-    assert_account_equiv(yes_voting_mint_account_info, &proposal.yes_voting_mint)?;
-    assert_account_equiv(no_voting_mint_account_info, &proposal.no_voting_mint)?;
+    assert_account_equiv(voting_mint_account_info, &proposal.vote_mint)?;
+    assert_account_equiv(yes_voting_mint_account_info, &proposal.yes_vote_mint)?;
+    assert_account_equiv(no_voting_mint_account_info, &proposal.no_vote_mint)?;
     assert_account_equiv(source_holding_account_info, &proposal.source_holding)?;
 
     let voting_account: Account = assert_initialized(voting_account_info)?;
@@ -78,11 +78,11 @@ pub fn process_withdraw_voting_tokens(
         program_id,
     );
     if voting_record_account_info.key != &voting_record_key {
-        return Err(GovernanceError::InvalidGovernanceVotingRecord.into());
+        return Err(GovernanceError::InvalidGovernanceVoteRecord.into());
     }
 
-    let mut voting_record: GovernanceVotingRecord =
-        GovernanceVotingRecord::unpack_unchecked(&voting_record_account_info.data.borrow())?;
+    let mut voting_record: GovernanceVoteRecord =
+        GovernanceVoteRecord::unpack_unchecked(&voting_record_account_info.data.borrow())?;
 
     // prefer voting account first, then yes, then no. Invariants we know are
     // voting_token_amount <= voting + yes + no
@@ -193,7 +193,7 @@ pub fn process_withdraw_voting_tokens(
         token_program: token_program_account_info.clone(),
     })?;
 
-    GovernanceVotingRecord::pack(
+    GovernanceVoteRecord::pack(
         voting_record,
         &mut voting_record_account_info.data.borrow_mut(),
     )?;

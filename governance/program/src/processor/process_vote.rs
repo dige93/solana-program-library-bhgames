@@ -3,7 +3,7 @@ use crate::{
     error::GovernanceError,
     state::{
         enums::ProposalStateStatus, governance::Governance,
-        governance_voting_record::GovernanceVotingRecord, proposal::Proposal,
+        governance_vote_record::GovernanceVoteRecord, proposal::Proposal,
         proposal_state::ProposalState,
     },
     utils::{
@@ -51,9 +51,9 @@ pub fn process_vote(
     let proposal: Proposal = assert_initialized(proposal_account_info)?;
     let governance: Governance = assert_initialized(governance_account_info)?;
 
-    assert_account_equiv(voting_mint_account_info, &proposal.voting_mint)?;
-    assert_account_equiv(yes_voting_mint_account_info, &proposal.yes_voting_mint)?;
-    assert_account_equiv(no_voting_mint_account_info, &proposal.no_voting_mint)?;
+    assert_account_equiv(voting_mint_account_info, &proposal.vote_mint)?;
+    assert_account_equiv(yes_voting_mint_account_info, &proposal.yes_vote_mint)?;
+    assert_account_equiv(no_voting_mint_account_info, &proposal.no_vote_mint)?;
     assert_account_equiv(governance_account_info, &proposal.governance)?;
     assert_account_equiv(proposal_state_account_info, &proposal.state)?;
     assert_account_equiv(source_mint_account_info, &proposal.source_mint)?;
@@ -149,11 +149,11 @@ pub fn process_vote(
         program_id,
     );
     if voting_record_account_info.key != &voting_record_key {
-        return Err(GovernanceError::InvalidGovernanceVotingRecord.into());
+        return Err(GovernanceError::InvalidGovernanceVoteRecord.into());
     }
 
-    let mut voting_record: GovernanceVotingRecord =
-        GovernanceVotingRecord::unpack_unchecked(&voting_record_account_info.data.borrow())?;
+    let mut voting_record: GovernanceVoteRecord =
+        GovernanceVoteRecord::unpack_unchecked(&voting_record_account_info.data.borrow())?;
 
     voting_record.yes_count = match yes_vote_acct.amount.checked_add(yes_voting_token_amount) {
         Some(val) => val,
@@ -171,7 +171,7 @@ pub fn process_vote(
         Some(val) => val,
         None => return Err(GovernanceError::NumericalOverflow.into()),
     };
-    GovernanceVotingRecord::pack(
+    GovernanceVoteRecord::pack(
         voting_record,
         &mut voting_record_account_info.data.borrow_mut(),
     )?;
