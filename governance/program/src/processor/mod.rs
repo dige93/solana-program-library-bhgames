@@ -1,7 +1,7 @@
 pub mod process_add_custom_single_signer_transaction;
 pub mod process_add_signer;
 pub mod process_create_empty_governance_voting_record;
-pub mod process_create_governance;
+pub mod process_create_program_governance;
 pub mod process_delete_proposal;
 pub mod process_deposit_source_tokens;
 pub mod process_execute;
@@ -17,7 +17,7 @@ use crate::instruction::GovernanceInstruction;
 use process_add_custom_single_signer_transaction::process_add_custom_single_signer_transaction;
 use process_add_signer::process_add_signer;
 use process_create_empty_governance_voting_record::process_create_empty_governance_voting_record;
-use process_create_governance::process_create_governance;
+use process_create_program_governance::process_create_program_governance;
 use process_delete_proposal::process_delete_proposal;
 use process_deposit_source_tokens::process_deposit_source_tokens;
 use process_execute::process_execute;
@@ -83,14 +83,14 @@ pub fn process_instruction(
             msg!("Instruction: Vote");
             process_vote(program_id, accounts, vote)
         }
-        GovernanceInstruction::CreateGovernance {
+        GovernanceInstruction::CreateProgramGovernance {
             vote_threshold,
             minimum_slot_waiting_period,
             time_limit,
             name,
         } => {
             msg!("Instruction: Initialize Governance");
-            process_create_governance(
+            process_create_program_governance(
                 program_id,
                 accounts,
                 vote_threshold,

@@ -5,7 +5,7 @@ use crate::{
     error::GovernanceError,
     state::{
         enums::GovernanceAccountType,
-        governance::Governance,
+        program_governance::ProgramGovernance,
         proposal::Proposal,
         proposal_state::ProposalState,
         proposal_state::{DESC_SIZE, NAME_SIZE},
@@ -56,7 +56,7 @@ pub fn process_init_proposal(
 
     let mut new_proposal_state: ProposalState = assert_uninitialized(proposal_state_account_info)?;
     let mut new_proposal: Proposal = assert_uninitialized(proposal_account_info)?;
-    let mut governance: Governance = assert_initialized(governance_account_info)?;
+    let mut governance: ProgramGovernance = assert_initialized(governance_account_info)?;
 
     new_proposal.account_type = GovernanceAccountType::Proposal;
     new_proposal.governance = *governance_account_info.key;
@@ -182,7 +182,7 @@ pub fn process_init_proposal(
         new_proposal_state,
         &mut proposal_state_account_info.data.borrow_mut(),
     )?;
-    Governance::pack(governance, &mut governance_account_info.data.borrow_mut())?;
+    ProgramGovernance::pack(governance, &mut governance_account_info.data.borrow_mut())?;
 
     let mut seeds = vec![PROGRAM_AUTHORITY_SEED, proposal_account_info.key.as_ref()];
 

@@ -19,7 +19,7 @@ use spl_governance::{
     id,
     instruction::{create_dummy_account, create_governance},
     processor::process_instruction,
-    state::governance::{Governance, GOVERNANCE_NAME_LENGTH},
+    state::program_governance::{ProgramGovernance, GOVERNANCE_NAME_LENGTH},
     PROGRAM_AUTHORITY_SEED,
 };
 
@@ -29,7 +29,7 @@ pub struct GovernedProgramSetup {
     pub data_address: Pubkey,
 }
 
-pub struct GovernanceSetup {
+pub struct ProgramGovernanceSetup {
     pub address: Pubkey,
     pub governance_mint: Pubkey,
     pub council_mint: Option<Pubkey>,
@@ -170,10 +170,10 @@ impl GovernanceProgramTest {
         self.process_transaction(&[instruction], None).await;
     }
 
-    pub async fn with_governance(
+    pub async fn with_program_governance(
         &mut self,
         governed_program: &GovernedProgramSetup,
-    ) -> GovernanceSetup {
+    ) -> ProgramGovernanceSetup {
         let (governance_address, _) = Pubkey::find_program_address(
             &[PROGRAM_AUTHORITY_SEED, governed_program.address.as_ref()],
             &id(),
@@ -208,7 +208,7 @@ impl GovernanceProgramTest {
         )
         .await;
 
-        GovernanceSetup {
+        ProgramGovernanceSetup {
             address: governance_address,
             governance_mint,
             council_mint,
@@ -219,7 +219,7 @@ impl GovernanceProgramTest {
         }
     }
 
-    pub async fn get_governance_account(&mut self, governance_address: &Pubkey) -> Governance {
+    pub async fn get_program_governance_account(&mut self, governance_address: &Pubkey) -> ProgramGovernance {
         let governance_account_raw = self
             .banks_client
             .get_account(*governance_address)
@@ -227,7 +227,7 @@ impl GovernanceProgramTest {
             .unwrap()
             .unwrap();
 
-        Governance::unpack(&governance_account_raw.data).unwrap()
+        ProgramGovernance::unpack(&governance_account_raw.data).unwrap()
     }
 }
 

@@ -14,7 +14,7 @@ use crate::{
     id,
     state::{
         custom_single_signer_transaction::MAX_INSTRUCTION_DATA,
-        governance::GOVERNANCE_NAME_LENGTH,
+        program_governance::GOVERNANCE_NAME_LENGTH,
         proposal_state::{DESC_SIZE, NAME_SIZE},
     },
 };
@@ -255,7 +255,7 @@ pub enum GovernanceInstruction {
     ///   6. `[]` System account.
     ///   7. `[]` bpf_upgrade_loader account.
     ///   8. `[]` Council mint that this Governance uses [Optional]
-    CreateGovernance {
+    CreateProgramGovernance {
         /// Vote threshold in % required to tip the vote
         vote_threshold: u8,
         /// Execution type
@@ -341,7 +341,7 @@ impl GovernanceInstruction {
                 let mut name = [0u8; GOVERNANCE_NAME_LENGTH];
                 name[..(GOVERNANCE_NAME_LENGTH - 1)]
                     .clone_from_slice(&rest[..(GOVERNANCE_NAME_LENGTH - 1)]);
-                Self::CreateGovernance {
+                Self::CreateProgramGovernance {
                     vote_threshold,
                     minimum_slot_waiting_period,
                     name,
@@ -474,7 +474,7 @@ impl GovernanceInstruction {
                 buf.extend_from_slice(&yes_vote_amount.to_le_bytes());
                 buf.extend_from_slice(&no_vote_amount.to_le_bytes());
             }
-            Self::CreateGovernance {
+            Self::CreateProgramGovernance {
                 vote_threshold,
                 minimum_slot_waiting_period,
                 time_limit,
@@ -537,7 +537,7 @@ pub fn create_governance(
         accounts.push(AccountMeta::new_readonly(*council_mint_key, false));
     }
 
-    let instruction = GovernanceInstruction::CreateGovernance {
+    let instruction = GovernanceInstruction::CreateProgramGovernance {
         vote_threshold,
         minimum_slot_waiting_period,
         time_limit,

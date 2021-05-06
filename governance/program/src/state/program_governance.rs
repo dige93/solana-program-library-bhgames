@@ -14,7 +14,7 @@ use solana_program::{
 pub const GOVERNANCE_NAME_LENGTH: usize = 32;
 /// Governance Account
 #[derive(Clone, Debug, Default, PartialEq)]
-pub struct Governance {
+pub struct ProgramGovernance {
     /// Account type
     pub account_type: GovernanceAccountType,
 
@@ -43,8 +43,8 @@ pub struct Governance {
     pub proposal_count: u32,
 }
 
-impl Sealed for Governance {}
-impl IsInitialized for Governance {
+impl Sealed for ProgramGovernance {}
+impl IsInitialized for ProgramGovernance {
     fn is_initialized(&self) -> bool {
         self.account_type != GovernanceAccountType::Uninitialized
     }
@@ -53,7 +53,7 @@ impl IsInitialized for Governance {
 /// Len of Governance
 pub const GOVERNANCE_LEN: usize = 1 + 1 + 8 + 32 + 33 + 32 + 8 + GOVERNANCE_NAME_LENGTH + 4 + 295;
 
-impl Pack for Governance {
+impl Pack for ProgramGovernance {
     const LEN: usize = 1 + 1 + 8 + 32 + 33 + 32 + 8 + GOVERNANCE_NAME_LENGTH + 4 + 295;
     /// Unpacks a byte buffer into Governance account data
     fn unpack_from_slice(input: &[u8]) -> Result<Self, ProgramError> {

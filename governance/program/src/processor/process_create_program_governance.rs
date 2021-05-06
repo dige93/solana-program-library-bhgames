@@ -4,7 +4,7 @@ use crate::utils::create_account_raw;
 use crate::{
     error::GovernanceError,
     state::enums::GovernanceAccountType,
-    state::governance::{Governance, GOVERNANCE_NAME_LENGTH},
+    state::program_governance::{ProgramGovernance, GOVERNANCE_NAME_LENGTH},
     PROGRAM_AUTHORITY_SEED,
 };
 use solana_program::{
@@ -16,7 +16,7 @@ use solana_program::{
 
 /// Init Governance
 #[allow(clippy::too_many_arguments)]
-pub fn process_create_governance(
+pub fn process_create_program_governance(
     program_id: &Pubkey,
     accounts: &[AccountInfo],
     vote_threshold: u8,
@@ -77,7 +77,7 @@ pub fn process_create_governance(
     let bump = &[bump_seed];
     seeds.push(bump);
 
-    create_account_raw::<Governance>(
+    create_account_raw::<ProgramGovernance>(
         &[
             payer_info.clone(),
             governance_info.clone(),
@@ -89,7 +89,7 @@ pub fn process_create_governance(
         &seeds[..],
     )?;
 
-    let governance = Governance {
+    let governance = ProgramGovernance {
         account_type: GovernanceAccountType::Governance,
         name,
         minimum_slot_waiting_period,
@@ -104,7 +104,7 @@ pub fn process_create_governance(
         proposal_count: 0,
     };
 
-    Governance::pack(governance, &mut governance_info.data.borrow_mut())?;
+    ProgramGovernance::pack(governance, &mut governance_info.data.borrow_mut())?;
 
     Ok(())
 }
