@@ -275,10 +275,6 @@ pub enum GovernanceInstruction {
     ///   3. `[]` Payer
     ///   5. `[]` System account.
     CreateEmptyGovernanceVoteRecord,
-
-    /// Creates dummy account for testing
-    /// TODO: Remove in final version
-    CreateDummyAccount,
 }
 
 impl GovernanceInstruction {
@@ -362,7 +358,6 @@ impl GovernanceInstruction {
                 }
             }
             14 => Self::CreateEmptyGovernanceVoteRecord,
-            15 => Self::CreateDummyAccount,
             _ => return Err(GovernanceError::InstructionUnpackError.into()),
         })
     }
@@ -502,7 +497,6 @@ impl GovernanceInstruction {
                 buf.extend_from_slice(&voting_token_amount.to_le_bytes());
             }
             Self::CreateEmptyGovernanceVoteRecord => buf.push(14),
-            Self::CreateDummyAccount => buf.push(15),
         }
         buf
     }
@@ -543,22 +537,6 @@ pub fn create_governance(
         time_limit,
         name: *name,
     };
-
-    Ok(Instruction {
-        program_id: id(),
-        accounts,
-        data: instruction.pack(),
-    })
-}
-
-/// Create Gov Account
-pub fn create_dummy_account() -> Result<Instruction, ProgramError> {
-    let accounts = vec![
-        AccountMeta::new_readonly(system_program::id(), false),
-        AccountMeta::new_readonly(bpf_loader_upgradeable::id(), false),
-    ];
-
-    let instruction = GovernanceInstruction::CreateDummyAccount {};
 
     Ok(Instruction {
         program_id: id(),

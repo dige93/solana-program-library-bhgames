@@ -17,7 +17,7 @@ use solana_sdk::{
 };
 use spl_governance::{
     id,
-    instruction::{create_dummy_account, create_governance},
+    instruction::create_governance,
     processor::process_instruction,
     state::program_governance::{ProgramGovernance, GOVERNANCE_NAME_LENGTH},
     PROGRAM_AUTHORITY_SEED,
@@ -164,12 +164,6 @@ impl GovernanceProgramTest {
         }
     }
 
-    pub async fn with_dummy_account(&mut self) {
-        let instruction = create_dummy_account().unwrap();
-
-        self.process_transaction(&[instruction], None).await;
-    }
-
     pub async fn with_program_governance(
         &mut self,
         governed_program: &GovernedProgramSetup,
@@ -219,7 +213,10 @@ impl GovernanceProgramTest {
         }
     }
 
-    pub async fn get_program_governance_account(&mut self, governance_address: &Pubkey) -> ProgramGovernance {
+    pub async fn get_program_governance_account(
+        &mut self,
+        governance_address: &Pubkey,
+    ) -> ProgramGovernance {
         let governance_account_raw = self
             .banks_client
             .get_account(*governance_address)
