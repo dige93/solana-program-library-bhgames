@@ -41,8 +41,8 @@ pub enum ProposalStateStatus {
     /// Completed, can be rebooted
     Completed,
 
-    /// Deleted
-    Deleted,
+    /// Canceled
+    Canceled,
 
     /// Defeated
     Defeated,

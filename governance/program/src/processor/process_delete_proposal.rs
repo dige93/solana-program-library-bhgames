@@ -14,8 +14,8 @@ use solana_program::{
     pubkey::Pubkey,
 };
 
-/// Delete Proposal
-pub fn process_delete_proposal(program_id: &Pubkey, accounts: &[AccountInfo]) -> ProgramResult {
+/// Cancel Proposal
+pub fn process_cancel_proposal(program_id: &Pubkey, accounts: &[AccountInfo]) -> ProgramResult {
     let account_info_iter = &mut accounts.iter();
     let proposal_state_account_info = next_account_info(account_info_iter)?;
     let admin_account_info = next_account_info(account_info_iter)?;
@@ -41,7 +41,7 @@ pub fn process_delete_proposal(program_id: &Pubkey, accounts: &[AccountInfo]) ->
         transfer_authority_info,
         proposal_authority_info,
     )?;
-    proposal_state.status = ProposalStateStatus::Deleted;
+    proposal_state.status = ProposalStateStatus::Canceled;
     ProposalState::pack(
         proposal_state,
         &mut proposal_state_account_info.data.borrow_mut(),

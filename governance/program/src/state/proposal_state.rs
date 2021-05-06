@@ -151,7 +151,7 @@ impl Pack for ProposalState {
                 1 => ProposalStateStatus::Voting,
                 2 => ProposalStateStatus::Executing,
                 3 => ProposalStateStatus::Completed,
-                4 => ProposalStateStatus::Deleted,
+                4 => ProposalStateStatus::Canceled,
                 _ => ProposalStateStatus::Draft,
             },
             total_signing_tokens_minted,
@@ -215,7 +215,7 @@ impl Pack for ProposalState {
             ProposalStateStatus::Voting => 1_u8,
             ProposalStateStatus::Executing => 2_u8,
             ProposalStateStatus::Completed => 3_u8,
-            ProposalStateStatus::Deleted => 4_u8,
+            ProposalStateStatus::Canceled => 4_u8,
             ProposalStateStatus::Defeated => 5_u8,
         }
         .to_le_bytes();

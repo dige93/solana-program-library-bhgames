@@ -18,7 +18,7 @@ use process_add_custom_single_signer_transaction::process_add_custom_single_sign
 use process_add_signer::process_add_signer;
 use process_create_empty_governance_voting_record::process_create_empty_governance_voting_record;
 use process_create_program_governance::process_create_program_governance;
-use process_delete_proposal::process_delete_proposal;
+use process_delete_proposal::process_cancel_proposal;
 use process_deposit_source_tokens::process_deposit_source_tokens;
 use process_execute::process_execute;
 use process_init_proposal::process_init_proposal;
@@ -71,9 +71,9 @@ pub fn process_instruction(
             msg!("Instruction: Update Transaction Slot");
             process_update_transaction_slot(program_id, accounts, delay_slots)
         }
-        GovernanceInstruction::DeleteProposal => {
+        GovernanceInstruction::CancelProposal => {
             msg!("Instruction: Delete Proposal");
-            process_delete_proposal(program_id, accounts)
+            process_cancel_proposal(program_id, accounts)
         }
         GovernanceInstruction::SignProposal => {
             msg!("Instruction: Sign");

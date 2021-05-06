@@ -139,7 +139,7 @@ pub enum GovernanceInstruction {
     },
 
     /// [Requires Admin token]
-    /// Delete Proposal entirely.
+    /// Cancels Proposal by moving it into Cancelled state.
     ///
     ///   0. `[writable]` Proposal state account pub key.
     ///   1. `[writable]` Admin account
@@ -148,7 +148,7 @@ pub enum GovernanceInstruction {
     ///   4. `[]` Transfer authority.
     ///   5. `[]` Governance mint authority (pda with seed of Proposal key)
     ///   6. `[]` Token program account.
-    DeleteProposal,
+    CancelProposal,
 
     /// [Requires Signatory token]
     /// Burns signatory token, indicating you approve of moving this Proposal from Draft state to Voting state.
@@ -159,7 +159,7 @@ pub enum GovernanceInstruction {
     ///   2. `[writable]` Signatory mint account.
     ///   3. `[]` Proposal account pub key.
     ///   4. `[]` Transfer authority
-    ///   5. `[]` Governance mint authority (pda of seed Proposal key)
+    ///   5. `[]` Governance mint authority (pda of seed Proposal key)ß
     ///   7. `[]` Token program account.
     ///   8. `[]` Clock sysvar.
     SignProposal,
@@ -312,7 +312,7 @@ impl GovernanceInstruction {
                 let (delay_slots, _) = Self::unpack_u64(rest)?;
                 Self::UpdateTransactionDelaySlots { delay_slots }
             }
-            7 => Self::DeleteProposal,
+            7 => Self::CancelProposal,
             8 => Self::SignProposal,
             9 => {
                 let (yes_vote_amount, rest) = Self::unpack_u64(rest)?;
@@ -451,7 +451,7 @@ impl GovernanceInstruction {
                 buf.push(6);
                 buf.extend_from_slice(&delay_slots.to_le_bytes());
             }
-            Self::DeleteProposal => buf.push(7),
+            Self::CancelProposal => buf.push(7),
             Self::SignProposal => buf.push(8),
             Self::Vote { vote } => {
                 buf.push(9);
