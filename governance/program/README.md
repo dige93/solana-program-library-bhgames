@@ -6,6 +6,10 @@ a voting population to vote on disbursement of access or funds collectively.
 
 ## Architecture
 
+### Accounts diagram
+
+![Accounts diagram](./resources/governance-accounts.jpg)
+
 ### Governance account
 
 The basic building block of governance is the Governance account. It ties a governed Program ID to a Governance mint
@@ -85,3 +89,7 @@ What this means is that users can submit Proposals that have a different voting 
 that can affect the same program. A practical application of this policy may be to have a very large population control
 major version bumps of Solana via normal SOL, for instance, but hot fixes be controlled via Council tokens,
 of which there may be only 30, and which may be themselves minted and distributed via proposals by the governing population.
+
+### Proposal Workflow
+
+![Proposal Workflow](./resources/governance-workflow.jpg)
