@@ -4,8 +4,8 @@ pub enum GovernanceAccountType {
     /// 0 - Default uninitialized account state
     Uninitialized,
 
-    /// 1 - Governance account
-    Governance,
+    /// 1 - Program Governance account
+    ProgramGovernance,
 
     /// 2 - Proposal account for Governance account. A single Governance account can have multiple Proposal accounts
     Proposal,

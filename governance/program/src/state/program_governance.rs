@@ -100,7 +100,7 @@ impl Pack for ProgramGovernance {
 
         let account_type = match account_type {
             0 => GovernanceAccountType::Uninitialized,
-            1 => GovernanceAccountType::Governance,
+            1 => GovernanceAccountType::ProgramGovernance,
             _ => return Err(ProgramError::InvalidAccountData),
         };
 
@@ -149,7 +149,7 @@ impl Pack for ProgramGovernance {
         ];
         *account_type_value = match self.account_type {
             GovernanceAccountType::Uninitialized => 0_u8,
-            GovernanceAccountType::Governance => 1_u8,
+            GovernanceAccountType::ProgramGovernance => 1_u8,
             _ => panic!("Account type was invalid"),
         }
         .to_le_bytes();

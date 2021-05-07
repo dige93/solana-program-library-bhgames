@@ -49,8 +49,9 @@ pub enum GovernanceInstruction {
     ///   19. `[]` Rent sysvar
     InitProposal {
         /// Link to gist explaining proposal
-        desc_link: [u8; DESC_SIZE],
-        /// name of proposal
+        description_link: [u8; DESC_SIZE],
+        /// UTF-8 encoded name of the proposal
+        // TOODL Change to String
         name: [u8; NAME_SIZE],
     },
 
@@ -303,7 +304,10 @@ impl GovernanceInstruction {
 
                 desc_link[..(DESC_SIZE - 1)].clone_from_slice(&input_desc_link[..(DESC_SIZE - 1)]);
                 name[..(NAME_SIZE - 1)].clone_from_slice(&input_name[..(NAME_SIZE - 1)]);
-                Self::InitProposal { desc_link, name }
+                Self::InitProposal {
+                    description_link: desc_link,
+                    name,
+                }
             }
             2 => Self::AddSignatory,
             3 => Self::RemoveSignatory,
@@ -439,7 +443,10 @@ impl GovernanceInstruction {
         let mut buf = Vec::with_capacity(size_of::<Self>());
 
         match self {
-            Self::InitProposal { desc_link, name } => {
+            Self::InitProposal {
+                description_link: desc_link,
+                name,
+            } => {
                 buf.push(1);
                 buf.extend_from_slice(desc_link);
                 buf.extend_from_slice(name);

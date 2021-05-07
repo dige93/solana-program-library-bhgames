@@ -38,7 +38,10 @@ pub fn process_instruction(
 ) -> ProgramResult {
     let instruction = GovernanceInstruction::unpack(input)?;
     match instruction {
-        GovernanceInstruction::InitProposal { name, desc_link } => {
+        GovernanceInstruction::InitProposal {
+            name,
+            description_link: desc_link,
+        } => {
             msg!("Instruction: Init Proposal");
             process_init_proposal(program_id, accounts, name, desc_link)
         }
