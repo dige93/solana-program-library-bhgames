@@ -1,6 +1,5 @@
 //! Program state processor
 
-use borsh::BorshSerialize;
 use solana_program::{
     account_info::{next_account_info, AccountInfo},
     entrypoint::ProgramResult,
@@ -9,7 +8,7 @@ use solana_program::{
 
 use crate::{
     state::{enums::GovernanceAccountType, proposal::Proposal},
-    utils::create_account_raw2,
+    utils::create_serialized_account,
 };
 
 /// process_create_proposal
@@ -22,31 +21,26 @@ pub fn process_create_proposal(
     let account_info_iter = &mut accounts.iter();
 
     let proposal_info = next_account_info(account_info_iter)?; // 1
-
     let payer_info = next_account_info(account_info_iter)?; // 2
     let system_info = next_account_info(account_info_iter)?; // 3
 
     let proposal = Proposal {
         account_type: GovernanceAccountType::Proposal,
-        name: name,
-        description_link: description_link,
+        name,
+        description_link,
     };
 
-    let data = proposal.try_to_vec()?;
-
-    create_account_raw2::<Proposal>(
+    create_serialized_account::<Proposal>(
+        payer_info.key,
+        &proposal_info,
+        &proposal,
+        program_id,
         &[
-            payer_info.clone(),
             proposal_info.clone(),
+            payer_info.clone(),
             system_info.clone(),
         ],
-        &proposal_info.key,
-        payer_info.key,
-        program_id,
-        data.len(),
     )?;
-
-    proposal_info.data.borrow_mut().copy_from_slice(&data);
 
     Ok(())
 }

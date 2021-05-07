@@ -5,6 +5,7 @@ use crate::{
     PROGRAM_AUTHORITY_SEED,
 };
 use arrayref::{array_ref, array_refs, mut_array_refs};
+
 use borsh::BorshSerialize;
 use solana_program::{
     account_info::AccountInfo,
@@ -495,7 +496,7 @@ pub fn pack_option_key(src: Option<Pubkey>, dst: &mut [u8; 33]) {
 /// Create account from scratch, stolen from Wormhole, slightly altered for my purposes
 /// https://github.com/bartosz-lipinski/wormhole/blob/8478735ea7525043635524a62db2751e59d2bc38/solana/bridge/src/processor.rs#L1335
 #[inline(always)]
-pub fn create_account_raw<T: Pack>(
+pub fn create_account_raw_signed<T: Pack>(
     accounts: &[AccountInfo],
     new_account: &Pubkey,
     payer: &Pubkey,
@@ -513,18 +514,8 @@ pub fn create_account_raw<T: Pack>(
     invoke_signed(&ix, accounts, &[seeds])
 }
 
-/// Tries to serialize with max vector
-pub fn serialize_to_vec<T: BorshSerialize>(
-    source: T,
-    capacity: usize,
-) -> Result<Vec<u8>, ProgramError> {
-    let mut result = Vec::with_capacity(capacity);
-    source.serialize(&mut result)?;
-    Ok(result)
-}
-
-/// create
-pub fn create_account_raw2<T>(
+/// Creates raw account
+pub fn create_account_raw<T>(
     accounts: &[AccountInfo],
     new_account: &Pubkey,
     payer: &Pubkey,
@@ -539,6 +530,33 @@ pub fn create_account_raw2<T>(
         owner,
     );
     invoke(&ix, accounts)
+}
+
+/// Creates account and serializes its data
+pub fn create_serialized_account<T: BorshSerialize>(
+    payer: &Pubkey,
+    account_info: &AccountInfo,
+    account: &T,
+    owner: &Pubkey,
+    accounts: &[AccountInfo],
+) -> Result<(), ProgramError> {
+    let serialized_data = account.try_to_vec()?;
+
+    let ix = create_account(
+        payer,
+        account_info.key,
+        Rent::default().minimum_balance(serialized_data.len()),
+        serialized_data.len() as u64,
+        owner,
+    );
+    invoke(&ix, accounts)?;
+
+    account_info
+        .data
+        .borrow_mut()
+        .copy_from_slice(&serialized_data);
+
+    Ok(())
 }
 
 ///TokenTransferParams

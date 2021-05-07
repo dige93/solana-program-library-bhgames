@@ -1,6 +1,6 @@
 //! Program state processor
 use crate::utils::assert_program_upgrade_authority;
-use crate::utils::create_account_raw;
+use crate::utils::create_account_raw_signed;
 use crate::{
     error::GovernanceError, state::enums::GovernanceAccountType,
     state::program_governance::ProgramGovernance, PROGRAM_AUTHORITY_SEED,
@@ -74,7 +74,7 @@ pub fn process_create_program_governance(
     let bump = &[bump_seed];
     seeds.push(bump);
 
-    create_account_raw::<ProgramGovernance>(
+    create_account_raw_signed::<ProgramGovernance>(
         &[
             payer_info.clone(),
             governance_info.clone(),
