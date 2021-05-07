@@ -34,10 +34,7 @@ async fn test_created() {
         program_governance_setup.max_voting_time,
         program_governance_account.max_voting_time
     );
-    // assert_eq!(
-    //     program_governance_setup.name,
-    //     program_governance_account.name
-    // );
+
     assert_eq!(
         program_governance_setup.governance_mint,
         program_governance_account.governance_mint

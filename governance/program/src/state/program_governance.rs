@@ -43,10 +43,6 @@ pub struct ProgramGovernance {
     /// Time limit in slots for proposal to be open for voting
     pub max_voting_time: u64,
 
-    /// Optional Governance name
-    // TODO: Change to String
-    pub name: [u8; GOVERNANCE_NAME_LENGTH],
-
     /// Running count of proposals
     pub proposal_count: u32,
 }
@@ -59,10 +55,10 @@ impl IsInitialized for ProgramGovernance {
 }
 
 /// Len of Governance
-pub const GOVERNANCE_LEN: usize = 1 + 1 + 8 + 32 + 33 + 32 + 8 + GOVERNANCE_NAME_LENGTH + 4 + 295;
+pub const GOVERNANCE_LEN: usize = 1 + 1 + 8 + 32 + 33 + 32 + 8 + 4 + 295;
 
 impl Pack for ProgramGovernance {
-    const LEN: usize = 1 + 1 + 8 + 32 + 33 + 32 + 8 + GOVERNANCE_NAME_LENGTH + 4 + 295;
+    const LEN: usize = 1 + 1 + 8 + 32 + 33 + 32 + 8 + 4 + 295;
     /// Unpacks a byte buffer into Governance account data
     fn unpack_from_slice(input: &[u8]) -> Result<Self, ProgramError> {
         let input = array_ref![input, 0, GOVERNANCE_LEN];
@@ -76,22 +72,9 @@ impl Pack for ProgramGovernance {
             council_mint_option,
             program,
             time_limit,
-            name,
             proposal_count,
             _padding,
-        ) = array_refs![
-            input,
-            1,
-            1,
-            8,
-            32,
-            33,
-            32,
-            8,
-            GOVERNANCE_NAME_LENGTH,
-            4,
-            295
-        ];
+        ) = array_refs![input, 1, 1, 8, 32, 33, 32, 8, 4, 295];
         let account_type = u8::from_le_bytes(*account_type_value);
         let vote_threshold = u8::from_le_bytes(*vote_threshold);
         let minimum_slot_waiting_period = u64::from_le_bytes(*minimum_slot_waiting_period);
@@ -115,7 +98,6 @@ impl Pack for ProgramGovernance {
 
             program: Pubkey::new_from_array(*program),
             max_voting_time: time_limit,
-            name: *name,
             proposal_count,
         })
     }
@@ -131,22 +113,9 @@ impl Pack for ProgramGovernance {
             council_mint_option,
             program,
             time_limit,
-            name,
             proposal_count,
             _padding,
-        ) = mut_array_refs![
-            output,
-            1,
-            1,
-            8,
-            32,
-            33,
-            32,
-            8,
-            GOVERNANCE_NAME_LENGTH,
-            4,
-            295
-        ];
+        ) = mut_array_refs![output, 1, 1, 8, 32, 33, 32, 8, 4, 295];
         *account_type_value = match self.account_type {
             GovernanceAccountType::Uninitialized => 0_u8,
             GovernanceAccountType::ProgramGovernance => 1_u8,
@@ -163,7 +132,7 @@ impl Pack for ProgramGovernance {
 
         program.copy_from_slice(self.program.as_ref());
         *time_limit = self.max_voting_time.to_le_bytes();
-        name.copy_from_slice(self.name.as_ref());
+
         *proposal_count = self.proposal_count.to_le_bytes();
     }
 

@@ -39,9 +39,8 @@ pub struct ProgramGovernanceSetup {
     pub vote_threshold: u8,
     pub min_instruction_hold_up_time: u64,
     pub max_voting_time: u64,
-    pub name: String,
 }
-
+#[derive(Debug)]
 pub struct ProposalSetup {
     pub address: Pubkey,
     /// bla
@@ -105,6 +104,7 @@ impl GovernanceProgramTest {
             .unwrap();
     }
 
+    #[allow(dead_code)]
     pub async fn with_governed_program(&mut self) -> GovernedProgramSetup {
         let program_address_keypair = Keypair::new();
         let program_buffer_keypair = Keypair::new();
@@ -175,6 +175,7 @@ impl GovernanceProgramTest {
         }
     }
 
+    #[allow(dead_code)]
     pub async fn with_program_governance(
         &mut self,
         governed_program: &GovernedProgramSetup,
@@ -190,7 +191,6 @@ impl GovernanceProgramTest {
         let vote_threshold: u8 = 60;
         let min_instruction_hold_up_time: u64 = 10;
         let max_voting_time: u64 = 100;
-        let name = "program_governance".to_string();
 
         let create_governance_instruction = create_governance(
             &governance_address,
@@ -203,7 +203,6 @@ impl GovernanceProgramTest {
             vote_threshold,
             min_instruction_hold_up_time,
             max_voting_time,
-            name.clone(),
         )
         .unwrap();
 
@@ -220,10 +219,10 @@ impl GovernanceProgramTest {
             vote_threshold,
             min_instruction_hold_up_time,
             max_voting_time,
-            name,
         }
     }
 
+    #[allow(dead_code)]
     pub async fn get_program_governance_account(
         &mut self,
         governance_address: &Pubkey,
@@ -238,11 +237,12 @@ impl GovernanceProgramTest {
         ProgramGovernance::unpack(&governance_account_raw.data).unwrap()
     }
 
+    #[allow(dead_code)]
     pub async fn with_proposal(&mut self) -> ProposalSetup {
         let description_link = "proposal description".to_string();
         let name = "proposal_name".to_string();
 
-        let proposal_count = 0;
+        //let proposal_count = 0;
         let proposal_key = Keypair::new();
 
         let create_proposal_instruction = create_proposal(
@@ -263,6 +263,7 @@ impl GovernanceProgramTest {
         }
     }
 
+    #[allow(dead_code)]
     pub async fn get_proposal_account(&mut self, proposal_address: &Pubkey) -> Proposal {
         let raw_account = self
             .banks_client
@@ -274,6 +275,7 @@ impl GovernanceProgramTest {
         Proposal::try_from_slice(&raw_account.data).unwrap()
     }
 
+    #[allow(dead_code)]
     async fn get_account<T: Pack + IsInitialized>(&mut self, address: &Pubkey) -> T {
         let raw_account = self
             .banks_client

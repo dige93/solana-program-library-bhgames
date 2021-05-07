@@ -15,6 +15,7 @@ use crate::id;
 /// Instructions supported by the Governance program.
 #[derive(Clone, Debug, PartialEq, BorshDeserialize, BorshSerialize, BorshSchema)]
 #[allow(clippy::large_enum_variant)]
+#[allow(dead_code)]
 pub enum GovernanceInstruction {
     /// Initializes a new empty Proposal for Instructions that will be executed at various slots in the future in draft mode.
     /// Grants Admin token to caller.
@@ -41,8 +42,10 @@ pub enum GovernanceInstruction {
     ///   19. `[]` Rent sysvar
     InitProposal {
         /// UTF-8 encoded gist explaining proposal
+        #[allow(dead_code)]
         description_link: String,
         /// UTF-8 encoded name of the proposal
+        #[allow(dead_code)]
         name: String,
     },
 
@@ -93,12 +96,16 @@ pub enum GovernanceInstruction {
     ///   9. `[]` Token program account.
     AddCustomSingleSignerTransaction {
         /// Slot during which this will run
+        #[allow(dead_code)]
         delay_slots: u64,
         /// Instruction
+        #[allow(dead_code)]
         instruction: Vec<u8>,
         /// Position in transaction array
+        #[allow(dead_code)]
         position: u8,
         /// Point in instruction array where 0 padding begins - inclusive, index should be where actual instruction ends, not where 0s begin
+        #[allow(dead_code)]
         instruction_end_index: u16,
     },
 
@@ -128,6 +135,7 @@ pub enum GovernanceInstruction {
     ///   8. `[]` Token program account.
     UpdateTransactionDelaySlots {
         /// On what slot this transaction slot will now run
+        #[allow(dead_code)]
         delay_slots: u64,
     },
 
@@ -180,6 +188,7 @@ pub enum GovernanceInstruction {
     ///   15. `[]` Clock sysvar.
     Vote {
         /// Casted vote
+        #[allow(dead_code)]
         vote: Vote,
     },
 
@@ -211,6 +220,7 @@ pub enum GovernanceInstruction {
     ///   8. `[]` Token program account.
     DepositSourceTokens {
         /// How many voting tokens to deposit
+        #[allow(dead_code)]
         voting_token_amount: u64,
     },
 
@@ -235,6 +245,7 @@ pub enum GovernanceInstruction {
     ///   15. `[]` Token program account.
     WithdrawVotingTokens {
         /// How many voting tokens to withdrawal
+        #[allow(dead_code)]
         voting_token_amount: u64,
     },
 
@@ -254,21 +265,20 @@ pub enum GovernanceInstruction {
     CreateProgramGovernance {
         /// Voting threshold in % required to tip the vote
         /// It's the percentage of tokens out of the entire pool of governance tokens eligible to vote
+        #[allow(dead_code)]
         vote_threshold: u8,
 
         /// Minimum waiting time in slots for an instruction to be executed after proposal is voted on
+        #[allow(dead_code)]
         min_instruction_hold_up_time: Slot,
 
         /// Time limit in slots for proposal to be open to voting
+        #[allow(dead_code)]
         max_voting_time: Slot,
-
-        /// Minimum % of tokens for a governance token owner to be able to create proposal
-        /// It's the percentage of tokens out of the entire pool of governance tokens eligible to vote
+        // Minimum % of tokens for a governance token owner to be able to create proposal
+        // It's the percentage of tokens out of the entire pool of governance tokens eligible to vote
         // TODO: Add field
         //token_threshold_to_create_proposal: u8,
-
-        /// UTF-8 encoded Governance name
-        name: String,
     },
 
     ///   0. `[]` Governance vote record key. Needs to be set with pubkey set to PDA with seeds of the
@@ -282,8 +292,10 @@ pub enum GovernanceInstruction {
     /// Creates Proposal Account
     CreateProposal {
         /// UTF-8 encoded gist explaining proposal
+        #[allow(dead_code)]
         description_link: String,
         /// UTF-8 encoded name of the proposal
+        #[allow(dead_code)]
         name: String,
     },
 }
@@ -300,7 +312,6 @@ pub fn create_governance(
     vote_threshold: u8,
     min_instruction_hold_up_time: u64,
     max_voting_time: u64,
-    name: String,
 ) -> Result<Instruction, ProgramError> {
     let mut accounts = vec![
         AccountMeta::new(*governance_address, false),
@@ -321,7 +332,6 @@ pub fn create_governance(
         vote_threshold,
         min_instruction_hold_up_time,
         max_voting_time,
-        name: name,
     };
 
     Ok(Instruction {
