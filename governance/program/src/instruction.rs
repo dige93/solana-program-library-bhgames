@@ -3,6 +3,7 @@ use std::{convert::TryInto, mem::size_of};
 
 use solana_program::{
     bpf_loader_upgradeable,
+    epoch_schedule::Slot,
     instruction::{AccountMeta, Instruction},
     program_error::ProgramError,
     pubkey::Pubkey,
@@ -245,26 +246,37 @@ pub enum GovernanceInstruction {
         voting_token_amount: u64,
     },
 
-    ///   0. `[writable]` Governance account. The account pubkey needs to be set to PDA with the following seeds:
-    ///           1) 'governance' const prefix, 2) Governed Program account key
+    /// Creates Program Governance account
+    ///
+    ///   0. `[writable]` Governance account. The account pubkey needs to be set to program-derived address (PDA) with the following seeds:
+    ///           1) 'governance' const prefix
+    ///           2) Governed Program address
     ///   1. `[]` Account of the Program governed by this Governance account
     ///   2. `[writable]` Program Data account of the Program governed by this Governance account
     ///   3. `[signer]` Current Upgrade Authority account of the Program governed by this Governance account
     ///   4. `[]` Governance mint that this Governance uses
     ///   5. `[signer]` Payer
-    ///   6. `[]` System account.
-    ///   7. `[]` bpf_upgrade_loader account.
+    ///   6. `[]` System account
+    ///   7. `[]` Bpf_upgrade_loader account
     ///   8. `[]` Council mint that this Governance uses [Optional]
     CreateProgramGovernance {
-        /// Vote threshold in % required to tip the vote
+        /// Voting threshold in % required to tip the vote
+        /// It's the percentage of tokens out of the entire pool of governance tokens eligible to vote
         vote_threshold: u8,
-        /// Execution type
 
-        /// Minimum slot time-distance from creation of proposal for an instruction to be placed
-        minimum_slot_waiting_period: u64,
+        /// Minimum waiting time in slots for an instruction to be executed after proposal is voted on
+        min_instruction_hold_up_time: Slot,
+
         /// Time limit in slots for proposal to be open to voting
-        time_limit: u64,
-        /// Optional name
+        max_voting_time: Slot,
+
+        /// Minimum % of tokens for a governance token owner to be able to create proposal
+        /// It's the percentage of tokens out of the entire pool of governance tokens eligible to vote
+        // TODO: Add field
+        //token_threshold_to_create_proposal: u8,
+
+        /// UTF-8 encoded Governance name
+        // TODO: Change to String
         name: [u8; GOVERNANCE_NAME_LENGTH],
     },
 
@@ -339,9 +351,9 @@ impl GovernanceInstruction {
                     .clone_from_slice(&rest[..(GOVERNANCE_NAME_LENGTH - 1)]);
                 Self::CreateProgramGovernance {
                     vote_threshold,
-                    minimum_slot_waiting_period,
+                    min_instruction_hold_up_time: minimum_slot_waiting_period,
                     name,
-                    time_limit,
+                    max_voting_time: time_limit,
                 }
             }
             11 => Self::Execute,
@@ -471,8 +483,8 @@ impl GovernanceInstruction {
             }
             Self::CreateProgramGovernance {
                 vote_threshold,
-                minimum_slot_waiting_period,
-                time_limit,
+                min_instruction_hold_up_time: minimum_slot_waiting_period,
+                max_voting_time: time_limit,
                 name,
             } => {
                 buf.push(10);
@@ -512,8 +524,8 @@ pub fn create_governance(
     payer: &Pubkey,
     council_mint: &Option<Pubkey>,
     vote_threshold: u8,
-    minimum_slot_waiting_period: u64,
-    time_limit: u64,
+    min_instruction_hold_up_time: u64,
+    max_voting_time: u64,
     name: &[u8; GOVERNANCE_NAME_LENGTH],
 ) -> Result<Instruction, ProgramError> {
     let mut accounts = vec![
@@ -533,8 +545,8 @@ pub fn create_governance(
 
     let instruction = GovernanceInstruction::CreateProgramGovernance {
         vote_threshold,
-        minimum_slot_waiting_period,
-        time_limit,
+        min_instruction_hold_up_time,
+        max_voting_time,
         name: *name,
     };
 

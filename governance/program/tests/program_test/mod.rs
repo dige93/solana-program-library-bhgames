@@ -34,8 +34,8 @@ pub struct ProgramGovernanceSetup {
     pub governance_mint: Pubkey,
     pub council_mint: Option<Pubkey>,
     pub vote_threshold: u8,
-    pub minimum_slot_waiting_period: u64,
-    pub time_limit: u64,
+    pub min_instruction_hold_up_time: u64,
+    pub max_voting_time: u64,
     pub name: [u8; GOVERNANCE_NAME_LENGTH],
 }
 
@@ -177,8 +177,8 @@ impl GovernanceProgramTest {
         let council_mint = Option::None::<Pubkey>;
 
         let vote_threshold: u8 = 60;
-        let minimum_slot_waiting_period: u64 = 10;
-        let time_limit: u64 = 100;
+        let min_instruction_hold_up_time: u64 = 10;
+        let max_voting_time: u64 = 100;
         let name = [0u8; GOVERNANCE_NAME_LENGTH];
 
         let create_governance_instruction = create_governance(
@@ -190,8 +190,8 @@ impl GovernanceProgramTest {
             &self.payer.pubkey(),
             &council_mint,
             vote_threshold,
-            minimum_slot_waiting_period,
-            time_limit,
+            min_instruction_hold_up_time,
+            max_voting_time,
             &name,
         )
         .unwrap();
@@ -207,8 +207,8 @@ impl GovernanceProgramTest {
             governance_mint,
             council_mint,
             vote_threshold,
-            minimum_slot_waiting_period,
-            time_limit,
+            min_instruction_hold_up_time,
+            max_voting_time,
             name,
         }
     }

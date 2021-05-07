@@ -92,8 +92,8 @@ pub fn process_create_program_governance(
     let governance = ProgramGovernance {
         account_type: GovernanceAccountType::Governance,
         name,
-        minimum_slot_waiting_period,
-        time_limit,
+        min_instruction_hold_up_time: minimum_slot_waiting_period,
+        max_voting_time: time_limit,
         program: *governed_program_info.key,
         governance_mint: *governance_mint_info.key,
 

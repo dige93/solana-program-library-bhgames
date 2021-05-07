@@ -3,9 +3,8 @@ use crate::state::enums::Vote;
 use crate::{
     error::GovernanceError,
     state::{
-        enums::ProposalStateStatus, program_governance::ProgramGovernance,
-        governance_vote_record::GovernanceVoteRecord, proposal::Proposal,
-        proposal_state::ProposalState,
+        enums::ProposalStateStatus, governance_vote_record::GovernanceVoteRecord,
+        program_governance::ProgramGovernance, proposal::Proposal, proposal_state::ProposalState,
     },
     utils::{
         assert_account_equiv, assert_initialized, assert_voting, get_mint_supply, spl_token_burn,
@@ -130,7 +129,7 @@ pub fn process_vote(program_id: &Pubkey, accounts: &[AccountInfo], vote: Vote) -
         Some(val) => val,
         None => return Err(GovernanceError::NumericalOverflow.into()),
     };
-    let too_long = elapsed > governance.time_limit;
+    let too_long = elapsed > governance.max_voting_time;
 
     if tipped || too_long {
         if tipped {

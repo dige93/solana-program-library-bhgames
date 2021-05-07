@@ -85,8 +85,8 @@ pub fn process_instruction(
         }
         GovernanceInstruction::CreateProgramGovernance {
             vote_threshold,
-            minimum_slot_waiting_period,
-            time_limit,
+            min_instruction_hold_up_time: minimum_slot_waiting_period,
+            max_voting_time: time_limit,
             name,
         } => {
             msg!("Instruction: Initialize Governance");

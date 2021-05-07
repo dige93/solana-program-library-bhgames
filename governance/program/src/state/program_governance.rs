@@ -5,6 +5,7 @@ use crate::{
 
 use arrayref::{array_mut_ref, array_ref, array_refs, mut_array_refs};
 use solana_program::{
+    epoch_schedule::Slot,
     program_error::ProgramError,
     program_pack::{IsInitialized, Pack, Sealed},
     pubkey::Pubkey,
@@ -19,10 +20,16 @@ pub struct ProgramGovernance {
     pub account_type: GovernanceAccountType,
 
     /// Voting threshold in % required to tip the vote
+    /// It's the percentage of tokens out of the entire pool of governance tokens eligible to vote
     pub vote_threshold: u8,
 
-    /// Minimum slot time-distance from creation of proposal for an instruction to be placed
-    pub minimum_slot_waiting_period: u64,
+    /// Minimum % of tokens for a governance token owner to be able to create a proposal
+    /// It's the percentage of tokens out of the entire pool of governance tokens eligible to vote
+    // TODO: Add Field
+    // pub token_threshold_to_create_proposal: u8,
+
+    /// Minimum waiting time in slots for an instruction to be executed after proposal is voted on
+    pub min_instruction_hold_up_time: Slot,
 
     /// Governance mint
     pub governance_mint: Pubkey,
@@ -33,10 +40,11 @@ pub struct ProgramGovernance {
     /// Program ID that is governed by this Governance
     pub program: Pubkey,
 
-    /// Time limit in slots for proposal to be open to voting
-    pub time_limit: u64,
+    /// Time limit in slots for proposal to be open for voting
+    pub max_voting_time: u64,
 
-    /// Optional name
+    /// Optional Governance name
+    // TODO: Change to String
     pub name: [u8; GOVERNANCE_NAME_LENGTH],
 
     /// Running count of proposals
@@ -100,13 +108,13 @@ impl Pack for ProgramGovernance {
             account_type,
             vote_threshold,
 
-            minimum_slot_waiting_period,
+            min_instruction_hold_up_time: minimum_slot_waiting_period,
             governance_mint: Pubkey::new_from_array(*governance_mint),
 
             council_mint: unpack_option_key(council_mint_option)?,
 
             program: Pubkey::new_from_array(*program),
-            time_limit,
+            max_voting_time: time_limit,
             name: *name,
             proposal_count,
         })
@@ -148,13 +156,13 @@ impl Pack for ProgramGovernance {
 
         *vote_threshold = self.vote_threshold.to_le_bytes();
 
-        *minimum_slot_waiting_period = self.minimum_slot_waiting_period.to_le_bytes();
+        *minimum_slot_waiting_period = self.min_instruction_hold_up_time.to_le_bytes();
         governance_mint.copy_from_slice(self.governance_mint.as_ref());
 
         pack_option_key(self.council_mint, council_mint_option);
 
         program.copy_from_slice(self.program.as_ref());
-        *time_limit = self.time_limit.to_le_bytes();
+        *time_limit = self.max_voting_time.to_le_bytes();
         name.copy_from_slice(self.name.as_ref());
         *proposal_count = self.proposal_count.to_le_bytes();
     }

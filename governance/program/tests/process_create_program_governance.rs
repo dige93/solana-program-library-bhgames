@@ -27,12 +27,12 @@ async fn test_created() {
         program_governance_account.vote_threshold
     );
     assert_eq!(
-        program_governance_setup.minimum_slot_waiting_period,
-        program_governance_account.minimum_slot_waiting_period
+        program_governance_setup.min_instruction_hold_up_time,
+        program_governance_account.min_instruction_hold_up_time
     );
     assert_eq!(
-        program_governance_setup.time_limit,
-        program_governance_account.time_limit
+        program_governance_setup.max_voting_time,
+        program_governance_account.max_voting_time
     );
     assert_eq!(
         program_governance_setup.name,

@@ -72,7 +72,7 @@ pub fn process_add_custom_single_signer_transaction(
         governance_mint_authority_info,
     )?;
 
-    if delay_slots < governance.minimum_slot_waiting_period {
+    if delay_slots < governance.min_instruction_hold_up_time {
         return Err(GovernanceError::MustBeAboveMinimumWaitingPeriod.into());
     };
 
