@@ -49,9 +49,11 @@ pub enum GovernanceInstruction {
     ///   19. `[]` Rent sysvar
     InitProposal {
         /// Link to gist explaining proposal
+        /// UTF-8 encoded name of the proposal
+        // TODO: Change to String
         description_link: [u8; DESC_SIZE],
         /// UTF-8 encoded name of the proposal
-        // TOODL Change to String
+        // TODO: Change to String
         name: [u8; NAME_SIZE],
     },
 
@@ -288,6 +290,17 @@ pub enum GovernanceInstruction {
     ///   3. `[]` Payer
     ///   5. `[]` System account.
     CreateEmptyGovernanceVoteRecord,
+
+    /// Creates Proposal Account
+    CreateProposal {
+        /// Link to gist explaining proposal
+        /// UTF-8 encoded name of the proposal
+        // TODO: Change to String
+        description_link: [u8; DESC_SIZE],
+        /// UTF-8 encoded name of the proposal
+        // TODO: Change to String
+        name: [u8; NAME_SIZE],
+    },
 }
 
 impl GovernanceInstruction {
@@ -374,6 +387,18 @@ impl GovernanceInstruction {
                 }
             }
             14 => Self::CreateEmptyGovernanceVoteRecord,
+            15 => {
+                let (input_desc_link, input_name) = rest.split_at(DESC_SIZE);
+                let mut desc_link = [0u8; DESC_SIZE];
+                let mut name = [0u8; NAME_SIZE];
+
+                desc_link[..(DESC_SIZE - 1)].clone_from_slice(&input_desc_link[..(DESC_SIZE - 1)]);
+                name[..(NAME_SIZE - 1)].clone_from_slice(&input_name[..(NAME_SIZE - 1)]);
+                Self::CreateProposal {
+                    description_link: desc_link,
+                    name,
+                }
+            }
             _ => return Err(GovernanceError::InstructionUnpackError.into()),
         })
     }
@@ -516,6 +541,14 @@ impl GovernanceInstruction {
                 buf.extend_from_slice(&voting_token_amount.to_le_bytes());
             }
             Self::CreateEmptyGovernanceVoteRecord => buf.push(14),
+            Self::CreateProposal {
+                description_link,
+                name,
+            } => {
+                buf.push(15);
+                buf.extend_from_slice(description_link);
+                buf.extend_from_slice(name);
+            }
         }
         buf
     }
@@ -554,6 +587,29 @@ pub fn create_governance(
         vote_threshold,
         min_instruction_hold_up_time,
         max_voting_time,
+        name: *name,
+    };
+
+    Ok(Instruction {
+        program_id: id(),
+        accounts,
+        data: instruction.pack(),
+    })
+}
+
+/// Creates proposal
+pub fn create_proposal(
+    description_link: &[u8; DESC_SIZE],
+    name: &[u8; NAME_SIZE],
+    payer: &Pubkey,
+) -> Result<Instruction, ProgramError> {
+    let accounts = vec![
+        AccountMeta::new_readonly(*payer, true),
+        AccountMeta::new_readonly(system_program::id(), false),
+    ];
+
+    let instruction = GovernanceInstruction::CreateProposal {
+        description_link: *description_link,
         name: *name,
     };
 

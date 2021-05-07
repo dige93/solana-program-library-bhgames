@@ -1,7 +1,7 @@
 //! Program state processor
 
 use crate::{
-    state::{enums::ProposalStateStatus, proposal::Proposal, proposal_state::ProposalState},
+    state::{enums::ProposalStateStatus, proposal_old::ProposalOld, proposal_state::ProposalState},
     utils::{
         assert_account_equiv, assert_initialized, assert_is_permissioned,
         assert_not_in_voting_or_executing, assert_token_program_is_correct,
@@ -26,7 +26,7 @@ pub fn process_cancel_proposal(program_id: &Pubkey, accounts: &[AccountInfo]) ->
     let token_program_info = next_account_info(account_info_iter)?;
 
     let mut proposal_state: ProposalState = assert_initialized(proposal_state_account_info)?;
-    let proposal: Proposal = assert_initialized(proposal_account_info)?;
+    let proposal: ProposalOld = assert_initialized(proposal_account_info)?;
 
     assert_account_equiv(admin_validation_account_info, &proposal.admin_validation)?;
     assert_account_equiv(proposal_state_account_info, &proposal.state)?;

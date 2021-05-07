@@ -17,9 +17,12 @@ use solana_sdk::{
 };
 use spl_governance::{
     id,
-    instruction::create_governance,
+    instruction::{create_governance, create_proposal},
     processor::process_instruction,
-    state::program_governance::{ProgramGovernance, GOVERNANCE_NAME_LENGTH},
+    state::{
+        program_governance::{ProgramGovernance, GOVERNANCE_NAME_LENGTH},
+        proposal_state::{DESC_SIZE, NAME_SIZE},
+    },
     PROGRAM_AUTHORITY_SEED,
 };
 
@@ -38,6 +41,8 @@ pub struct ProgramGovernanceSetup {
     pub max_voting_time: u64,
     pub name: [u8; GOVERNANCE_NAME_LENGTH],
 }
+
+pub struct ProposalSetup {}
 
 pub struct GovernanceProgramTest {
     pub banks_client: BanksClient,
@@ -225,6 +230,19 @@ impl GovernanceProgramTest {
             .unwrap();
 
         ProgramGovernance::unpack(&governance_account_raw.data).unwrap()
+    }
+
+    pub async fn with_proposal(&mut self) -> ProposalSetup {
+        let description_link = [1u8; DESC_SIZE];
+        let name = [1u8; NAME_SIZE];
+
+        let create_proposal_instruction =
+            create_proposal(&description_link, &name, &self.payer.pubkey()).unwrap();
+
+        self.process_transaction(&[create_proposal_instruction], None)
+            .await;
+
+        ProposalSetup {}
     }
 }
 

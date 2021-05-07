@@ -9,7 +9,7 @@ use crate::state::enums::GovernanceAccountType;
 
 /// Governance Proposal
 #[derive(Clone)]
-pub struct Proposal {
+pub struct ProposalOld {
     /// Governance account type
     pub account_type: GovernanceAccountType,
 
@@ -52,15 +52,15 @@ pub struct Proposal {
     pub source_mint: Pubkey,
 }
 
-impl Sealed for Proposal {}
-impl IsInitialized for Proposal {
+impl Sealed for ProposalOld {}
+impl IsInitialized for ProposalOld {
     fn is_initialized(&self) -> bool {
         self.account_type != GovernanceAccountType::Uninitialized
     }
 }
 
 const PROPOSAL_LEN: usize = 1 + 32 * 12 + 300;
-impl Pack for Proposal {
+impl Pack for ProposalOld {
     const LEN: usize = 1 + 32 * 12 + 300;
     /// Unpacks a byte buffer into a Proposal account data
     fn unpack_from_slice(input: &[u8]) -> Result<Self, ProgramError> {

@@ -8,7 +8,7 @@ pub mod custom_single_signer_transaction;
 pub mod program_governance;
 
 /// Proposal
-pub mod proposal;
+pub mod proposal_old;
 
 /// Proposal state
 pub mod proposal_state;

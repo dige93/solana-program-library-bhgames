@@ -2,6 +2,7 @@ pub mod process_add_custom_single_signer_transaction;
 pub mod process_add_signer;
 pub mod process_create_empty_governance_voting_record;
 pub mod process_create_program_governance;
+pub mod process_create_proposal;
 pub mod process_delete_proposal;
 pub mod process_deposit_source_tokens;
 pub mod process_execute;
@@ -18,6 +19,7 @@ use process_add_custom_single_signer_transaction::process_add_custom_single_sign
 use process_add_signer::process_add_signer;
 use process_create_empty_governance_voting_record::process_create_empty_governance_voting_record;
 use process_create_program_governance::process_create_program_governance;
+use process_create_proposal::process_create_proposal;
 use process_delete_proposal::process_cancel_proposal;
 use process_deposit_source_tokens::process_deposit_source_tokens;
 use process_execute::process_execute;
@@ -122,6 +124,14 @@ pub fn process_instruction(
         GovernanceInstruction::CreateEmptyGovernanceVoteRecord => {
             msg!("Instruction: Create Empty Governance Voting Record");
             process_create_empty_governance_voting_record(program_id, accounts)
+        }
+
+        GovernanceInstruction::CreateProposal {
+            description_link,
+            name,
+        } => {
+            msg!("Instruction:CreateProposal");
+            process_create_proposal(program_id, accounts, &description_link, &name)
         }
     }
 }

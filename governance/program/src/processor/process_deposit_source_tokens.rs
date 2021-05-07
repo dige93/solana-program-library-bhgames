@@ -3,7 +3,7 @@
 use crate::{
     error::GovernanceError,
     state::governance_vote_record::GovernanceVoteRecord,
-    state::{enums::GovernanceAccountType, proposal::Proposal},
+    state::{enums::GovernanceAccountType, proposal_old::ProposalOld},
     utils::{
         assert_account_equiv, assert_initialized, assert_token_program_is_correct,
         spl_token_mint_to, spl_token_transfer, TokenMintToParams, TokenTransferParams,
@@ -35,7 +35,7 @@ pub fn process_deposit_source_tokens(
     let governance_program_authority_info = next_account_info(account_info_iter)?;
     let token_program_account_info = next_account_info(account_info_iter)?;
 
-    let proposal: Proposal = assert_initialized(proposal_account_info)?;
+    let proposal: ProposalOld = assert_initialized(proposal_account_info)?;
     assert_token_program_is_correct(token_program_account_info)?;
 
     assert_account_equiv(source_holding_account_info, &proposal.source_holding)?;

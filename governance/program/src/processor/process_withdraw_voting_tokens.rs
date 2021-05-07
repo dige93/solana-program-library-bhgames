@@ -3,7 +3,7 @@
 use crate::{
     error::GovernanceError,
     state::governance_vote_record::GovernanceVoteRecord,
-    state::proposal::Proposal,
+    state::proposal_old::ProposalOld,
     utils::{
         assert_account_equiv, assert_initialized, assert_token_program_is_correct, spl_token_burn,
         spl_token_transfer, TokenBurnParams, TokenTransferParams,
@@ -44,7 +44,7 @@ pub fn process_withdraw_voting_tokens(
     let governance_program_authority_info = next_account_info(account_info_iter)?;
     let token_program_account_info = next_account_info(account_info_iter)?;
 
-    let proposal: Proposal = assert_initialized(proposal_account_info)?;
+    let proposal: ProposalOld = assert_initialized(proposal_account_info)?;
     assert_token_program_is_correct(token_program_account_info)?;
     // Using assert_account_equiv not workable here due to cost of stack size on this method.
 

@@ -1,7 +1,7 @@
 use crate::{
     error::GovernanceError,
     state::upgradable_loader_state::UpgradeableLoaderState,
-    state::{enums::ProposalStateStatus, proposal::Proposal, proposal_state::ProposalState},
+    state::{enums::ProposalStateStatus, proposal_old::ProposalOld, proposal_state::ProposalState},
     PROGRAM_AUTHORITY_SEED,
 };
 use arrayref::{array_ref, array_refs, mut_array_refs};
@@ -123,7 +123,7 @@ pub fn assert_draft(proposal_state: &ProposalState) -> ProgramResult {
 
 /// Asserts the proper mint key is being used.
 pub fn assert_proper_signatory_mint(
-    proposal: &Proposal,
+    proposal: &ProposalOld,
     signatory_mint_account_info: &AccountInfo,
 ) -> ProgramResult {
     if proposal.signatory_mint != *signatory_mint_account_info.key {

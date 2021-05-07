@@ -4,7 +4,8 @@ use crate::{
     error::GovernanceError,
     state::{
         enums::ProposalStateStatus, governance_vote_record::GovernanceVoteRecord,
-        program_governance::ProgramGovernance, proposal::Proposal, proposal_state::ProposalState,
+        program_governance::ProgramGovernance, proposal_old::ProposalOld,
+        proposal_state::ProposalState,
     },
     utils::{
         assert_account_equiv, assert_initialized, assert_voting, get_mint_supply, spl_token_burn,
@@ -43,7 +44,7 @@ pub fn process_vote(program_id: &Pubkey, accounts: &[AccountInfo], vote: Vote) -
 
     let clock = Clock::from_account_info(clock_info)?;
     let mut proposal_state: ProposalState = assert_initialized(proposal_state_account_info)?;
-    let proposal: Proposal = assert_initialized(proposal_account_info)?;
+    let proposal: ProposalOld = assert_initialized(proposal_account_info)?;
     let governance: ProgramGovernance = assert_initialized(governance_account_info)?;
 
     assert_account_equiv(voting_mint_account_info, &proposal.vote_mint)?;

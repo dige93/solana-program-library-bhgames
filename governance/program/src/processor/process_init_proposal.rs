@@ -6,7 +6,7 @@ use crate::{
     state::{
         enums::GovernanceAccountType,
         program_governance::ProgramGovernance,
-        proposal::Proposal,
+        proposal_old::ProposalOld,
         proposal_state::ProposalState,
         proposal_state::{DESC_SIZE, NAME_SIZE},
     },
@@ -55,7 +55,7 @@ pub fn process_init_proposal(
     let rent = &Rent::from_account_info(rent_info)?;
 
     let mut new_proposal_state: ProposalState = assert_uninitialized(proposal_state_account_info)?;
-    let mut new_proposal: Proposal = assert_uninitialized(proposal_account_info)?;
+    let mut new_proposal: ProposalOld = assert_uninitialized(proposal_account_info)?;
     let mut governance: ProgramGovernance = assert_initialized(governance_account_info)?;
 
     new_proposal.account_type = GovernanceAccountType::Proposal;
@@ -177,7 +177,7 @@ pub fn process_init_proposal(
         }
     }
 
-    Proposal::pack(new_proposal, &mut proposal_account_info.data.borrow_mut())?;
+    ProposalOld::pack(new_proposal, &mut proposal_account_info.data.borrow_mut())?;
     ProposalState::pack(
         new_proposal_state,
         &mut proposal_state_account_info.data.borrow_mut(),

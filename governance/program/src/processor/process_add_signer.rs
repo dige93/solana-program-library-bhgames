@@ -1,7 +1,7 @@
 //! Program state processor
 use crate::{
     error::GovernanceError,
-    state::proposal::Proposal,
+    state::proposal_old::ProposalOld,
     state::proposal_state::ProposalState,
     utils::{
         assert_account_equiv, assert_draft, assert_initialized, assert_is_permissioned,
@@ -31,7 +31,7 @@ pub fn process_add_signer(program_id: &Pubkey, accounts: &[AccountInfo]) -> Prog
     let token_program_account_info = next_account_info(account_info_iter)?;
 
     let mut proposal_state: ProposalState = assert_initialized(proposal_state_account_info)?;
-    let proposal: Proposal = assert_initialized(proposal_account_info)?;
+    let proposal: ProposalOld = assert_initialized(proposal_account_info)?;
     assert_account_equiv(proposal_state_account_info, &proposal.state)?;
     assert_account_equiv(admin_validation_account_info, &proposal.admin_validation)?;
     assert_token_program_is_correct(token_program_account_info)?;

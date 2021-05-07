@@ -6,7 +6,7 @@ use crate::{
         custom_single_signer_transaction::{CustomSingleSignerTransaction, MAX_ACCOUNTS_ALLOWED},
         enums::ProposalStateStatus,
         program_governance::GOVERNANCE_LEN,
-        proposal::Proposal,
+        proposal_old::ProposalOld,
         proposal_state::ProposalState,
     },
     utils::{assert_account_equiv, assert_executing, assert_initialized, execute, ExecuteParams},
@@ -34,7 +34,7 @@ pub fn process_execute(program_id: &Pubkey, accounts: &[AccountInfo]) -> Program
     let clock_info = next_account_info(account_info_iter)?;
 
     let mut proposal_state: ProposalState = assert_initialized(proposal_state_account_info)?;
-    let proposal: Proposal = assert_initialized(proposal_account_info)?;
+    let proposal: ProposalOld = assert_initialized(proposal_account_info)?;
     let governance: ProgramGovernance = assert_initialized(governance_account_info)?;
     let clock = &Clock::from_account_info(clock_info)?;
     // For now we assume all transactions are CustomSingleSignerTransactions even though
