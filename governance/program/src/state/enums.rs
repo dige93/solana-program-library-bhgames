@@ -8,7 +8,7 @@ pub enum GovernanceAccountType {
     ProgramGovernance,
 
     /// 2 - Proposal account for Governance account. A single Governance account can have multiple Proposal accounts
-    Proposal,
+    ProposalOld,
 
     /// 3 - Proposal voting state account. Every Proposal account has exactly one ProposalState account
     ProposalState,
@@ -18,6 +18,9 @@ pub enum GovernanceAccountType {
 
     /// 5 Custom Single Signer Transaction account which holds instructions to execute for Proposal
     CustomSingleSignerTransaction,
+
+    /// 6
+    Proposal,
 }
 
 impl Default for GovernanceAccountType {

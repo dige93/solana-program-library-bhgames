@@ -58,7 +58,7 @@ pub fn process_init_proposal(
     let mut new_proposal: ProposalOld = assert_uninitialized(proposal_account_info)?;
     let mut governance: ProgramGovernance = assert_initialized(governance_account_info)?;
 
-    new_proposal.account_type = GovernanceAccountType::Proposal;
+    new_proposal.account_type = GovernanceAccountType::ProposalOld;
     new_proposal.governance = *governance_account_info.key;
     new_proposal.state = *proposal_state_account_info.key;
     new_proposal.admin_mint = *admin_mint_account_info.key;

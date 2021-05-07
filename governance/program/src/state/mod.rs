@@ -10,6 +10,9 @@ pub mod program_governance;
 /// Proposal
 pub mod proposal_old;
 
+/// Proposal
+pub mod proposal;
+
 /// Proposal state
 pub mod proposal_state;
 

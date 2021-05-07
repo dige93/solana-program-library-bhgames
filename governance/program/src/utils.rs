@@ -10,7 +10,7 @@ use solana_program::{
     bpf_loader_upgradeable,
     entrypoint::ProgramResult,
     instruction::Instruction,
-    program::invoke_signed,
+    program::{invoke, invoke_signed},
     program_error::ProgramError,
     program_option::COption,
     program_pack::{IsInitialized, Pack},
@@ -510,6 +510,24 @@ pub fn create_account_raw<T: Pack>(
         owner,
     );
     invoke_signed(&ix, accounts, &[seeds])
+}
+
+/// create
+pub fn create_account_raw2<T: Pack>(
+    accounts: &[AccountInfo],
+    new_account: &Pubkey,
+    payer: &Pubkey,
+    owner: &Pubkey,
+) -> Result<(), ProgramError> {
+    let size = T::LEN;
+    let ix = create_account(
+        payer,
+        new_account,
+        Rent::default().minimum_balance(size as usize),
+        size as u64,
+        owner,
+    );
+    invoke(&ix, accounts)
 }
 
 ///TokenTransferParams

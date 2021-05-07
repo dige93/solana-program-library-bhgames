@@ -21,6 +21,7 @@ use spl_governance::{
     processor::process_instruction,
     state::{
         program_governance::{ProgramGovernance, GOVERNANCE_NAME_LENGTH},
+        proposal::Proposal,
         proposal_state::{DESC_SIZE, NAME_SIZE},
     },
     PROGRAM_AUTHORITY_SEED,
@@ -42,7 +43,14 @@ pub struct ProgramGovernanceSetup {
     pub name: [u8; GOVERNANCE_NAME_LENGTH],
 }
 
-pub struct ProposalSetup {}
+pub struct ProposalSetup {
+    pub address: Pubkey,
+    /// bla
+    pub description_link: [u8; DESC_SIZE],
+    /// UTF-8 encoded name of the proposal
+    // TODO: Change to String
+    pub name: [u8; NAME_SIZE],
+}
 
 pub struct GovernanceProgramTest {
     pub banks_client: BanksClient,
@@ -233,16 +241,39 @@ impl GovernanceProgramTest {
     }
 
     pub async fn with_proposal(&mut self) -> ProposalSetup {
-        let description_link = [1u8; DESC_SIZE];
-        let name = [1u8; NAME_SIZE];
+        let description_link = [2u8; DESC_SIZE];
+        let name = [5u8; NAME_SIZE];
 
-        let create_proposal_instruction =
-            create_proposal(&description_link, &name, &self.payer.pubkey()).unwrap();
+        let proposal_count = 0;
+        let proposal_key = Keypair::new();
 
-        self.process_transaction(&[create_proposal_instruction], None)
+        let create_proposal_instruction = create_proposal(
+            &description_link,
+            &name,
+            &proposal_key.pubkey(),
+            &self.payer.pubkey(),
+        )
+        .unwrap();
+
+        self.process_transaction(&[create_proposal_instruction], Some(&[&proposal_key]))
             .await;
 
-        ProposalSetup {}
+        ProposalSetup {
+            address: proposal_key.pubkey(),
+            description_link: description_link,
+            name: name,
+        }
+    }
+
+    pub async fn get_proposal_account(&mut self, proposal_address: &Pubkey) -> Proposal {
+        let proposal_account_raw = self
+            .banks_client
+            .get_account(*proposal_address)
+            .await
+            .unwrap()
+            .unwrap();
+
+        Proposal::unpack(&proposal_account_raw.data).unwrap()
     }
 }
 

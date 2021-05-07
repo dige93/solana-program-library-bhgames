@@ -5,6 +5,7 @@ use solana_program::{
     bpf_loader_upgradeable,
     epoch_schedule::Slot,
     instruction::{AccountMeta, Instruction},
+    msg,
     program_error::ProgramError,
     pubkey::Pubkey,
     system_program,
@@ -389,11 +390,13 @@ impl GovernanceInstruction {
             14 => Self::CreateEmptyGovernanceVoteRecord,
             15 => {
                 let (input_desc_link, input_name) = rest.split_at(DESC_SIZE);
+
                 let mut desc_link = [0u8; DESC_SIZE];
                 let mut name = [0u8; NAME_SIZE];
 
-                desc_link[..(DESC_SIZE - 1)].clone_from_slice(&input_desc_link[..(DESC_SIZE - 1)]);
-                name[..(NAME_SIZE - 1)].clone_from_slice(&input_name[..(NAME_SIZE - 1)]);
+                desc_link.clone_from_slice(&input_desc_link);
+                name.clone_from_slice(&input_name);
+
                 Self::CreateProposal {
                     description_link: desc_link,
                     name,
@@ -601,10 +604,13 @@ pub fn create_governance(
 pub fn create_proposal(
     description_link: &[u8; DESC_SIZE],
     name: &[u8; NAME_SIZE],
+
+    proposal_address: &Pubkey,
     payer: &Pubkey,
 ) -> Result<Instruction, ProgramError> {
     let accounts = vec![
-        AccountMeta::new_readonly(*payer, true),
+        AccountMeta::new(*proposal_address, true),
+        AccountMeta::new(*payer, true),
         AccountMeta::new_readonly(system_program::id(), false),
     ];
 

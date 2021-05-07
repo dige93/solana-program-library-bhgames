@@ -12,5 +12,17 @@ async fn test_created() {
     let mut governance_test = GovernanceProgramTest::start_new().await;
 
     // Act
-    governance_test.with_proposal().await;
+    let proposal_setup = governance_test.with_proposal().await;
+
+    // Assert
+    let proposal_account = governance_test
+        .get_proposal_account(&proposal_setup.address)
+        .await;
+
+    assert_eq!(proposal_setup.name, proposal_account.name);
+
+    assert_eq!(
+        proposal_setup.description_link,
+        proposal_account.description_link
+    );
 }

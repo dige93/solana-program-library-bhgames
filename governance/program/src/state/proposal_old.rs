@@ -87,7 +87,7 @@ impl Pack for ProposalOld {
 
         let account_type = match account_type {
             0 => GovernanceAccountType::Uninitialized,
-            2 => GovernanceAccountType::Proposal,
+            2 => GovernanceAccountType::ProposalOld,
             _ => return Err(ProgramError::InvalidAccountData),
         };
         Ok(Self {
@@ -129,7 +129,7 @@ impl Pack for ProposalOld {
 
         *account_type_value = match self.account_type {
             GovernanceAccountType::Uninitialized => 0_u8,
-            GovernanceAccountType::Proposal => 2_u8,
+            GovernanceAccountType::ProposalOld => 2_u8,
             _ => panic!("Account type was invalid"),
         }
         .to_le_bytes();
