@@ -10,9 +10,9 @@ use solana_program::{
 /// Transaction slots allowed
 pub const MAX_TRANSACTIONS: usize = 5;
 /// How many characters are allowed in the description
-pub const DESC_SIZE: usize = 3;
+pub const DESC_SIZE: usize = 200;
 /// How many characters are allowed in the name
-pub const NAME_SIZE: usize = 2;
+pub const NAME_SIZE: usize = 32;
 
 /// Proposal state
 #[derive(Clone)]
