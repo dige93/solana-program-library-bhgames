@@ -15,6 +15,7 @@ pub mod process_vote;
 pub mod process_withdraw_voting_tokens;
 
 use crate::instruction::GovernanceInstruction;
+use borsh::BorshDeserialize;
 use process_add_custom_single_signer_transaction::process_add_custom_single_signer_transaction;
 use process_add_signer::process_add_signer;
 use process_create_empty_governance_voting_record::process_create_empty_governance_voting_record;
@@ -30,7 +31,10 @@ use process_sign::process_sign;
 use process_update_transaction_slot::process_update_transaction_slot;
 use process_vote::process_vote;
 use process_withdraw_voting_tokens::process_withdraw_voting_tokens;
-use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult, msg, pubkey::Pubkey};
+use solana_program::{
+    account_info::AccountInfo, entrypoint::ProgramResult, msg, program_error::ProgramError,
+    pubkey::Pubkey,
+};
 
 /// Processes an instruction
 pub fn process_instruction(
@@ -38,14 +42,16 @@ pub fn process_instruction(
     accounts: &[AccountInfo],
     input: &[u8],
 ) -> ProgramResult {
-    let instruction = GovernanceInstruction::unpack(input)?;
+    let instruction = GovernanceInstruction::try_from_slice(input)
+        .map_err(|_| ProgramError::InvalidInstructionData)?;
+
     match instruction {
         GovernanceInstruction::InitProposal {
             name,
             description_link: desc_link,
         } => {
             msg!("Instruction: Init Proposal");
-            process_init_proposal(program_id, accounts, name, desc_link)
+            process_init_proposal(program_id, accounts, &name, &desc_link)
         }
         GovernanceInstruction::AddSignatory => {
             msg!("Instruction: Add Signer");
@@ -101,7 +107,7 @@ pub fn process_instruction(
                 vote_threshold,
                 minimum_slot_waiting_period,
                 time_limit,
-                name,
+                &name,
             )
         }
         GovernanceInstruction::Execute => {
@@ -131,7 +137,7 @@ pub fn process_instruction(
             name,
         } => {
             msg!("Instruction:CreateProposal");
-            process_create_proposal(program_id, accounts, &description_link, &name)
+            process_create_proposal(program_id, accounts, description_link, name)
         }
     }
 }

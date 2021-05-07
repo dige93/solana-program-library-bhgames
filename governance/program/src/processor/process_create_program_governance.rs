@@ -1,11 +1,11 @@
 //! Program state processor
-use crate::utils::assert_program_upgrade_authority;
 use crate::utils::create_account_raw;
 use crate::{
-    error::GovernanceError,
-    state::enums::GovernanceAccountType,
-    state::program_governance::{ProgramGovernance, GOVERNANCE_NAME_LENGTH},
-    PROGRAM_AUTHORITY_SEED,
+    error::GovernanceError, state::enums::GovernanceAccountType,
+    state::program_governance::ProgramGovernance, PROGRAM_AUTHORITY_SEED,
+};
+use crate::{
+    state::program_governance::GOVERNANCE_NAME_LENGTH, utils::assert_program_upgrade_authority,
 };
 use solana_program::{
     account_info::{next_account_info, AccountInfo},
@@ -23,7 +23,7 @@ pub fn process_create_program_governance(
 
     minimum_slot_waiting_period: u64,
     time_limit: u64,
-    name: [u8; GOVERNANCE_NAME_LENGTH],
+    name: &String,
 ) -> ProgramResult {
     let account_info_iter = &mut accounts.iter();
 
@@ -89,9 +89,14 @@ pub fn process_create_program_governance(
         &seeds[..],
     )?;
 
+    let mut name_data = [0u8; GOVERNANCE_NAME_LENGTH];
+    let name_bytes = name.as_bytes();
+
+    name_data[..name_bytes.len()].copy_from_slice(name_bytes);
+
     let governance = ProgramGovernance {
         account_type: GovernanceAccountType::ProgramGovernance,
-        name,
+        name: name_data,
         min_instruction_hold_up_time: minimum_slot_waiting_period,
         max_voting_time: time_limit,
         program: *governed_program_info.key,

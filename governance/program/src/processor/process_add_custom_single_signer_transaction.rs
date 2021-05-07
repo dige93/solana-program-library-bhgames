@@ -25,7 +25,7 @@ pub fn process_add_custom_single_signer_transaction(
     program_id: &Pubkey,
     accounts: &[AccountInfo],
     delay_slots: u64,
-    instruction: [u8; MAX_INSTRUCTION_DATA],
+    _instruction: Vec<u8>,
     position: u8,
     instruction_end_index: u16,
 ) -> ProgramResult {
@@ -78,7 +78,7 @@ pub fn process_add_custom_single_signer_transaction(
 
     proposal_txn.account_type = GovernanceAccountType::CustomSingleSignerTransaction;
     proposal_txn.delay_slots = delay_slots;
-    proposal_txn.instruction = instruction;
+    //proposal_txn.instruction = instruction;
     proposal_txn.instruction_end_index = instruction_end_index;
     proposal_state.transactions[position as usize] = *proposal_txn_account_info.key;
     proposal_state.number_of_transactions =

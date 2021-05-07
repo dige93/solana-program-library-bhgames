@@ -5,6 +5,7 @@ use crate::{
     PROGRAM_AUTHORITY_SEED,
 };
 use arrayref::{array_ref, array_refs, mut_array_refs};
+use borsh::BorshSerialize;
 use solana_program::{
     account_info::AccountInfo,
     bpf_loader_upgradeable,
@@ -512,19 +513,29 @@ pub fn create_account_raw<T: Pack>(
     invoke_signed(&ix, accounts, &[seeds])
 }
 
+/// Tries to serialize with max vector
+pub fn serialize_to_vec<T: BorshSerialize>(
+    source: T,
+    capacity: usize,
+) -> Result<Vec<u8>, ProgramError> {
+    let mut result = Vec::with_capacity(capacity);
+    source.serialize(&mut result)?;
+    Ok(result)
+}
+
 /// create
-pub fn create_account_raw2<T: Pack>(
+pub fn create_account_raw2<T>(
     accounts: &[AccountInfo],
     new_account: &Pubkey,
     payer: &Pubkey,
     owner: &Pubkey,
+    space: usize,
 ) -> Result<(), ProgramError> {
-    let size = T::LEN;
     let ix = create_account(
         payer,
         new_account,
-        Rent::default().minimum_balance(size as usize),
-        size as u64,
+        Rent::default().minimum_balance(space),
+        space as u64,
         owner,
     );
     invoke(&ix, accounts)

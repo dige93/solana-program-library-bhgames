@@ -3746,6 +3746,7 @@ dependencies = [
  "arrayref",
  "assert_matches",
  "bincode",
+ "borsh 0.8.2",
  "log",
  "num-derive",
  "num-traits",

@@ -4,11 +4,8 @@ use crate::utils::{assert_account_owner, assert_mint_authority, assert_mint_owne
 use crate::{
     error::GovernanceError,
     state::{
-        enums::GovernanceAccountType,
-        program_governance::ProgramGovernance,
-        proposal_old::ProposalOld,
-        proposal_state::ProposalState,
-        proposal_state::{DESC_SIZE, NAME_SIZE},
+        enums::GovernanceAccountType, program_governance::ProgramGovernance,
+        proposal_old::ProposalOld, proposal_state::ProposalState,
     },
     utils::{
         assert_account_mint, assert_initialized, assert_mint_decimals, assert_mint_initialized,
@@ -29,8 +26,8 @@ use solana_program::{
 pub fn process_init_proposal(
     program_id: &Pubkey,
     accounts: &[AccountInfo],
-    name: [u8; NAME_SIZE],
-    desc_link: [u8; DESC_SIZE],
+    _name: &String,
+    _desc_link: &String,
 ) -> ProgramResult {
     let account_info_iter = &mut accounts.iter();
 
@@ -75,8 +72,8 @@ pub fn process_init_proposal(
 
     new_proposal_state.account_type = GovernanceAccountType::ProposalState;
     new_proposal_state.proposal = *proposal_account_info.key;
-    new_proposal_state.desc_link = desc_link;
-    new_proposal_state.name = name;
+    //new_proposal_state.desc_link = desc_link;
+    //new_proposal_state.name = name;
     new_proposal_state.total_signing_tokens_minted = 1;
     new_proposal_state.number_of_executed_transactions = 0;
     new_proposal_state.number_of_transactions = 0;

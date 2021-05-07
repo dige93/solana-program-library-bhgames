@@ -1,5 +1,8 @@
 /// Defines all Governance accounts types
-#[derive(Clone, Debug, PartialEq)]
+use borsh::{BorshDeserialize, BorshSchema, BorshSerialize};
+
+/// GovernanceAccountType
+#[derive(Clone, Debug, PartialEq, BorshDeserialize, BorshSerialize, BorshSchema)]
 pub enum GovernanceAccountType {
     /// 0 - Default uninitialized account state
     Uninitialized,
@@ -58,7 +61,7 @@ impl Default for ProposalStateStatus {
 }
 
 /// Vote  with number of votes
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, BorshDeserialize, BorshSerialize, BorshSchema)]
 pub enum Vote {
     /// Yes vote
     Yes(u64),

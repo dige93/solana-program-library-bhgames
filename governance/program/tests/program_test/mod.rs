@@ -1,5 +1,6 @@
 use std::{env, fs::File, io::Read, path::PathBuf};
 
+use borsh::BorshDeserialize;
 use solana_program::{
     bpf_loader_upgradeable::{self, UpgradeableLoaderState},
     instruction::Instruction,
@@ -19,20 +20,18 @@ use spl_governance::{
     id,
     instruction::{create_governance, create_proposal},
     processor::process_instruction,
-    state::{
-        program_governance::{ProgramGovernance, GOVERNANCE_NAME_LENGTH},
-        proposal::Proposal,
-        proposal_state::{DESC_SIZE, NAME_SIZE},
-    },
+    state::{program_governance::ProgramGovernance, proposal::Proposal},
     PROGRAM_AUTHORITY_SEED,
 };
 
+#[derive(Debug)]
 pub struct GovernedProgramSetup {
     pub address: Pubkey,
     pub upgrade_authority: Keypair,
     pub data_address: Pubkey,
 }
 
+#[derive(Debug)]
 pub struct ProgramGovernanceSetup {
     pub address: Pubkey,
     pub governance_mint: Pubkey,
@@ -40,16 +39,15 @@ pub struct ProgramGovernanceSetup {
     pub vote_threshold: u8,
     pub min_instruction_hold_up_time: u64,
     pub max_voting_time: u64,
-    pub name: [u8; GOVERNANCE_NAME_LENGTH],
+    pub name: String,
 }
 
 pub struct ProposalSetup {
     pub address: Pubkey,
     /// bla
-    pub description_link: [u8; DESC_SIZE],
+    pub description_link: String,
     /// UTF-8 encoded name of the proposal
-    // TODO: Change to String
-    pub name: [u8; NAME_SIZE],
+    pub name: String,
 }
 
 pub struct GovernanceProgramTest {
@@ -192,7 +190,7 @@ impl GovernanceProgramTest {
         let vote_threshold: u8 = 60;
         let min_instruction_hold_up_time: u64 = 10;
         let max_voting_time: u64 = 100;
-        let name = [0u8; GOVERNANCE_NAME_LENGTH];
+        let name = "program_governance".to_string();
 
         let create_governance_instruction = create_governance(
             &governance_address,
@@ -205,7 +203,7 @@ impl GovernanceProgramTest {
             vote_threshold,
             min_instruction_hold_up_time,
             max_voting_time,
-            &name,
+            name.clone(),
         )
         .unwrap();
 
@@ -241,15 +239,15 @@ impl GovernanceProgramTest {
     }
 
     pub async fn with_proposal(&mut self) -> ProposalSetup {
-        let description_link = [2u8; DESC_SIZE];
-        let name = [5u8; NAME_SIZE];
+        let description_link = "proposal description".to_string();
+        let name = "proposal_name".to_string();
 
         let proposal_count = 0;
         let proposal_key = Keypair::new();
 
         let create_proposal_instruction = create_proposal(
-            &description_link,
-            &name,
+            description_link.clone(),
+            name.clone(),
             &proposal_key.pubkey(),
             &self.payer.pubkey(),
         )
@@ -266,7 +264,14 @@ impl GovernanceProgramTest {
     }
 
     pub async fn get_proposal_account(&mut self, proposal_address: &Pubkey) -> Proposal {
-        self.get_account::<Proposal>(proposal_address).await
+        let raw_account = self
+            .banks_client
+            .get_account(*proposal_address)
+            .await
+            .unwrap()
+            .unwrap();
+
+        Proposal::try_from_slice(&raw_account.data).unwrap()
     }
 
     async fn get_account<T: Pack + IsInitialized>(&mut self, address: &Pubkey) -> T {

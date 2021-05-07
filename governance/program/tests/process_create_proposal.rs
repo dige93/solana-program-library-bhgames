@@ -20,7 +20,6 @@ async fn test_created() {
         .await;
 
     assert_eq!(proposal_setup.name, proposal_account.name);
-
     assert_eq!(
         proposal_setup.description_link,
         proposal_account.description_link
