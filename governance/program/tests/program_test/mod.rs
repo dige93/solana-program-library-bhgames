@@ -3,7 +3,7 @@ use std::{env, fs::File, io::Read, path::PathBuf};
 use solana_program::{
     bpf_loader_upgradeable::{self, UpgradeableLoaderState},
     instruction::Instruction,
-    program_pack::Pack,
+    program_pack::{IsInitialized, Pack},
     pubkey::Pubkey,
     rent::Rent,
 };
@@ -266,14 +266,18 @@ impl GovernanceProgramTest {
     }
 
     pub async fn get_proposal_account(&mut self, proposal_address: &Pubkey) -> Proposal {
-        let proposal_account_raw = self
+        self.get_account::<Proposal>(proposal_address).await
+    }
+
+    async fn get_account<T: Pack + IsInitialized>(&mut self, address: &Pubkey) -> T {
+        let raw_account = self
             .banks_client
-            .get_account(*proposal_address)
+            .get_account(*address)
             .await
             .unwrap()
             .unwrap();
 
-        Proposal::unpack(&proposal_account_raw.data).unwrap()
+        T::unpack(&raw_account.data).unwrap()
     }
 }
 
