@@ -8,9 +8,7 @@ use solana_program::{
 
 use crate::{
     state::{enums::GovernanceAccountType, root_governance::RootGovernance},
-    tools::get_root_governance_address_with_bump_seed,
-    utils::{create_and_serialize_account, create_and_serialize_account_signed},
-    PROGRAM_AUTHORITY_SEED,
+    tools::{accounts::create_and_serialize_account_signed, get_root_governance_address_seeds},
 };
 
 /// process_create_root_governance
@@ -30,33 +28,24 @@ pub fn process_create_root_governance(
         .map(|ai| Some(*ai.key))
         .unwrap_or(None);
 
-    let (root_governance_address, bump_seed) =
-        get_root_governance_address_with_bump_seed(&name, Some(root_governance_info.key))?;
-
-    let name_seed = name.clone();
-    let mut seeds = vec![PROGRAM_AUTHORITY_SEED, &name_seed.as_bytes()];
-
     let root_governance = RootGovernance {
         account_type: GovernanceAccountType::RootGovernance,
         governance_mint: *governance_mint_info.key,
         council_mint: council_mint_key,
-        name,
+        name: name.clone(),
     };
-
-    let bump = &[bump_seed];
-    seeds.push(bump);
 
     create_and_serialize_account_signed::<RootGovernance>(
         payer_info.key,
         &root_governance_info,
         &root_governance,
+        get_root_governance_address_seeds(&name),
         program_id,
         &[
-            root_governance_info.clone(),
             payer_info.clone(),
+            root_governance_info.clone(),
             system_info.clone(),
         ],
-        &seeds[..],
     )?;
 
     Ok(())

@@ -318,7 +318,7 @@ pub fn create_root_governance(
     council_mint: Option<Pubkey>,
     name: String,
 ) -> Result<Instruction, ProgramError> {
-    let root_governance_address = get_root_governance_address(&name)?;
+    let root_governance_address = get_root_governance_address(&name);
 
     let mut accounts = vec![
         AccountMeta::new(root_governance_address, false),

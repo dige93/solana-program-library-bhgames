@@ -304,7 +304,7 @@ impl GovernanceProgramTest {
         let name = "Root Governance".to_string();
 
         //let proposal_count = 0;
-        let root_governance_key = get_root_governance_address(&name).unwrap();
+        let root_governance_key = get_root_governance_address(&name);
         let governance_mint = Pubkey::new_unique();
         let council_mint = Some(Pubkey::new_unique());
 
