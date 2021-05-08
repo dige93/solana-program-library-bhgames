@@ -1,3 +1,5 @@
+//! RootGovernance Account
+
 use super::enums::GovernanceAccountType;
 
 use borsh::{BorshDeserialize, BorshSchema, BorshSerialize};
@@ -6,18 +8,16 @@ use solana_program::program_pack::IsInitialized;
 
 /// Governance Proposal
 #[derive(Clone, Debug, PartialEq, BorshDeserialize, BorshSerialize, BorshSchema)]
-pub struct Proposal {
+pub struct RootGovernance {
     /// Governance account type
     pub account_type: GovernanceAccountType,
 
-    /// bla
-    pub description_link: String,
-    /// UTF-8 encoded name of the proposal
+    /// Governance name
     pub name: String,
 }
 
-impl IsInitialized for Proposal {
+impl IsInitialized for RootGovernance {
     fn is_initialized(&self) -> bool {
-        self.account_type == GovernanceAccountType::Proposal
+        self.account_type == GovernanceAccountType::RootGovernance
     }
 }

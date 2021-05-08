@@ -3,6 +3,7 @@ pub mod process_add_signer;
 pub mod process_create_empty_governance_voting_record;
 pub mod process_create_program_governance;
 pub mod process_create_proposal;
+pub mod process_create_root_governance;
 pub mod process_delete_proposal;
 pub mod process_deposit_source_tokens;
 pub mod process_execute;
@@ -21,6 +22,7 @@ use process_add_signer::process_add_signer;
 use process_create_empty_governance_voting_record::process_create_empty_governance_voting_record;
 use process_create_program_governance::process_create_program_governance;
 use process_create_proposal::process_create_proposal;
+use process_create_root_governance::process_create_root_governance;
 use process_delete_proposal::process_cancel_proposal;
 use process_deposit_source_tokens::process_deposit_source_tokens;
 use process_execute::process_execute;
@@ -136,6 +138,11 @@ pub fn process_instruction(
         } => {
             msg!("Instruction:CreateProposal");
             process_create_proposal(program_id, accounts, description_link, name)
+        }
+
+        GovernanceInstruction::CreateRootGovernance { name } => {
+            msg!("Instruction:CreateRootGovernance");
+            process_create_root_governance(program_id, accounts, name)
         }
     }
 }

@@ -298,6 +298,33 @@ pub enum GovernanceInstruction {
         #[allow(dead_code)]
         name: String,
     },
+
+    /// Creates Root Governance
+    CreateRootGovernance {
+        /// UTF-8 encoded Governance name
+        #[allow(dead_code)]
+        name: String,
+    },
+}
+/// create_root_governance
+pub fn create_root_governance(
+    root_governance_address: &Pubkey,
+    name: String,
+    payer: &Pubkey,
+) -> Result<Instruction, ProgramError> {
+    let accounts = vec![
+        AccountMeta::new(*root_governance_address, true),
+        AccountMeta::new_readonly(*payer, true),
+        AccountMeta::new_readonly(system_program::id(), false),
+    ];
+
+    let instruction = GovernanceInstruction::CreateRootGovernance { name };
+
+    Ok(Instruction {
+        program_id: id(),
+        accounts,
+        data: instruction.try_to_vec().unwrap(),
+    })
 }
 
 /// Creates CreateGovernance instruction

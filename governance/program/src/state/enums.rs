@@ -24,6 +24,9 @@ pub enum GovernanceAccountType {
 
     /// 6
     Proposal,
+
+    ///
+    RootGovernance,
 }
 
 impl Default for GovernanceAccountType {

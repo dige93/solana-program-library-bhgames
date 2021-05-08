@@ -18,9 +18,11 @@ use solana_sdk::{
 };
 use spl_governance::{
     id,
-    instruction::{create_governance, create_proposal},
+    instruction::{create_governance, create_proposal, create_root_governance},
     processor::process_instruction,
-    state::{program_governance::ProgramGovernance, proposal::Proposal},
+    state::{
+        program_governance::ProgramGovernance, proposal::Proposal, root_governance::RootGovernance,
+    },
     PROGRAM_AUTHORITY_SEED,
 };
 
@@ -45,6 +47,14 @@ pub struct ProposalSetup {
     pub address: Pubkey,
     /// bla
     pub description_link: String,
+    /// UTF-8 encoded name of the proposal
+    pub name: String,
+}
+
+#[derive(Debug)]
+pub struct RootGovernanceSetup {
+    pub address: Pubkey,
+
     /// UTF-8 encoded name of the proposal
     pub name: String,
 }
@@ -175,6 +185,7 @@ impl GovernanceProgramTest {
         }
     }
 
+    #[allow(dead_code)]
     pub async fn with_dummy_governed_program(&mut self) -> GovernedProgramSetup {
         GovernedProgramSetup {
             address: Pubkey::new_unique(),
@@ -245,6 +256,17 @@ impl GovernanceProgramTest {
         ProgramGovernance::unpack(&governance_account_raw.data).unwrap()
     }
 
+    pub async fn get_account<T: BorshDeserialize>(&mut self, address: &Pubkey) -> T {
+        let raw_account = self
+            .banks_client
+            .get_account(*address)
+            .await
+            .unwrap()
+            .unwrap();
+
+        T::try_from_slice(&raw_account.data).unwrap()
+    }
+
     #[allow(dead_code)]
     pub async fn with_proposal(&mut self, governance: &ProgramGovernanceSetup) -> ProposalSetup {
         let description_link = "proposal description".to_string();
@@ -273,19 +295,47 @@ impl GovernanceProgramTest {
     }
 
     #[allow(dead_code)]
-    pub async fn get_proposal_account(&mut self, proposal_address: &Pubkey) -> Proposal {
-        let raw_account = self
-            .banks_client
-            .get_account(*proposal_address)
-            .await
-            .unwrap()
-            .unwrap();
+    pub async fn with_root_governance(&mut self) -> RootGovernanceSetup {
+        let name = "Root Governance".to_string();
 
-        Proposal::try_from_slice(&raw_account.data).unwrap()
+        //let proposal_count = 0;
+        let root_governance_key = Keypair::new();
+
+        let create_proposal_instruction = create_root_governance(
+            &root_governance_key.pubkey(),
+            name.clone(),
+            &self.payer.pubkey(),
+        )
+        .unwrap();
+
+        self.process_transaction(
+            &[create_proposal_instruction],
+            Some(&[&root_governance_key]),
+        )
+        .await;
+
+        RootGovernanceSetup {
+            address: root_governance_key.pubkey(),
+            name: name,
+        }
     }
 
     #[allow(dead_code)]
-    async fn get_account<T: Pack + IsInitialized>(&mut self, address: &Pubkey) -> T {
+    pub async fn get_root_governnace_account(
+        &mut self,
+        root_governance_address: &Pubkey,
+    ) -> RootGovernance {
+        self.get_account::<RootGovernance>(root_governance_address)
+            .await
+    }
+
+    #[allow(dead_code)]
+    pub async fn get_proposal_account(&mut self, proposal_address: &Pubkey) -> Proposal {
+        self.get_account::<Proposal>(proposal_address).await
+    }
+
+    #[allow(dead_code)]
+    async fn get_packed_account<T: Pack + IsInitialized>(&mut self, address: &Pubkey) -> T {
         let raw_account = self
             .banks_client
             .get_account(*address)
