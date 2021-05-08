@@ -4,7 +4,7 @@ use super::enums::GovernanceAccountType;
 
 use borsh::{BorshDeserialize, BorshSchema, BorshSerialize};
 
-use solana_program::program_pack::IsInitialized;
+use solana_program::{msg, program_pack::IsInitialized};
 
 /// Governance Proposal
 #[derive(Clone, Debug, PartialEq, BorshDeserialize, BorshSerialize, BorshSchema)]

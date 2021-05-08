@@ -325,13 +325,14 @@ pub fn deposit_governing_tokens(
     governing_token_source_account: &Pubkey,
     voter_record_account: &Pubkey,
     payer: &Pubkey,
+    initial_deposit: bool,
 ) -> Result<Instruction, ProgramError> {
     let accounts = vec![
         AccountMeta::new_readonly(*root_governance_account, false),
         AccountMeta::new(*governing_token_mint, false),
         AccountMeta::new(*governing_token_holding_account, false),
         AccountMeta::new(*governing_token_source_account, false),
-        AccountMeta::new(*voter_record_account, true),
+        AccountMeta::new(*voter_record_account, initial_deposit),
         AccountMeta::new_readonly(*payer, true),
         AccountMeta::new_readonly(system_program::id(), false),
         AccountMeta::new_readonly(spl_token::id(), false),

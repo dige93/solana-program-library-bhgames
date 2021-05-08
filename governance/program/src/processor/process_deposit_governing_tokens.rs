@@ -1,8 +1,11 @@
 //! Program state processor
 
+use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::{
     account_info::{next_account_info, AccountInfo},
     entrypoint::ProgramResult,
+    msg,
+    program_pack::IsInitialized,
     pubkey::Pubkey,
 };
 
@@ -40,13 +43,13 @@ pub fn process_deposit_governing_tokens(
 
     let amount = amount.unwrap();
 
-    let mut governance_token_amount = 0;
-    let mut council_token_amount = Option::<u64>::None;
+    let mut governance_token_amount_delta = 0;
+    let mut council_token_amount_delta = Option::<u64>::None;
 
     if root_governance_data.governance_mint == *governing_token_mint_info.key {
-        governance_token_amount = amount;
+        governance_token_amount_delta = amount;
     } else if root_governance_data.council_mint == Some(*governing_token_mint_info.key) {
-        council_token_amount = Some(amount);
+        council_token_amount_delta = Some(amount);
     } else {
         return Err(GovernanceError::InvalidGoverningTokenMint.into());
     }
@@ -59,20 +62,40 @@ pub fn process_deposit_governing_tokens(
         spl_token_info,
     )?;
 
-    let voter_record_data = VoterRecord {
-        account_type: GovernanceAccountType::VoteRecord,
-        governance_token_amount: governance_token_amount,
-        council_token_amount: council_token_amount,
-        active_votes_count: 0,
-    };
+    if voter_record_info.data_len() == 0 {
+        let voter_record_data = VoterRecord {
+            account_type: GovernanceAccountType::VoterRecord,
+            governance_token_amount: governance_token_amount_delta,
+            council_token_amount: council_token_amount_delta,
+            active_votes_count: 0,
+        };
 
-    create_and_serialize_account(
-        payer_info,
-        voter_record_info,
-        &voter_record_data,
-        program_id,
-        system_info,
-    )?;
+        create_and_serialize_account(
+            payer_info,
+            voter_record_info,
+            &voter_record_data,
+            program_id,
+            system_info,
+        )?;
+    } else {
+        let mut voter_record_data =
+            deserialize_account::<VoterRecord>(voter_record_info, program_id)?;
+
+        voter_record_data.governance_token_amount = voter_record_data
+            .governance_token_amount
+            .checked_add(governance_token_amount_delta)
+            .unwrap();
+
+        msg!("AFTER {:?}", voter_record_data);
+
+        // if (council_token_amount_delta > 0) {
+        //     voter_record_data
+        //         .council_token_amount
+        //         .checked_add(council_token_amount_delta)
+        //         .unwrap();
+        // }
+        voter_record_data.serialize(&mut *voter_record_info.data.borrow_mut())?;
+    }
 
     Ok(())
 }

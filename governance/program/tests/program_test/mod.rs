@@ -380,9 +380,9 @@ impl GovernanceProgramTest {
     }
 
     #[allow(dead_code)]
-    pub async fn with_governance_token_deposit(
+    pub async fn with_initial_governance_token_deposit(
         &mut self,
-        root_governance_setup: RootGovernanceSetup,
+        root_governance_setup: &RootGovernanceSetup,
     ) -> VoterRecordSetup {
         let amount: u64 = 100;
 
@@ -393,7 +393,7 @@ impl GovernanceProgramTest {
             &governance_token_source,
             &root_governance_setup.governance_mint,
             &root_governance_setup.governance_mint_authority,
-            amount,
+            amount + 100,
         )
         .await;
 
@@ -405,6 +405,7 @@ impl GovernanceProgramTest {
             &governance_token_source.pubkey(),
             &voter_record_keypair.pubkey(),
             &self.payer.pubkey(),
+            true,
         )
         .unwrap();
 
@@ -424,7 +425,30 @@ impl GovernanceProgramTest {
     }
 
     #[allow(dead_code)]
-    pub async fn with_council_token_deposit(
+    pub async fn with_governance_token_deposit(
+        &mut self,
+        root_governance_setup: &RootGovernanceSetup,
+        voter_record_setup: &VoterRecordSetup,
+        amount: u64,
+    ) {
+        let deposit_governing_tokens_instruction = deposit_governing_tokens(
+            Some(amount),
+            &root_governance_setup.address,
+            &root_governance_setup.governance_mint,
+            &root_governance_setup.governance_token_holding_account,
+            &voter_record_setup.governance_token_source,
+            &voter_record_setup.address,
+            &self.payer.pubkey(),
+            false,
+        )
+        .unwrap();
+
+        self.process_transaction(&[deposit_governing_tokens_instruction], None)
+            .await;
+    }
+
+    #[allow(dead_code)]
+    pub async fn with_initial_council_token_deposit(
         &mut self,
         root_governance_setup: RootGovernanceSetup,
     ) -> VoterRecordSetup {
@@ -449,6 +473,7 @@ impl GovernanceProgramTest {
             &council_token_source_account.pubkey(),
             &voter_record_keypair.pubkey(),
             &self.payer.pubkey(),
+            true,
         )
         .unwrap();
 
