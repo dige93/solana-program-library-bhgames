@@ -7,6 +7,7 @@ use solana_program::{
     program_pack::{IsInitialized, Pack},
     pubkey::Pubkey,
     rent::Rent,
+    system_instruction,
 };
 use solana_program_test::ProgramTest;
 use solana_program_test::*;
@@ -305,13 +306,21 @@ impl GovernanceProgramTest {
 
         //let proposal_count = 0;
         let root_governance_key = get_root_governance_address(&name);
-        let governance_mint = Pubkey::new_unique();
-        let council_mint = Some(Pubkey::new_unique());
+
+        let governance_mint_keypair = Keypair::new();
+        let governance_mint_authority = Pubkey::new_unique();
+        self.create_mint(&governance_mint_keypair, &governance_mint_authority)
+            .await;
+
+        let council_mint_keypair = Keypair::new();
+        let council_mint_authority = Pubkey::new_unique();
+        self.create_mint(&council_mint_keypair, &council_mint_authority)
+            .await;
 
         let create_proposal_instruction = create_root_governance(
-            &governance_mint,
+            &governance_mint_keypair.pubkey(),
             &self.payer.pubkey(),
-            council_mint,
+            Some(council_mint_keypair.pubkey()),
             name.clone(),
         )
         .unwrap();
@@ -321,9 +330,9 @@ impl GovernanceProgramTest {
 
         RootGovernanceSetup {
             address: root_governance_key,
-            name: name,
-            governance_mint: governance_mint,
-            council_mint: council_mint,
+            name,
+            governance_mint: governance_mint_keypair.pubkey(),
+            council_mint: Some(council_mint_keypair.pubkey()),
         }
     }
 
@@ -351,6 +360,31 @@ impl GovernanceProgramTest {
             .unwrap();
 
         T::unpack(&raw_account.data).unwrap()
+    }
+
+    pub async fn create_mint(&mut self, mint_keypair: &Keypair, mint_authority: &Pubkey) {
+        let mint_rent = self.rent.minimum_balance(spl_token::state::Mint::LEN);
+
+        let instructions = [
+            system_instruction::create_account(
+                &self.payer.pubkey(),
+                &mint_keypair.pubkey(),
+                mint_rent,
+                spl_token::state::Mint::LEN as u64,
+                &spl_token::id(),
+            ),
+            spl_token::instruction::initialize_mint(
+                &spl_token::id(),
+                &mint_keypair.pubkey(),
+                &mint_authority,
+                None,
+                0,
+            )
+            .unwrap(),
+        ];
+
+        self.process_transaction(&instructions, Some(&[&mint_keypair]))
+            .await;
     }
 }
 
