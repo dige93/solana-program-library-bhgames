@@ -319,6 +319,23 @@ pub fn assert_initialized<T: Pack + IsInitialized>(
     }
 }
 
+/// Deserializes account and checks it's initialized and owned by the specified program
+pub fn deserialize_account<T: Pack + IsInitialized>(
+    account_info: &AccountInfo,
+    owner_program_id: &Pubkey,
+) -> Result<T, ProgramError> {
+    if account_info.owner != owner_program_id {
+        return Err(GovernanceError::InvalidAccountOwnerError.into());
+    }
+
+    let account: T = T::unpack_unchecked(&account_info.data.borrow())?;
+    if !account.is_initialized() {
+        Err(GovernanceError::Uninitialized.into())
+    } else {
+        Ok(account)
+    }
+}
+
 /// Checks if the given program upgrade authority matches the given authority and the authority is a signer of the transaction
 pub fn assert_program_upgrade_authority(
     governance_key: &Pubkey,
@@ -533,7 +550,7 @@ pub fn create_account_raw<T>(
 }
 
 /// Creates account and serializes its data
-pub fn create_serialized_account<T: BorshSerialize>(
+pub fn create_and_serialize_account<T: BorshSerialize>(
     payer: &Pubkey,
     account_info: &AccountInfo,
     account: &T,

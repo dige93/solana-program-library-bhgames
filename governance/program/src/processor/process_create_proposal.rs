@@ -10,7 +10,7 @@ use crate::{
     state::{
         enums::GovernanceAccountType, program_governance::ProgramGovernance, proposal::Proposal,
     },
-    utils::{assert_initialized, create_serialized_account},
+    utils::{create_and_serialize_account, deserialize_account},
 };
 
 /// process_create_proposal
@@ -27,7 +27,7 @@ pub fn process_create_proposal(
     let payer_info = next_account_info(account_info_iter)?; // 3
     let system_info = next_account_info(account_info_iter)?; // 4
 
-    let mut _governance: ProgramGovernance = assert_initialized(governance_info)?;
+    let mut _governance: ProgramGovernance = deserialize_account(governance_info, program_id)?;
 
     let proposal = Proposal {
         account_type: GovernanceAccountType::Proposal,
@@ -35,7 +35,7 @@ pub fn process_create_proposal(
         description_link,
     };
 
-    create_serialized_account::<Proposal>(
+    create_and_serialize_account::<Proposal>(
         payer_info.key,
         &proposal_info,
         &proposal,
