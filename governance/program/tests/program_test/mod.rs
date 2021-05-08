@@ -71,6 +71,8 @@ pub struct RootGovernanceSetup {
 
     pub council_mint: Option<Pubkey>,
 
+    pub council_mint_authority: Option<Keypair>,
+
     pub council_token_holding_account: Option<Pubkey>,
 }
 
@@ -335,8 +337,8 @@ impl GovernanceProgramTest {
         let governance_token_holding_keypair = Keypair::new();
 
         let council_mint_keypair = Keypair::new();
-        let council_mint_authority = Pubkey::new_unique();
-        self.create_mint(&council_mint_keypair, &council_mint_authority)
+        let council_mint_authority = Keypair::new();
+        self.create_mint(&council_mint_keypair, &council_mint_authority.pubkey())
             .await;
 
         let council_token_holding_keypair = Keypair::new();
@@ -368,6 +370,7 @@ impl GovernanceProgramTest {
             governance_token_holding_account: governance_token_holding_keypair.pubkey(),
             council_mint: Some(council_mint_keypair.pubkey()),
             council_token_holding_account: Some(council_token_holding_keypair.pubkey()),
+            council_mint_authority: Some(council_mint_authority),
         }
     }
 
@@ -376,7 +379,7 @@ impl GovernanceProgramTest {
         &mut self,
         root_governance_setup: RootGovernanceSetup,
     ) -> VoterRecordSetup {
-        let amount: u64 = 10;
+        let amount: u64 = 100;
 
         let voter_record_keypair = Keypair::new();
         let governance_source_token_account = Keypair::new();
@@ -410,6 +413,48 @@ impl GovernanceProgramTest {
             address: voter_record_keypair.pubkey(),
             governance_token_amount: amount,
             council_token_amount: None,
+        }
+    }
+
+    #[allow(dead_code)]
+    pub async fn with_council_token_deposit(
+        &mut self,
+        root_governance_setup: RootGovernanceSetup,
+    ) -> VoterRecordSetup {
+        let amount: u64 = 10;
+
+        let voter_record_keypair = Keypair::new();
+        let council_source_token_account = Keypair::new();
+
+        self.create_token_account(
+            &council_source_token_account,
+            &root_governance_setup.council_mint.unwrap(),
+            &root_governance_setup.council_mint_authority.unwrap(),
+            10,
+        )
+        .await;
+
+        let deposit_governing_tokens_instruction = deposit_governing_tokens(
+            Some(amount),
+            &root_governance_setup.address,
+            &root_governance_setup.council_mint.unwrap(),
+            &root_governance_setup.council_token_holding_account.unwrap(),
+            &council_source_token_account.pubkey(),
+            &voter_record_keypair.pubkey(),
+            &self.payer.pubkey(),
+        )
+        .unwrap();
+
+        self.process_transaction(
+            &[deposit_governing_tokens_instruction],
+            Some(&[&voter_record_keypair]),
+        )
+        .await;
+
+        VoterRecordSetup {
+            address: voter_record_keypair.pubkey(),
+            governance_token_amount: 0,
+            council_token_amount: Some(amount),
         }
     }
 
