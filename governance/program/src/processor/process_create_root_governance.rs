@@ -30,10 +30,6 @@ pub fn process_create_root_governance(
     let spl_token_info = next_account_info(account_info_iter)?; // 6
     let rent_sysvar_info = next_account_info(account_info_iter)?; // 7
 
-    let council_mint_key = next_account_info(account_info_iter) // 8
-        .map(|ai| Some(*ai.key))
-        .unwrap_or(None);
-
     create_token_account(
         payer_info,
         governance_token_holding_info,
@@ -44,10 +40,23 @@ pub fn process_create_root_governance(
         rent_sysvar_info,
     )?;
 
+    if let Ok(council_mint_info) = next_account_info(account_info_iter) {
+        let council_token_holding_info = next_account_info(account_info_iter)?;
+
+        create_token_account(
+            payer_info,
+            council_token_holding_info,
+            council_mint_info,
+            root_governance_info,
+            system_info,
+            spl_token_info,
+            rent_sysvar_info,
+        )?;
+    }
+
     let root_governance_data = RootGovernance {
         account_type: GovernanceAccountType::RootGovernance,
         governance_mint: *governance_token_mint_info.key,
-        council_mint: council_mint_key,
         name: name.clone(),
     };
 

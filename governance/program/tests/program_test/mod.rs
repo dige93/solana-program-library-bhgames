@@ -322,18 +322,24 @@ impl GovernanceProgramTest {
         self.create_mint(&council_mint_keypair, &council_mint_authority)
             .await;
 
+        let council_token_holding_keypair = Keypair::new();
+
         let create_proposal_instruction = create_root_governance(
+            name.clone(),
             &governance_token_mint_keypair.pubkey(),
             &governance_token_holding_keypair.pubkey(),
             &self.payer.pubkey(),
             Some(council_mint_keypair.pubkey()),
-            name.clone(),
+            Some(council_token_holding_keypair.pubkey()),
         )
         .unwrap();
 
         self.process_transaction(
             &[create_proposal_instruction],
-            Some(&[&governance_token_holding_keypair]),
+            Some(&[
+                &governance_token_holding_keypair,
+                &council_token_holding_keypair,
+            ]),
         )
         .await;
 

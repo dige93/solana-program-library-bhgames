@@ -313,11 +313,12 @@ pub enum GovernanceInstruction {
 }
 /// create_root_governance
 pub fn create_root_governance(
+    name: String,
     governance_token_mint: &Pubkey,
     governance_token_holding_account: &Pubkey,
     payer: &Pubkey,
-    council_mint: Option<Pubkey>,
-    name: String,
+    council_token_mint: Option<Pubkey>,
+    council_token_holding_account: Option<Pubkey>,
 ) -> Result<Instruction, ProgramError> {
     let root_governance_address = get_root_governance_address(&name);
 
@@ -331,8 +332,12 @@ pub fn create_root_governance(
         AccountMeta::new_readonly(sysvar::rent::id(), false),
     ];
 
-    if let Some(council_mint) = council_mint {
+    if let Some(council_mint) = council_token_mint {
         accounts.push(AccountMeta::new_readonly(council_mint, false));
+        accounts.push(AccountMeta::new(
+            council_token_holding_account.unwrap(),
+            true,
+        ));
     }
 
     let instruction = GovernanceInstruction::CreateRootGovernance { name };
