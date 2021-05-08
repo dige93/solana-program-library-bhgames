@@ -23,6 +23,7 @@ use spl_governance::{
     state::{
         program_governance::ProgramGovernance, proposal::Proposal, root_governance::RootGovernance,
     },
+    tools::get_root_governance_address,
     PROGRAM_AUTHORITY_SEED,
 };
 
@@ -303,12 +304,11 @@ impl GovernanceProgramTest {
         let name = "Root Governance".to_string();
 
         //let proposal_count = 0;
-        let root_governance_key = Keypair::new();
+        let root_governance_key = get_root_governance_address(&name).unwrap();
         let governance_mint = Pubkey::new_unique();
         let council_mint = Some(Pubkey::new_unique());
 
         let create_proposal_instruction = create_root_governance(
-            &root_governance_key.pubkey(),
             &governance_mint,
             &self.payer.pubkey(),
             council_mint,
@@ -316,14 +316,11 @@ impl GovernanceProgramTest {
         )
         .unwrap();
 
-        self.process_transaction(
-            &[create_proposal_instruction],
-            Some(&[&root_governance_key]),
-        )
-        .await;
+        self.process_transaction(&[create_proposal_instruction], None)
+            .await;
 
         RootGovernanceSetup {
-            address: root_governance_key.pubkey(),
+            address: root_governance_key,
             name: name,
             governance_mint: governance_mint,
             council_mint: council_mint,

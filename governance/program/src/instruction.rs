@@ -1,4 +1,4 @@
-use crate::state::enums::Vote;
+use crate::{state::enums::Vote, tools::get_root_governance_address};
 use borsh::{BorshDeserialize, BorshSchema, BorshSerialize};
 
 use solana_program::{
@@ -313,14 +313,15 @@ pub enum GovernanceInstruction {
 }
 /// create_root_governance
 pub fn create_root_governance(
-    root_governance_address: &Pubkey,
     governance_mint: &Pubkey,
     payer: &Pubkey,
     council_mint: Option<Pubkey>,
     name: String,
 ) -> Result<Instruction, ProgramError> {
+    let root_governance_address = get_root_governance_address(&name)?;
+
     let mut accounts = vec![
-        AccountMeta::new(*root_governance_address, true),
+        AccountMeta::new(root_governance_address, false),
         AccountMeta::new_readonly(*governance_mint, false),
         AccountMeta::new_readonly(*payer, true),
         AccountMeta::new_readonly(system_program::id(), false),

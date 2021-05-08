@@ -531,6 +531,34 @@ pub fn create_account_raw_signed<T: Pack>(
     invoke_signed(&ix, accounts, &[seeds])
 }
 
+/// Creates account and serializes its data
+pub fn create_and_serialize_account_signed<T: BorshSerialize>(
+    payer: &Pubkey,
+    account_info: &AccountInfo,
+    account: &T,
+    owner: &Pubkey,
+    accounts: &[AccountInfo],
+    seeds: &[&[u8]],
+) -> Result<(), ProgramError> {
+    let serialized_data = account.try_to_vec()?;
+
+    let ix = create_account(
+        payer,
+        account_info.key,
+        Rent::default().minimum_balance(serialized_data.len()),
+        serialized_data.len() as u64,
+        owner,
+    );
+    invoke_signed(&ix, accounts, &[seeds])?;
+
+    account_info
+        .data
+        .borrow_mut()
+        .copy_from_slice(&serialized_data);
+
+    Ok(())
+}
+
 /// Creates raw account
 pub fn create_account_raw<T>(
     accounts: &[AccountInfo],

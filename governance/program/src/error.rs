@@ -27,6 +27,10 @@ pub enum GovernanceError {
     #[error("Invalid PDA given for a Governance program account")]
     InvalidGovernanceAuthority,
 
+    /// Invalid program derived address
+    #[error("Invalid program derived address")]
+    InvalidProgramDerivedAddress,
+
     /// Proposal Transaction not found on the Proposal
     #[error("Proposal Transaction not found on the Proposal")]
     ProposalTransactionNotFoundError,
