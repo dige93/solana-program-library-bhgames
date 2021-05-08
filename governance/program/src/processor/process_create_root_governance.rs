@@ -20,11 +20,18 @@ pub fn process_create_root_governance(
     let account_info_iter = &mut accounts.iter();
 
     let root_governance_info = next_account_info(account_info_iter)?; // 1
+    let governance_mint_info = next_account_info(account_info_iter)?; // 2
     let payer_info = next_account_info(account_info_iter)?; // 3
     let system_info = next_account_info(account_info_iter)?; // 4
 
+    let council_mint_key = next_account_info(account_info_iter) // 5
+        .map(|ai| Some(*ai.key))
+        .unwrap_or(None);
+
     let root_governance = RootGovernance {
         account_type: GovernanceAccountType::RootGovernance,
+        governance_mint: *governance_mint_info.key,
+        council_mint: council_mint_key,
         name,
     };
 

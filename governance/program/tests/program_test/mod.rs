@@ -57,6 +57,10 @@ pub struct RootGovernanceSetup {
 
     /// UTF-8 encoded name of the proposal
     pub name: String,
+
+    pub governance_mint: Pubkey,
+
+    pub council_mint: Option<Pubkey>,
 }
 
 pub struct GovernanceProgramTest {
@@ -300,11 +304,15 @@ impl GovernanceProgramTest {
 
         //let proposal_count = 0;
         let root_governance_key = Keypair::new();
+        let governance_mint = Pubkey::new_unique();
+        let council_mint = Some(Pubkey::new_unique());
 
         let create_proposal_instruction = create_root_governance(
             &root_governance_key.pubkey(),
-            name.clone(),
+            &governance_mint,
             &self.payer.pubkey(),
+            council_mint,
+            name.clone(),
         )
         .unwrap();
 
@@ -317,6 +325,8 @@ impl GovernanceProgramTest {
         RootGovernanceSetup {
             address: root_governance_key.pubkey(),
             name: name,
+            governance_mint: governance_mint,
+            council_mint: council_mint,
         }
     }
 

@@ -300,6 +300,11 @@ pub enum GovernanceInstruction {
     },
 
     /// Creates Root Governance
+    /// 1. Governance account
+    /// 2. Governance mint
+    /// 3. payer
+    /// 4. system
+    /// 5. Council mint - optional
     CreateRootGovernance {
         /// UTF-8 encoded Governance name
         #[allow(dead_code)]
@@ -309,14 +314,21 @@ pub enum GovernanceInstruction {
 /// create_root_governance
 pub fn create_root_governance(
     root_governance_address: &Pubkey,
-    name: String,
+    governance_mint: &Pubkey,
     payer: &Pubkey,
+    council_mint: Option<Pubkey>,
+    name: String,
 ) -> Result<Instruction, ProgramError> {
-    let accounts = vec![
+    let mut accounts = vec![
         AccountMeta::new(*root_governance_address, true),
+        AccountMeta::new_readonly(*governance_mint, false),
         AccountMeta::new_readonly(*payer, true),
         AccountMeta::new_readonly(system_program::id(), false),
     ];
+
+    if let Some(council_mint) = council_mint {
+        accounts.push(AccountMeta::new_readonly(council_mint, false));
+    }
 
     let instruction = GovernanceInstruction::CreateRootGovernance { name };
 
