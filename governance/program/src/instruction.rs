@@ -347,10 +347,12 @@ pub fn create_proposal(
     name: String,
 
     proposal_address: &Pubkey,
+    governance_address: &Pubkey,
     payer: &Pubkey,
 ) -> Result<Instruction, ProgramError> {
     let accounts = vec![
         AccountMeta::new(*proposal_address, true),
+        AccountMeta::new(*governance_address, false),
         AccountMeta::new(*payer, true),
         AccountMeta::new_readonly(system_program::id(), false),
     ];

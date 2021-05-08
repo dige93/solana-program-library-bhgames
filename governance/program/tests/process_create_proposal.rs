@@ -11,8 +11,13 @@ async fn test_created() {
     // Arrange
     let mut governance_test = GovernanceProgramTest::start_new().await;
 
+    let governed_program_setup = governance_test.with_dummy_governed_program().await;
+    let governance_setup = governance_test
+        .with_program_governance(&governed_program_setup)
+        .await;
+
     // Act
-    let proposal_setup = governance_test.with_proposal().await;
+    let proposal_setup = governance_test.with_proposal(&governance_setup).await;
 
     // Assert
     let proposal_account = governance_test

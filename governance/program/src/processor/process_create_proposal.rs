@@ -7,8 +7,10 @@ use solana_program::{
 };
 
 use crate::{
-    state::{enums::GovernanceAccountType, proposal::Proposal},
-    utils::create_serialized_account,
+    state::{
+        enums::GovernanceAccountType, program_governance::ProgramGovernance, proposal::Proposal,
+    },
+    utils::{assert_initialized, create_serialized_account},
 };
 
 /// process_create_proposal
@@ -21,8 +23,11 @@ pub fn process_create_proposal(
     let account_info_iter = &mut accounts.iter();
 
     let proposal_info = next_account_info(account_info_iter)?; // 1
-    let payer_info = next_account_info(account_info_iter)?; // 2
-    let system_info = next_account_info(account_info_iter)?; // 3
+    let governance_info = next_account_info(account_info_iter)?; // 2
+    let payer_info = next_account_info(account_info_iter)?; // 3
+    let system_info = next_account_info(account_info_iter)?; // 4
+
+    let mut _governance: ProgramGovernance = assert_initialized(governance_info)?;
 
     let proposal = Proposal {
         account_type: GovernanceAccountType::Proposal,

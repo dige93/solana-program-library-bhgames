@@ -1,5 +1,5 @@
 //! Program state processor
-use crate::utils::assert_program_upgrade_authority;
+//use crate::utils::assert_program_upgrade_authority;
 use crate::utils::create_account_raw_signed;
 use crate::{
     error::GovernanceError, state::enums::GovernanceAccountType,
@@ -26,8 +26,8 @@ pub fn process_create_program_governance(
 
     let governance_info = next_account_info(account_info_iter)?; // 1
     let governed_program_info = next_account_info(account_info_iter)?; //2
-    let governed_program_data_info = next_account_info(account_info_iter)?; // 3
-    let governed_program_upgrade_authority_info = next_account_info(account_info_iter)?; // 4
+    let _governed_program_data_info = next_account_info(account_info_iter)?; // 3
+    let _governed_program_upgrade_authority_info = next_account_info(account_info_iter)?; // 4
     let governance_mint_info = next_account_info(account_info_iter)?; //5
 
     let payer_info = next_account_info(account_info_iter)?; // 6
@@ -48,12 +48,13 @@ pub fn process_create_program_governance(
     // Even though it doesn't transfer authority to the governance at the creation time it prevents from creating governance for programs owned by somebody else
     // After governance is created upgrade authority can be transferred to governance using CLI call.
 
-    assert_program_upgrade_authority(
-        &governance_key,
-        governed_program_info.key,
-        governed_program_data_info,
-        governed_program_upgrade_authority_info,
-    )?;
+    // Temp. disabled to use dummy program for faster testing
+    // assert_program_upgrade_authority(
+    //     &governance_key,
+    //     governed_program_info.key,
+    //     governed_program_data_info,
+    //     governed_program_upgrade_authority_info,
+    // )?;
 
     // TODO: Uncomment once PR to allow set_upgrade_authority via CPI calls is released  https://github.com/solana-labs/solana/pull/16676
     // let set_upgrade_authority_ix = bpf_loader_upgradeable::set_upgrade_authority(

@@ -175,6 +175,14 @@ impl GovernanceProgramTest {
         }
     }
 
+    pub async fn with_dummy_governed_program(&mut self) -> GovernedProgramSetup {
+        GovernedProgramSetup {
+            address: Pubkey::new_unique(),
+            upgrade_authority: Keypair::new(),
+            data_address: Pubkey::new_unique(),
+        }
+    }
+
     #[allow(dead_code)]
     pub async fn with_program_governance(
         &mut self,
@@ -238,7 +246,7 @@ impl GovernanceProgramTest {
     }
 
     #[allow(dead_code)]
-    pub async fn with_proposal(&mut self) -> ProposalSetup {
+    pub async fn with_proposal(&mut self, governance: &ProgramGovernanceSetup) -> ProposalSetup {
         let description_link = "proposal description".to_string();
         let name = "proposal_name".to_string();
 
@@ -249,6 +257,7 @@ impl GovernanceProgramTest {
             description_link.clone(),
             name.clone(),
             &proposal_key.pubkey(),
+            &governance.address,
             &self.payer.pubkey(),
         )
         .unwrap();
