@@ -38,14 +38,14 @@ pub fn create_and_serialize_account_signed<T: BorshSerialize>(
         account_owner,
     );
 
-    let mut seeds = account_address_seeds.to_vec();
+    let mut signer_seeds = account_address_seeds.to_vec();
     let bump = &[bump_seed];
-    seeds.push(bump);
+    signer_seeds.push(bump);
 
     invoke_signed(
         &create_account_instruction,
         invoke_signed_accounts,
-        &[&seeds[..]],
+        &[&signer_seeds[..]],
     )?;
 
     account_info
