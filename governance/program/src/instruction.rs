@@ -7,7 +7,7 @@ use solana_program::{
     instruction::{AccountMeta, Instruction},
     program_error::ProgramError,
     pubkey::Pubkey,
-    system_program,
+    system_program, sysvar,
 };
 
 use crate::id;
@@ -313,7 +313,8 @@ pub enum GovernanceInstruction {
 }
 /// create_root_governance
 pub fn create_root_governance(
-    governance_mint: &Pubkey,
+    governance_token_mint: &Pubkey,
+    governance_token_holding_account: &Pubkey,
     payer: &Pubkey,
     council_mint: Option<Pubkey>,
     name: String,
@@ -322,9 +323,12 @@ pub fn create_root_governance(
 
     let mut accounts = vec![
         AccountMeta::new(root_governance_address, false),
-        AccountMeta::new_readonly(*governance_mint, false),
+        AccountMeta::new_readonly(*governance_token_mint, false),
+        AccountMeta::new(*governance_token_holding_account, true),
         AccountMeta::new_readonly(*payer, true),
         AccountMeta::new_readonly(system_program::id(), false),
+        AccountMeta::new_readonly(spl_token::id(), false),
+        AccountMeta::new_readonly(sysvar::rent::id(), false),
     ];
 
     if let Some(council_mint) = council_mint {

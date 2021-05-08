@@ -3,6 +3,8 @@
 
 pub mod accounts;
 
+pub mod token;
+
 use solana_program::pubkey::Pubkey;
 
 use crate::{id, PROGRAM_AUTHORITY_SEED};

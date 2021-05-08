@@ -307,10 +307,15 @@ impl GovernanceProgramTest {
         //let proposal_count = 0;
         let root_governance_key = get_root_governance_address(&name);
 
-        let governance_mint_keypair = Keypair::new();
-        let governance_mint_authority = Pubkey::new_unique();
-        self.create_mint(&governance_mint_keypair, &governance_mint_authority)
-            .await;
+        let governance_token_mint_keypair = Keypair::new();
+        let governance_token_mint_authority = Pubkey::new_unique();
+        self.create_mint(
+            &governance_token_mint_keypair,
+            &governance_token_mint_authority,
+        )
+        .await;
+
+        let governance_token_holding_keypair = Keypair::new();
 
         let council_mint_keypair = Keypair::new();
         let council_mint_authority = Pubkey::new_unique();
@@ -318,20 +323,24 @@ impl GovernanceProgramTest {
             .await;
 
         let create_proposal_instruction = create_root_governance(
-            &governance_mint_keypair.pubkey(),
+            &governance_token_mint_keypair.pubkey(),
+            &governance_token_holding_keypair.pubkey(),
             &self.payer.pubkey(),
             Some(council_mint_keypair.pubkey()),
             name.clone(),
         )
         .unwrap();
 
-        self.process_transaction(&[create_proposal_instruction], None)
-            .await;
+        self.process_transaction(
+            &[create_proposal_instruction],
+            Some(&[&governance_token_holding_keypair]),
+        )
+        .await;
 
         RootGovernanceSetup {
             address: root_governance_key,
             name,
-            governance_mint: governance_mint_keypair.pubkey(),
+            governance_mint: governance_token_mint_keypair.pubkey(),
             council_mint: Some(council_mint_keypair.pubkey()),
         }
     }
