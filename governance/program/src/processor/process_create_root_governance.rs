@@ -10,7 +10,7 @@ use crate::{
     state::{enums::GovernanceAccountType, root_governance::RootGovernance},
     tools::{
         accounts::create_and_serialize_account_signed, get_root_governance_address_seeds,
-        token::create_token_account,
+        token::create_spl_token_account,
     },
 };
 
@@ -38,7 +38,7 @@ pub fn process_create_root_governance(
 
         let council_token_holding_info = next_account_info(account_info_iter)?; //9
 
-        create_token_account(
+        create_spl_token_account(
             payer_info,
             council_token_holding_info,
             council_mint_info,
@@ -49,7 +49,7 @@ pub fn process_create_root_governance(
         )?;
     }
 
-    create_token_account(
+    create_spl_token_account(
         payer_info,
         governance_token_holding_info,
         governance_token_mint_info,

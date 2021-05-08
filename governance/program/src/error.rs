@@ -75,6 +75,10 @@ pub enum GovernanceError {
     #[error("Input token mint account is not valid")]
     InvalidTokenMint,
 
+    /// Invalid Governing Token Mint
+    #[error("Invalid Governing Token Mint")]
+    InvalidGoverningTokenMint,
+
     /// Token initialize mint failed
     #[error("Token initialize mint failed")]
     TokenInitializeMintFailed,

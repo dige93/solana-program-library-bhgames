@@ -79,9 +79,14 @@ pub struct RootGovernanceSetup {
 #[derive(Debug)]
 pub struct VoterRecordSetup {
     pub address: Pubkey,
+
     pub governance_token_amount: u64,
 
+    pub governance_token_source: Pubkey,
+
     pub council_token_amount: Option<u64>,
+
+    pub council_token_source: Option<Pubkey>,
 }
 
 pub struct GovernanceProgramTest {
@@ -382,13 +387,13 @@ impl GovernanceProgramTest {
         let amount: u64 = 100;
 
         let voter_record_keypair = Keypair::new();
-        let governance_source_token_account = Keypair::new();
+        let governance_token_source = Keypair::new();
 
         self.create_token_account(
-            &governance_source_token_account,
+            &governance_token_source,
             &root_governance_setup.governance_mint,
             &root_governance_setup.governance_mint_authority,
-            10,
+            amount,
         )
         .await;
 
@@ -397,7 +402,7 @@ impl GovernanceProgramTest {
             &root_governance_setup.address,
             &root_governance_setup.governance_mint,
             &root_governance_setup.governance_token_holding_account,
-            &governance_source_token_account.pubkey(),
+            &governance_token_source.pubkey(),
             &voter_record_keypair.pubkey(),
             &self.payer.pubkey(),
         )
@@ -412,7 +417,9 @@ impl GovernanceProgramTest {
         VoterRecordSetup {
             address: voter_record_keypair.pubkey(),
             governance_token_amount: amount,
+            governance_token_source: governance_token_source.pubkey(),
             council_token_amount: None,
+            council_token_source: None,
         }
     }
 
@@ -424,13 +431,13 @@ impl GovernanceProgramTest {
         let amount: u64 = 10;
 
         let voter_record_keypair = Keypair::new();
-        let council_source_token_account = Keypair::new();
+        let council_token_source_account = Keypair::new();
 
         self.create_token_account(
-            &council_source_token_account,
+            &council_token_source_account,
             &root_governance_setup.council_mint.unwrap(),
             &root_governance_setup.council_mint_authority.unwrap(),
-            10,
+            amount,
         )
         .await;
 
@@ -439,7 +446,7 @@ impl GovernanceProgramTest {
             &root_governance_setup.address,
             &root_governance_setup.council_mint.unwrap(),
             &root_governance_setup.council_token_holding_account.unwrap(),
-            &council_source_token_account.pubkey(),
+            &council_token_source_account.pubkey(),
             &voter_record_keypair.pubkey(),
             &self.payer.pubkey(),
         )
@@ -454,7 +461,9 @@ impl GovernanceProgramTest {
         VoterRecordSetup {
             address: voter_record_keypair.pubkey(),
             governance_token_amount: 0,
+            governance_token_source: Pubkey::new_unique(),
             council_token_amount: Some(amount),
+            council_token_source: Some(council_token_source_account.pubkey()),
         }
     }
 
@@ -487,6 +496,10 @@ impl GovernanceProgramTest {
             .unwrap();
 
         T::unpack(&raw_account.data).unwrap()
+    }
+
+    pub async fn get_token_account(&mut self, address: &Pubkey) -> spl_token::state::Account {
+        self.get_packed_account(address).await
     }
 
     pub async fn create_mint(&mut self, mint_keypair: &Keypair, mint_authority: &Pubkey) {
