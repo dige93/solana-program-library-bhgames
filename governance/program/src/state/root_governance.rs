@@ -15,6 +15,9 @@ pub struct RootGovernance {
     /// Governance mint
     pub governance_mint: Pubkey,
 
+    /// Council mint
+    pub council_mint: Option<Pubkey>,
+
     /// Governance name
     pub name: String,
 }

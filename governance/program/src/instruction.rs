@@ -407,8 +407,8 @@ pub fn create_proposal(
     ];
 
     let instruction = GovernanceInstruction::CreateProposal {
-        description_link: description_link,
-        name: name,
+        description_link,
+        name,
     };
 
     Ok(Instruction {

@@ -24,4 +24,8 @@ async fn test_created() {
         root_governance_setup.governance_mint,
         root_governance_account.governance_mint
     );
+    assert_eq!(
+        root_governance_setup.council_mint,
+        root_governance_account.council_mint
+    );
 }
