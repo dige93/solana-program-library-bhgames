@@ -8,13 +8,13 @@ use solana_program::{
 
 /// Creates a new account and serializes data into it using the provided seeds to make signed CPI call
 /// Note: This functions also checks the provided account Program Derived Address matches the supplied seeds
-pub fn create_and_serialize_account_signed<T: BorshSerialize>(
-    payer: &Pubkey,
-    account_info: &AccountInfo,
+pub fn create_and_serialize_account_signed<'a, T: BorshSerialize>(
+    payer_info: &AccountInfo<'a>,
+    account_info: &AccountInfo<'a>,
     account_data: &T,
     account_address_seeds: Vec<&[u8]>,
     account_owner: &Pubkey,
-    invoke_signed_accounts: &[AccountInfo],
+    system_info: &AccountInfo<'a>,
 ) -> Result<(), ProgramError> {
     // Get PDA and assert it's the same as the requested account address
     let (account_address, bump_seed) =
@@ -31,7 +31,7 @@ pub fn create_and_serialize_account_signed<T: BorshSerialize>(
     let serialized_data = account_data.try_to_vec()?;
 
     let create_account_instruction = create_account(
-        payer,
+        payer_info.key,
         account_info.key,
         Rent::default().minimum_balance(serialized_data.len()),
         serialized_data.len() as u64,
@@ -44,7 +44,11 @@ pub fn create_and_serialize_account_signed<T: BorshSerialize>(
 
     invoke_signed(
         &create_account_instruction,
-        invoke_signed_accounts,
+        &[
+            payer_info.clone(),
+            account_info.clone(),
+            system_info.clone(),
+        ],
         &[&signers_seeds[..]],
     )?;
 

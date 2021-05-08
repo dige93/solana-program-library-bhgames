@@ -44,7 +44,7 @@ pub fn process_create_root_governance(
         rent_sysvar_info,
     )?;
 
-    let root_governance = RootGovernance {
+    let root_governance_data = RootGovernance {
         account_type: GovernanceAccountType::RootGovernance,
         governance_mint: *governance_token_mint_info.key,
         council_mint: council_mint_key,
@@ -52,16 +52,12 @@ pub fn process_create_root_governance(
     };
 
     create_and_serialize_account_signed::<RootGovernance>(
-        payer_info.key,
+        payer_info,
         &root_governance_info,
-        &root_governance,
+        &root_governance_data,
         get_root_governance_address_seeds(&name),
         program_id,
-        &[
-            payer_info.clone(),
-            root_governance_info.clone(),
-            system_info.clone(),
-        ],
+        system_info,
     )?;
 
     Ok(())
