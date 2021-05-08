@@ -65,6 +65,8 @@ pub struct RootGovernanceSetup {
 
     pub governance_mint: Pubkey,
 
+    pub governance_mint_authority: Keypair,
+
     pub governance_token_holding_account: Pubkey,
 
     pub council_mint: Option<Pubkey>,
@@ -323,10 +325,10 @@ impl GovernanceProgramTest {
         let root_governance_key = get_root_governance_address(&name);
 
         let governance_token_mint_keypair = Keypair::new();
-        let governance_token_mint_authority = Pubkey::new_unique();
+        let governance_token_mint_authority = Keypair::new();
         self.create_mint(
             &governance_token_mint_keypair,
-            &governance_token_mint_authority,
+            &governance_token_mint_authority.pubkey(),
         )
         .await;
 
@@ -362,6 +364,7 @@ impl GovernanceProgramTest {
             address: root_governance_key,
             name,
             governance_mint: governance_token_mint_keypair.pubkey(),
+            governance_mint_authority: governance_token_mint_authority,
             governance_token_holding_account: governance_token_holding_keypair.pubkey(),
             council_mint: Some(council_mint_keypair.pubkey()),
             council_token_holding_account: Some(council_token_holding_keypair.pubkey()),
@@ -377,6 +380,14 @@ impl GovernanceProgramTest {
 
         let voter_record_keypair = Keypair::new();
         let governance_source_token_account = Keypair::new();
+
+        self.create_token_account(
+            &governance_source_token_account,
+            &root_governance_setup.governance_mint,
+            &root_governance_setup.governance_mint_authority,
+            10,
+        )
+        .await;
 
         let deposit_governing_tokens_instruction = deposit_governing_tokens(
             Some(amount),
@@ -456,6 +467,51 @@ impl GovernanceProgramTest {
 
         self.process_transaction(&instructions, Some(&[&mint_keypair]))
             .await;
+    }
+
+    pub async fn create_token_account(
+        &mut self,
+        token_account_keypair: &Keypair,
+        token_mint: &Pubkey,
+        token_mint_authority: &Keypair,
+        amount: u64,
+    ) {
+        let create_account_instruction = system_instruction::create_account(
+            &self.payer.pubkey(),
+            &token_account_keypair.pubkey(),
+            self.rent
+                .minimum_balance(spl_token::state::Account::get_packed_len()),
+            spl_token::state::Account::get_packed_len() as u64,
+            &spl_token::id(),
+        );
+
+        let initialize_account_instruction = spl_token::instruction::initialize_account(
+            &spl_token::id(),
+            &token_account_keypair.pubkey(),
+            token_mint,
+            &self.payer.pubkey(),
+        )
+        .unwrap();
+
+        let mint_instruction = spl_token::instruction::mint_to(
+            &spl_token::id(),
+            token_mint,
+            &token_account_keypair.pubkey(),
+            &token_mint_authority.pubkey(),
+            &[],
+            amount,
+        )
+        .unwrap();
+
+        self.process_transaction(
+            &[
+                create_account_instruction,
+                initialize_account_instruction,
+                mint_instruction,
+            ],
+            Some(&[&token_account_keypair, &token_mint_authority]),
+        )
+        .await;
     }
 }
 
