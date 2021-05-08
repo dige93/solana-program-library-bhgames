@@ -27,6 +27,9 @@ pub enum GovernanceAccountType {
 
     ///
     RootGovernance,
+
+    ///
+    VoterRecord,
 }
 
 impl Default for GovernanceAccountType {

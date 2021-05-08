@@ -1,10 +1,45 @@
 //! General purpose account utility functions
 
-use borsh::BorshSerialize;
+use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::{
-    account_info::AccountInfo, msg, program::invoke_signed, program_error::ProgramError,
-    pubkey::Pubkey, rent::Rent, system_instruction::create_account,
+    account_info::AccountInfo,
+    msg,
+    program::{invoke, invoke_signed},
+    program_error::ProgramError,
+    program_pack::IsInitialized,
+    pubkey::Pubkey,
+    rent::Rent,
+    system_instruction::create_account,
 };
+
+use crate::error::GovernanceError;
+
+/// Creates account and serializes its data
+pub fn create_and_serialize_account<T: BorshSerialize>(
+    payer: &Pubkey,
+    account_info: &AccountInfo,
+    account: &T,
+    owner: &Pubkey,
+    accounts: &[AccountInfo],
+) -> Result<(), ProgramError> {
+    let serialized_data = account.try_to_vec()?;
+
+    let ix = create_account(
+        payer,
+        account_info.key,
+        Rent::default().minimum_balance(serialized_data.len()),
+        serialized_data.len() as u64,
+        owner,
+    );
+    invoke(&ix, accounts)?;
+
+    account_info
+        .data
+        .borrow_mut()
+        .copy_from_slice(&serialized_data);
+
+    Ok(())
+}
 
 /// Creates a new account and serializes data into it using the provided seeds to make signed CPI call
 /// Note: This functions also checks the provided account Program Derived Address matches the supplied seeds
@@ -58,4 +93,21 @@ pub fn create_and_serialize_account_signed<'a, T: BorshSerialize>(
         .copy_from_slice(&serialized_data);
 
     Ok(())
+}
+
+/// Deserializes account and checks it's initialized and owned by the specified program
+pub fn deserialize_account<T: BorshDeserialize + IsInitialized>(
+    account_info: &AccountInfo,
+    owner_program_id: &Pubkey,
+) -> Result<T, ProgramError> {
+    if account_info.owner != owner_program_id {
+        return Err(GovernanceError::InvalidAccountOwnerError.into());
+    }
+
+    let account: T = T::try_from_slice(&account_info.data.borrow())?;
+    if !account.is_initialized() {
+        Err(ProgramError::UninitializedAccount.into())
+    } else {
+        Ok(account)
+    }
 }

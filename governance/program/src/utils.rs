@@ -6,7 +6,6 @@ use crate::{
 };
 use arrayref::{array_ref, array_refs, mut_array_refs};
 
-use borsh::BorshSerialize;
 use solana_program::{
     account_info::AccountInfo,
     bpf_loader_upgradeable,
@@ -547,33 +546,6 @@ pub fn create_account_raw<T>(
         owner,
     );
     invoke(&ix, accounts)
-}
-
-/// Creates account and serializes its data
-pub fn create_and_serialize_account<T: BorshSerialize>(
-    payer: &Pubkey,
-    account_info: &AccountInfo,
-    account: &T,
-    owner: &Pubkey,
-    accounts: &[AccountInfo],
-) -> Result<(), ProgramError> {
-    let serialized_data = account.try_to_vec()?;
-
-    let ix = create_account(
-        payer,
-        account_info.key,
-        Rent::default().minimum_balance(serialized_data.len()),
-        serialized_data.len() as u64,
-        owner,
-    );
-    invoke(&ix, accounts)?;
-
-    account_info
-        .data
-        .borrow_mut()
-        .copy_from_slice(&serialized_data);
-
-    Ok(())
 }
 
 ///TokenTransferParams

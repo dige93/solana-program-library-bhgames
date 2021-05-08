@@ -1,4 +1,4 @@
-#![deny(missing_docs)]
+//#![deny(missing_docs)]
 //! A Proposal program for the Solana blockchain.
 
 pub mod entrypoint;

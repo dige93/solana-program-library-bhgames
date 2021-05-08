@@ -19,10 +19,13 @@ use solana_sdk::{
 };
 use spl_governance::{
     id,
-    instruction::{create_governance, create_proposal, create_root_governance},
+    instruction::{
+        create_governance, create_proposal, create_root_governance, deposit_governing_tokens,
+    },
     processor::process_instruction,
     state::{
         program_governance::ProgramGovernance, proposal::Proposal, root_governance::RootGovernance,
+        voter_record::VoterRecord,
     },
     tools::get_root_governance_address,
     PROGRAM_AUTHORITY_SEED,
@@ -62,7 +65,19 @@ pub struct RootGovernanceSetup {
 
     pub governance_mint: Pubkey,
 
+    pub governance_token_holding_account: Pubkey,
+
     pub council_mint: Option<Pubkey>,
+
+    pub council_token_holding_account: Option<Pubkey>,
+}
+
+#[derive(Debug)]
+pub struct VoterRecordSetup {
+    pub address: Pubkey,
+    pub governance_token_amount: u64,
+
+    pub council_token_amount: Option<u64>,
 }
 
 pub struct GovernanceProgramTest {
@@ -268,7 +283,7 @@ impl GovernanceProgramTest {
             .get_account(*address)
             .await
             .unwrap()
-            .unwrap();
+            .expect("Account missing");
 
         T::try_from_slice(&raw_account.data).unwrap()
     }
@@ -347,8 +362,49 @@ impl GovernanceProgramTest {
             address: root_governance_key,
             name,
             governance_mint: governance_token_mint_keypair.pubkey(),
+            governance_token_holding_account: governance_token_holding_keypair.pubkey(),
             council_mint: Some(council_mint_keypair.pubkey()),
+            council_token_holding_account: Some(council_token_holding_keypair.pubkey()),
         }
+    }
+
+    #[allow(dead_code)]
+    pub async fn with_governance_token_deposit(
+        &mut self,
+        root_governance_setup: RootGovernanceSetup,
+    ) -> VoterRecordSetup {
+        let amount: u64 = 10;
+
+        let voter_record_keypair = Keypair::new();
+        let governance_source_token_account = Keypair::new();
+
+        let deposit_governing_tokens_instruction = deposit_governing_tokens(
+            Some(amount),
+            &root_governance_setup.address,
+            &root_governance_setup.governance_mint,
+            &root_governance_setup.governance_token_holding_account,
+            &governance_source_token_account.pubkey(),
+            &voter_record_keypair.pubkey(),
+            &self.payer.pubkey(),
+        )
+        .unwrap();
+
+        self.process_transaction(
+            &[deposit_governing_tokens_instruction],
+            Some(&[&voter_record_keypair]),
+        )
+        .await;
+
+        VoterRecordSetup {
+            address: voter_record_keypair.pubkey(),
+            governance_token_amount: amount,
+            council_token_amount: None,
+        }
+    }
+
+    #[allow(dead_code)]
+    pub async fn get_voter_record_account(&mut self, address: &Pubkey) -> VoterRecord {
+        self.get_account::<VoterRecord>(address).await
     }
 
     #[allow(dead_code)]

@@ -310,7 +310,43 @@ pub enum GovernanceInstruction {
         #[allow(dead_code)]
         name: String,
     },
+
+    DepositGoverningTokens {
+        #[allow(dead_code)]
+        amount: Option<u64>,
+    },
 }
+
+pub fn deposit_governing_tokens(
+    amount: Option<u64>,
+    root_governance_account: &Pubkey,
+    governing_token_mint: &Pubkey,
+    governing_token_holding_account: &Pubkey,
+    governing_token_source_account: &Pubkey,
+    voter_record_account: &Pubkey,
+    payer: &Pubkey,
+) -> Result<Instruction, ProgramError> {
+    let accounts = vec![
+        AccountMeta::new_readonly(*root_governance_account, false),
+        AccountMeta::new(*governing_token_mint, false),
+        AccountMeta::new(*governing_token_holding_account, false),
+        AccountMeta::new(*governing_token_source_account, false),
+        AccountMeta::new(*voter_record_account, true),
+        AccountMeta::new_readonly(*payer, true),
+        AccountMeta::new_readonly(system_program::id(), false),
+        AccountMeta::new_readonly(spl_token::id(), false),
+        AccountMeta::new_readonly(sysvar::rent::id(), false),
+    ];
+
+    let instruction = GovernanceInstruction::DepositGoverningTokens { amount };
+
+    Ok(Instruction {
+        program_id: id(),
+        accounts,
+        data: instruction.try_to_vec().unwrap(),
+    })
+}
+
 /// create_root_governance
 pub fn create_root_governance(
     name: String,

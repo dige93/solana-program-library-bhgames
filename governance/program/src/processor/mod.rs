@@ -5,6 +5,7 @@ pub mod process_create_program_governance;
 pub mod process_create_proposal;
 pub mod process_create_root_governance;
 pub mod process_delete_proposal;
+pub mod process_deposit_governing_tokens;
 pub mod process_deposit_source_tokens;
 pub mod process_execute;
 pub mod process_init_proposal;
@@ -24,6 +25,7 @@ use process_create_program_governance::process_create_program_governance;
 use process_create_proposal::process_create_proposal;
 use process_create_root_governance::process_create_root_governance;
 use process_delete_proposal::process_cancel_proposal;
+use process_deposit_governing_tokens::process_deposit_governing_tokens;
 use process_deposit_source_tokens::process_deposit_source_tokens;
 use process_execute::process_execute;
 use process_init_proposal::process_init_proposal;
@@ -143,6 +145,11 @@ pub fn process_instruction(
         GovernanceInstruction::CreateRootGovernance { name } => {
             msg!("Instruction:CreateRootGovernance");
             process_create_root_governance(program_id, accounts, name)
+        }
+
+        GovernanceInstruction::DepositGoverningTokens { amount } => {
+            msg!("Instruction:DepositGoverningTokens");
+            process_deposit_governing_tokens(program_id, accounts, amount)
         }
     }
 }

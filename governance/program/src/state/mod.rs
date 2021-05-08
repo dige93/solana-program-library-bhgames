@@ -23,3 +23,5 @@ pub mod governance_vote_record;
 pub mod upgradable_loader_state;
 
 pub mod root_governance;
+
+pub mod voter_record;
