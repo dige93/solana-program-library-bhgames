@@ -15,23 +15,30 @@ use solana_program::{
 use crate::error::GovernanceError;
 
 /// Creates account and serializes its data
-pub fn create_and_serialize_account<T: BorshSerialize>(
-    payer: &Pubkey,
-    account_info: &AccountInfo,
-    account: &T,
-    owner: &Pubkey,
-    accounts: &[AccountInfo],
+pub fn create_and_serialize_account<'a, T: BorshSerialize>(
+    payer_info: &AccountInfo<'a>,
+    account_info: &AccountInfo<'a>,
+    account_data: &T,
+    account_owner: &Pubkey,
+    system_info: &AccountInfo<'a>,
 ) -> Result<(), ProgramError> {
-    let serialized_data = account.try_to_vec()?;
+    let serialized_data = account_data.try_to_vec()?;
 
     let ix = create_account(
-        payer,
+        payer_info.key,
         account_info.key,
         Rent::default().minimum_balance(serialized_data.len()),
         serialized_data.len() as u64,
-        owner,
+        account_owner,
     );
-    invoke(&ix, accounts)?;
+    invoke(
+        &ix,
+        &[
+            payer_info.clone(),
+            account_info.clone(),
+            system_info.clone(),
+        ],
+    )?;
 
     account_info
         .data

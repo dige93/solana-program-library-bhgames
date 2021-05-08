@@ -42,15 +42,11 @@ pub fn process_deposit_governing_tokens(
     };
 
     create_and_serialize_account(
-        &payer_info.key,
+        payer_info,
         voter_record_info,
         &voter_record_data,
         program_id,
-        &[
-            voter_record_info.clone(),
-            payer_info.clone(),
-            system_info.clone(),
-        ],
+        system_info,
     )?;
 
     Ok(())

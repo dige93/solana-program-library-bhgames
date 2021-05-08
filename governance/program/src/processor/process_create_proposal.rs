@@ -30,22 +30,18 @@ pub fn process_create_proposal(
 
     let mut _governance: ProgramGovernance = deserialize_account(governance_info, program_id)?;
 
-    let proposal = Proposal {
+    let proposal_data = Proposal {
         account_type: GovernanceAccountType::Proposal,
         name,
         description_link,
     };
 
     create_and_serialize_account::<Proposal>(
-        payer_info.key,
-        &proposal_info,
-        &proposal,
+        payer_info,
+        proposal_info,
+        &proposal_data,
         program_id,
-        &[
-            proposal_info.clone(),
-            payer_info.clone(),
-            system_info.clone(),
-        ],
+        system_info,
     )?;
 
     Ok(())
