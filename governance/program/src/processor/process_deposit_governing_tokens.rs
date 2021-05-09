@@ -1,11 +1,9 @@
 //! Program state processor
 
-use borsh::{BorshDeserialize, BorshSerialize};
+use borsh::BorshSerialize;
 use solana_program::{
     account_info::{next_account_info, AccountInfo},
     entrypoint::ProgramResult,
-    msg,
-    program_pack::IsInitialized,
     pubkey::Pubkey,
 };
 
@@ -44,12 +42,12 @@ pub fn process_deposit_governing_tokens(
     let amount = amount.unwrap();
 
     let mut governance_token_amount_delta = 0;
-    let mut council_token_amount_delta = Option::<u64>::None;
+    let mut council_token_amount_delta = 0;
 
     if root_governance_data.governance_mint == *governing_token_mint_info.key {
         governance_token_amount_delta = amount;
     } else if root_governance_data.council_mint == Some(*governing_token_mint_info.key) {
-        council_token_amount_delta = Some(amount);
+        council_token_amount_delta = amount;
     } else {
         return Err(GovernanceError::InvalidGoverningTokenMint.into());
     }
@@ -86,14 +84,11 @@ pub fn process_deposit_governing_tokens(
             .checked_add(governance_token_amount_delta)
             .unwrap();
 
-        msg!("AFTER {:?}", voter_record_data);
+        voter_record_data.council_token_amount = voter_record_data
+            .council_token_amount
+            .checked_add(council_token_amount_delta)
+            .unwrap();
 
-        // if (council_token_amount_delta > 0) {
-        //     voter_record_data
-        //         .council_token_amount
-        //         .checked_add(council_token_amount_delta)
-        //         .unwrap();
-        // }
         voter_record_data.serialize(&mut *voter_record_info.data.borrow_mut())?;
     }
 

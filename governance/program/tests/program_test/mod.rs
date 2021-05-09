@@ -80,11 +80,11 @@ pub struct RootGovernanceSetup {
 pub struct VoterRecordSetup {
     pub address: Pubkey,
 
-    pub governance_token_amount: u64,
+    pub governance_token_deposit_amount: u64,
 
     pub governance_token_source: Pubkey,
 
-    pub council_token_amount: Option<u64>,
+    pub council_token_deposit_amount: u64,
 
     pub council_token_source: Option<Pubkey>,
 }
@@ -417,9 +417,11 @@ impl GovernanceProgramTest {
 
         VoterRecordSetup {
             address: voter_record_keypair.pubkey(),
-            governance_token_amount: amount,
+            governance_token_deposit_amount: amount,
+
             governance_token_source: governance_token_source.pubkey(),
-            council_token_amount: None,
+            council_token_deposit_amount: 0,
+
             council_token_source: None,
         }
     }
@@ -448,9 +450,32 @@ impl GovernanceProgramTest {
     }
 
     #[allow(dead_code)]
+    pub async fn with_council_token_deposit(
+        &mut self,
+        root_governance_setup: &RootGovernanceSetup,
+        voter_record_setup: &VoterRecordSetup,
+        amount: u64,
+    ) {
+        let deposit_governing_tokens_instruction = deposit_governing_tokens(
+            Some(amount),
+            &root_governance_setup.address,
+            &root_governance_setup.council_mint.unwrap(),
+            &root_governance_setup.council_token_holding_account.unwrap(),
+            &voter_record_setup.council_token_source.unwrap(),
+            &voter_record_setup.address,
+            &self.payer.pubkey(),
+            false,
+        )
+        .unwrap();
+
+        self.process_transaction(&[deposit_governing_tokens_instruction], None)
+            .await;
+    }
+
+    #[allow(dead_code)]
     pub async fn with_initial_council_token_deposit(
         &mut self,
-        root_governance_setup: RootGovernanceSetup,
+        root_governance_setup: &RootGovernanceSetup,
     ) -> VoterRecordSetup {
         let amount: u64 = 10;
 
@@ -460,8 +485,11 @@ impl GovernanceProgramTest {
         self.create_token_account(
             &council_token_source_account,
             &root_governance_setup.council_mint.unwrap(),
-            &root_governance_setup.council_mint_authority.unwrap(),
-            amount,
+            &root_governance_setup
+                .council_mint_authority
+                .as_ref()
+                .unwrap(),
+            amount + 100,
         )
         .await;
 
@@ -485,9 +513,9 @@ impl GovernanceProgramTest {
 
         VoterRecordSetup {
             address: voter_record_keypair.pubkey(),
-            governance_token_amount: 0,
+            governance_token_deposit_amount: 0,
             governance_token_source: Pubkey::new_unique(),
-            council_token_amount: Some(amount),
+            council_token_deposit_amount: amount,
             council_token_source: Some(council_token_source_account.pubkey()),
         }
     }
@@ -523,6 +551,7 @@ impl GovernanceProgramTest {
         T::unpack(&raw_account.data).unwrap()
     }
 
+    #[allow(dead_code)]
     pub async fn get_token_account(&mut self, address: &Pubkey) -> spl_token::state::Account {
         self.get_packed_account(address).await
     }
