@@ -315,6 +315,41 @@ pub enum GovernanceInstruction {
         #[allow(dead_code)]
         amount: Option<u64>,
     },
+
+    WithdrawGoverningTokens {
+        #[allow(dead_code)]
+        amount: Option<u64>,
+    },
+}
+
+pub fn withdraw_governing_tokens(
+    amount: Option<u64>,
+    root_governance_account: &Pubkey,
+    governing_token_mint: &Pubkey,
+    governing_token_holding_account: &Pubkey,
+    governing_token_source_account: &Pubkey,
+    voter_record_account: &Pubkey,
+    payer: &Pubkey,
+) -> Result<Instruction, ProgramError> {
+    let accounts = vec![
+        AccountMeta::new_readonly(*root_governance_account, false),
+        AccountMeta::new_readonly(*governing_token_mint, false),
+        AccountMeta::new(*governing_token_holding_account, false),
+        AccountMeta::new(*governing_token_source_account, false),
+        AccountMeta::new(*voter_record_account, false),
+        AccountMeta::new_readonly(*payer, true),
+        AccountMeta::new_readonly(system_program::id(), false),
+        AccountMeta::new_readonly(spl_token::id(), false),
+        AccountMeta::new_readonly(sysvar::rent::id(), false),
+    ];
+
+    let instruction = GovernanceInstruction::WithdrawGoverningTokens { amount };
+
+    Ok(Instruction {
+        program_id: id(),
+        accounts,
+        data: instruction.try_to_vec().unwrap(),
+    })
 }
 
 pub fn deposit_governing_tokens(
@@ -329,7 +364,7 @@ pub fn deposit_governing_tokens(
 ) -> Result<Instruction, ProgramError> {
     let accounts = vec![
         AccountMeta::new_readonly(*root_governance_account, false),
-        AccountMeta::new(*governing_token_mint, false),
+        AccountMeta::new_readonly(*governing_token_mint, false),
         AccountMeta::new(*governing_token_holding_account, false),
         AccountMeta::new(*governing_token_source_account, false),
         AccountMeta::new(*voter_record_account, initial_deposit),

@@ -14,6 +14,7 @@ pub mod process_remove_transaction;
 pub mod process_sign;
 pub mod process_update_transaction_slot;
 pub mod process_vote;
+pub mod process_withdraw_governing_tokens;
 pub mod process_withdraw_voting_tokens;
 
 use crate::instruction::GovernanceInstruction;
@@ -34,6 +35,7 @@ use process_remove_transaction::process_remove_transaction;
 use process_sign::process_sign;
 use process_update_transaction_slot::process_update_transaction_slot;
 use process_vote::process_vote;
+use process_withdraw_governing_tokens::process_withdraw_governing_tokens;
 use process_withdraw_voting_tokens::process_withdraw_voting_tokens;
 use solana_program::{
     account_info::AccountInfo, entrypoint::ProgramResult, msg, program_error::ProgramError,
@@ -150,6 +152,11 @@ pub fn process_instruction(
         GovernanceInstruction::DepositGoverningTokens { amount } => {
             msg!("Instruction:DepositGoverningTokens");
             process_deposit_governing_tokens(program_id, accounts, amount)
+        }
+
+        GovernanceInstruction::WithdrawGoverningTokens { amount } => {
+            msg!("Instruction:WithdrawGoverningTokens");
+            process_withdraw_governing_tokens(program_id, accounts, amount)
         }
     }
 }
