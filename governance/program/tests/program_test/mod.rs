@@ -464,7 +464,6 @@ impl GovernanceProgramTest {
             &root_governance_setup.governance_token_holding_account,
             &voter_record_setup.governance_token_source,
             &voter_record_setup.address,
-            &self.payer.pubkey(),
         )
         .unwrap();
 

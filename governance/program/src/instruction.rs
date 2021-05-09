@@ -329,7 +329,6 @@ pub fn withdraw_governing_tokens(
     governing_token_holding_account: &Pubkey,
     governing_token_source_account: &Pubkey,
     voter_record_account: &Pubkey,
-    payer: &Pubkey,
 ) -> Result<Instruction, ProgramError> {
     let accounts = vec![
         AccountMeta::new_readonly(*root_governance_account, false),
@@ -337,8 +336,6 @@ pub fn withdraw_governing_tokens(
         AccountMeta::new(*governing_token_holding_account, false),
         AccountMeta::new(*governing_token_source_account, false),
         AccountMeta::new(*voter_record_account, false),
-        AccountMeta::new_readonly(*payer, true),
-        AccountMeta::new_readonly(system_program::id(), false),
         AccountMeta::new_readonly(spl_token::id(), false),
         AccountMeta::new_readonly(sysvar::rent::id(), false),
     ];

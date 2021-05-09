@@ -3,9 +3,11 @@
 use solana_program::{
     account_info::AccountInfo,
     entrypoint::ProgramResult,
+    msg,
     program::{invoke, invoke_signed},
     program_error::ProgramError,
     program_pack::Pack,
+    pubkey::Pubkey,
     rent::Rent,
     system_instruction,
 };
@@ -92,10 +94,23 @@ pub fn transfer_spl_tokens_signed<'a>(
     source_info: &AccountInfo<'a>,
     destination_info: &AccountInfo<'a>,
     authority_info: &AccountInfo<'a>,
+    authority_seeds: Vec<&[u8]>,
+    source_owner: &Pubkey,
     amount: u64,
     spl_token_info: &AccountInfo<'a>,
-    signers_seeds: &[&[&[u8]]],
 ) -> ProgramResult {
+    let (authority_address, bump_seed) =
+        Pubkey::find_program_address(&authority_seeds[..], source_owner);
+
+    if authority_address != *authority_info.key {
+        msg!(
+                "Transfer SPL Token with Authority Address: {:?} was requested while Address: {:?} was expected",
+                authority_info.key,
+                authority_address
+            );
+        return Err(ProgramError::InvalidSeeds);
+    }
+
     let transfer_instruction = spl_token::instruction::transfer(
         &spl_token::id(),
         source_info.key,
@@ -106,6 +121,10 @@ pub fn transfer_spl_tokens_signed<'a>(
     )
     .unwrap();
 
+    let mut signers_seeds = authority_seeds.to_vec();
+    let bump = &[bump_seed];
+    signers_seeds.push(bump);
+
     invoke_signed(
         &transfer_instruction,
         &[
@@ -114,7 +133,7 @@ pub fn transfer_spl_tokens_signed<'a>(
             source_info.clone(),
             destination_info.clone(),
         ],
-        signers_seeds,
+        &[&signers_seeds[..]],
     )?;
 
     Ok(())

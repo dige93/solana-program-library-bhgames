@@ -9,13 +9,10 @@ use solana_program::{
 
 use crate::{
     error::GovernanceError,
-    state::{
-        enums::GovernanceAccountType, root_governance::RootGovernance, voter_record::VoterRecord,
-    },
+    state::{root_governance::RootGovernance, voter_record::VoterRecord},
     tools::{
-        accounts::{create_and_serialize_account, deserialize_account},
-        get_root_governance_address_seeds,
-        token::{transfer_spl_tokens, transfer_spl_tokens_signed},
+        accounts::deserialize_account, get_root_governance_address_seeds,
+        token::transfer_spl_tokens_signed,
     },
 };
 
@@ -32,8 +29,7 @@ pub fn process_withdraw_governing_tokens(
     let governing_token_holding_info = next_account_info(account_info_iter)?; // 1
     let governing_token_source_info = next_account_info(account_info_iter)?; // 1
     let voter_record_info = next_account_info(account_info_iter)?; // 1
-    let payer_info = next_account_info(account_info_iter)?; // 4
-    let system_info = next_account_info(account_info_iter)?; // 5
+
     let spl_token_info = next_account_info(account_info_iter)?; // 6
     let _rent_sysvar_info = next_account_info(account_info_iter)?; // 7
 
@@ -53,22 +49,14 @@ pub fn process_withdraw_governing_tokens(
         return Err(GovernanceError::InvalidGoverningTokenMint.into());
     }
 
-    let (_, bump_seed) = Pubkey::find_program_address(
-        &get_root_governance_address_seeds(&root_governance_data.name)[..],
-        program_id,
-    );
-
-    let mut signers_seeds = get_root_governance_address_seeds(&root_governance_data.name);
-    let bump = &[bump_seed];
-    signers_seeds.push(bump);
-
     transfer_spl_tokens_signed(
         &governing_token_holding_info,
         &governing_token_source_info,
         &root_governance_info,
+        get_root_governance_address_seeds(&root_governance_data.name),
+        program_id,
         amount,
         spl_token_info,
-        &[&signers_seeds[..]],
     )?;
 
     let mut voter_record_data = deserialize_account::<VoterRecord>(voter_record_info, program_id)?;
