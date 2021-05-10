@@ -10,7 +10,7 @@ use program_test::*;
 async fn test_deposited_initial_governance_tokens() {
     // Arrange
     let mut governance_test = GovernanceProgramTest::start_new().await;
-    let root_governance_setup = governance_test.with_root_governance().await;
+    let root_governance_setup = governance_test.with_governance_realm().await;
 
     let governance_token_holding_account = root_governance_setup.governance_token_holding_account;
 
@@ -50,7 +50,7 @@ async fn test_deposited_initial_governance_tokens() {
 async fn test_deposited_initial_council_tokens() {
     // Arrange
     let mut governance_test = GovernanceProgramTest::start_new().await;
-    let root_governance_setup = governance_test.with_root_governance().await;
+    let root_governance_setup = governance_test.with_governance_realm().await;
 
     let council_token_holding_account =
         root_governance_setup.council_token_holding_account.unwrap();
@@ -91,7 +91,7 @@ async fn test_deposited_initial_council_tokens() {
 async fn test_deposited_subsequent_governance_tokens() {
     // Arrange
     let mut governance_test = GovernanceProgramTest::start_new().await;
-    let root_governance_setup = governance_test.with_root_governance().await;
+    let root_governance_setup = governance_test.with_governance_realm().await;
 
     let governance_token_holding_account = root_governance_setup.governance_token_holding_account;
 
@@ -125,7 +125,7 @@ async fn test_deposited_subsequent_governance_tokens() {
 async fn test_deposited_subsequent_council_tokens() {
     // Arrange
     let mut governance_test = GovernanceProgramTest::start_new().await;
-    let root_governance_setup = governance_test.with_root_governance().await;
+    let root_governance_setup = governance_test.with_governance_realm().await;
 
     let council_token_holding_account =
         root_governance_setup.council_token_holding_account.unwrap();

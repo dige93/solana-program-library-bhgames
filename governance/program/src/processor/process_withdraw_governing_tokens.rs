@@ -9,7 +9,7 @@ use solana_program::{
 
 use crate::{
     error::GovernanceError,
-    state::{root_governance::RootGovernance, voter_record::VoterRecord},
+    state::{governance_realm::GovernanceRealm, voter_record::VoterRecord},
     tools::{
         accounts::deserialize_account, get_root_governance_address_seeds,
         token::transfer_spl_tokens_signed,
@@ -34,7 +34,7 @@ pub fn process_withdraw_governing_tokens(
     let _rent_sysvar_info = next_account_info(account_info_iter)?; // 7
 
     let root_governance_data =
-        deserialize_account::<RootGovernance>(root_governance_info, program_id)?;
+        deserialize_account::<GovernanceRealm>(root_governance_info, program_id)?;
 
     let amount = amount.unwrap();
 

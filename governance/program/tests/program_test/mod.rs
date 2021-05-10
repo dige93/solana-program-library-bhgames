@@ -20,13 +20,13 @@ use solana_sdk::{
 use spl_governance::{
     id,
     instruction::{
-        create_governance, create_proposal, create_root_governance, deposit_governing_tokens,
+        create_governance, create_governance_realm, create_proposal, deposit_governing_tokens,
         withdraw_governing_tokens,
     },
     processor::process_instruction,
     state::{
-        program_governance::ProgramGovernance, proposal::Proposal, root_governance::RootGovernance,
-        voter_record::VoterRecord,
+        governance_realm::GovernanceRealm, program_governance::ProgramGovernance,
+        proposal::Proposal, voter_record::VoterRecord,
     },
     tools::get_root_governance_address,
     PROGRAM_AUTHORITY_SEED,
@@ -58,7 +58,7 @@ pub struct ProposalSetup {
 }
 
 #[derive(Debug)]
-pub struct RootGovernanceSetup {
+pub struct GovernanceRealmCookie {
     pub address: Pubkey,
 
     /// UTF-8 encoded name of the proposal
@@ -326,8 +326,8 @@ impl GovernanceProgramTest {
     }
 
     #[allow(dead_code)]
-    pub async fn with_root_governance(&mut self) -> RootGovernanceSetup {
-        let name = "Root Governance".to_string();
+    pub async fn with_governance_realm(&mut self) -> GovernanceRealmCookie {
+        let name = "Governance Realm".to_string();
 
         //let proposal_count = 0;
         let root_governance_key = get_root_governance_address(&name);
@@ -349,7 +349,7 @@ impl GovernanceProgramTest {
 
         let council_token_holding_keypair = Keypair::new();
 
-        let create_proposal_instruction = create_root_governance(
+        let create_proposal_instruction = create_governance_realm(
             name.clone(),
             &governance_token_mint_keypair.pubkey(),
             &governance_token_holding_keypair.pubkey(),
@@ -368,7 +368,7 @@ impl GovernanceProgramTest {
         )
         .await;
 
-        RootGovernanceSetup {
+        GovernanceRealmCookie {
             address: root_governance_key,
             name,
             governance_mint: governance_token_mint_keypair.pubkey(),
@@ -383,7 +383,7 @@ impl GovernanceProgramTest {
     #[allow(dead_code)]
     pub async fn with_initial_governance_token_deposit(
         &mut self,
-        root_governance_setup: &RootGovernanceSetup,
+        root_governance_setup: &GovernanceRealmCookie,
     ) -> VoterRecordSetup {
         let amount: u64 = 100;
 
@@ -430,7 +430,7 @@ impl GovernanceProgramTest {
     #[allow(dead_code)]
     pub async fn with_governance_token_deposit(
         &mut self,
-        root_governance_setup: &RootGovernanceSetup,
+        root_governance_setup: &GovernanceRealmCookie,
         voter_record_setup: &VoterRecordSetup,
         amount: u64,
     ) {
@@ -453,7 +453,7 @@ impl GovernanceProgramTest {
     #[allow(dead_code)]
     pub async fn withdraw_governance_token_deposit(
         &mut self,
-        root_governance_setup: &RootGovernanceSetup,
+        root_governance_setup: &GovernanceRealmCookie,
         voter_record_setup: &VoterRecordSetup,
         amount: u64,
     ) {
@@ -474,7 +474,7 @@ impl GovernanceProgramTest {
     #[allow(dead_code)]
     pub async fn with_council_token_deposit(
         &mut self,
-        root_governance_setup: &RootGovernanceSetup,
+        root_governance_setup: &GovernanceRealmCookie,
         voter_record_setup: &VoterRecordSetup,
         amount: u64,
     ) {
@@ -497,7 +497,7 @@ impl GovernanceProgramTest {
     #[allow(dead_code)]
     pub async fn with_initial_council_token_deposit(
         &mut self,
-        root_governance_setup: &RootGovernanceSetup,
+        root_governance_setup: &GovernanceRealmCookie,
     ) -> VoterRecordSetup {
         let amount: u64 = 10;
 
@@ -551,8 +551,8 @@ impl GovernanceProgramTest {
     pub async fn get_root_governnace_account(
         &mut self,
         root_governance_address: &Pubkey,
-    ) -> RootGovernance {
-        self.get_account::<RootGovernance>(root_governance_address)
+    ) -> GovernanceRealm {
+        self.get_account::<GovernanceRealm>(root_governance_address)
             .await
     }
 

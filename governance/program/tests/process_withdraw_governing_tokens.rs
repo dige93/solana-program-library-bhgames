@@ -10,7 +10,7 @@ use program_test::*;
 async fn test_withdraw_governance_tokens() {
     // Arrange
     let mut governance_test = GovernanceProgramTest::start_new().await;
-    let root_governance_setup = governance_test.with_root_governance().await;
+    let root_governance_setup = governance_test.with_governance_realm().await;
     let voter_record_setup = governance_test
         .with_initial_governance_token_deposit(&root_governance_setup)
         .await;

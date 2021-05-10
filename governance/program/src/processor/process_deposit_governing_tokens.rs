@@ -10,7 +10,7 @@ use solana_program::{
 use crate::{
     error::GovernanceError,
     state::{
-        enums::GovernanceAccountType, root_governance::RootGovernance, voter_record::VoterRecord,
+        enums::GovernanceAccountType, governance_realm::GovernanceRealm, voter_record::VoterRecord,
     },
     tools::{
         accounts::{create_and_serialize_account, deserialize_account},
@@ -37,7 +37,7 @@ pub fn process_deposit_governing_tokens(
     let _rent_sysvar_info = next_account_info(account_info_iter)?; // 7
 
     let root_governance_data =
-        deserialize_account::<RootGovernance>(root_governance_info, program_id)?;
+        deserialize_account::<GovernanceRealm>(root_governance_info, program_id)?;
 
     let amount = amount.unwrap();
 

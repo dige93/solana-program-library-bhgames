@@ -12,7 +12,7 @@ async fn test_created() {
     let mut governance_test = GovernanceProgramTest::start_new().await;
 
     // Act
-    let root_governance_setup = governance_test.with_root_governance().await;
+    let root_governance_setup = governance_test.with_governance_realm().await;
 
     // Assert
     let root_governance_account = governance_test

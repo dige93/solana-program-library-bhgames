@@ -299,14 +299,19 @@ pub enum GovernanceInstruction {
         name: String,
     },
 
-    /// Creates Root Governance
-    /// 1. Governance account
-    /// 2. Governance mint
-    /// 3. payer
-    /// 4. system
-    /// 5. Council mint - optional
-    CreateRootGovernance {
-        /// UTF-8 encoded Governance name
+    /// Creates Governance Realm which aggregates governances for given Governance Mint and optional Council Mint.
+    ///
+    /// 1. `[writable]` Governance Realm account.
+    /// 2. `[]` Governance Token Mint.
+    /// 3. `[writable, signer]` Governances Token Holding account.
+    /// 4. `[signer]` Payer.
+    /// 5. `[]` System.
+    /// 6. `[]` SPL Token.
+    /// 7. `[]` Sysvar Rent.
+    /// 8. `[]` Council Token mint - optional.
+    /// 9. `[writable, signer]` Council Token Holding account - optional.
+    CreateGovernanceRealm {
+        /// UTF-8 encoded Governance Realm name
         #[allow(dead_code)]
         name: String,
     },
@@ -320,6 +325,44 @@ pub enum GovernanceInstruction {
         #[allow(dead_code)]
         amount: Option<u64>,
     },
+}
+
+/// create_root_governance
+pub fn create_governance_realm(
+    name: String,
+    governance_token_mint: &Pubkey,
+    governance_token_holding_account: &Pubkey,
+    payer: &Pubkey,
+    council_token_mint: Option<Pubkey>,
+    council_token_holding_account: Option<Pubkey>,
+) -> Result<Instruction, ProgramError> {
+    let root_governance_address = get_root_governance_address(&name);
+
+    let mut accounts = vec![
+        AccountMeta::new(root_governance_address, false),
+        AccountMeta::new_readonly(*governance_token_mint, false),
+        AccountMeta::new(*governance_token_holding_account, true),
+        AccountMeta::new_readonly(*payer, true),
+        AccountMeta::new_readonly(system_program::id(), false),
+        AccountMeta::new_readonly(spl_token::id(), false),
+        AccountMeta::new_readonly(sysvar::rent::id(), false),
+    ];
+
+    if let Some(council_mint) = council_token_mint {
+        accounts.push(AccountMeta::new_readonly(council_mint, false));
+        accounts.push(AccountMeta::new(
+            council_token_holding_account.unwrap(),
+            true,
+        ));
+    }
+
+    let instruction = GovernanceInstruction::CreateGovernanceRealm { name };
+
+    Ok(Instruction {
+        program_id: id(),
+        accounts,
+        data: instruction.try_to_vec().unwrap(),
+    })
 }
 
 pub fn withdraw_governing_tokens(
@@ -372,44 +415,6 @@ pub fn deposit_governing_tokens(
     ];
 
     let instruction = GovernanceInstruction::DepositGoverningTokens { amount };
-
-    Ok(Instruction {
-        program_id: id(),
-        accounts,
-        data: instruction.try_to_vec().unwrap(),
-    })
-}
-
-/// create_root_governance
-pub fn create_root_governance(
-    name: String,
-    governance_token_mint: &Pubkey,
-    governance_token_holding_account: &Pubkey,
-    payer: &Pubkey,
-    council_token_mint: Option<Pubkey>,
-    council_token_holding_account: Option<Pubkey>,
-) -> Result<Instruction, ProgramError> {
-    let root_governance_address = get_root_governance_address(&name);
-
-    let mut accounts = vec![
-        AccountMeta::new(root_governance_address, false),
-        AccountMeta::new_readonly(*governance_token_mint, false),
-        AccountMeta::new(*governance_token_holding_account, true),
-        AccountMeta::new_readonly(*payer, true),
-        AccountMeta::new_readonly(system_program::id(), false),
-        AccountMeta::new_readonly(spl_token::id(), false),
-        AccountMeta::new_readonly(sysvar::rent::id(), false),
-    ];
-
-    if let Some(council_mint) = council_token_mint {
-        accounts.push(AccountMeta::new_readonly(council_mint, false));
-        accounts.push(AccountMeta::new(
-            council_token_holding_account.unwrap(),
-            true,
-        ));
-    }
-
-    let instruction = GovernanceInstruction::CreateRootGovernance { name };
 
     Ok(Instruction {
         program_id: id(),

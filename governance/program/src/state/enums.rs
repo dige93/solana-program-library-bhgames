@@ -26,7 +26,7 @@ pub enum GovernanceAccountType {
     Proposal,
 
     ///
-    RootGovernance,
+    GovernanceRealm,
 
     ///
     VoterRecord,

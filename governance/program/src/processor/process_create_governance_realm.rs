@@ -7,7 +7,7 @@ use solana_program::{
 };
 
 use crate::{
-    state::{enums::GovernanceAccountType, root_governance::RootGovernance},
+    state::{enums::GovernanceAccountType, governance_realm::GovernanceRealm},
     tools::{
         accounts::create_and_serialize_account_signed, get_root_governance_address_seeds,
         token::create_spl_token_account,
@@ -59,14 +59,14 @@ pub fn process_create_root_governance(
         rent_sysvar_info,
     )?;
 
-    let root_governance_data = RootGovernance {
-        account_type: GovernanceAccountType::RootGovernance,
+    let root_governance_data = GovernanceRealm {
+        account_type: GovernanceAccountType::GovernanceRealm,
         governance_mint: *governance_token_mint_info.key,
         council_mint: council_mint_address,
         name: name.clone(),
     };
 
-    create_and_serialize_account_signed::<RootGovernance>(
+    create_and_serialize_account_signed::<GovernanceRealm>(
         payer_info,
         &root_governance_info,
         &root_governance_data,

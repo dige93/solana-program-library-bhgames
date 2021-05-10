@@ -8,7 +8,7 @@ use solana_program::{program_pack::IsInitialized, pubkey::Pubkey};
 
 /// Governance Proposal
 #[derive(Clone, Debug, PartialEq, BorshDeserialize, BorshSerialize, BorshSchema)]
-pub struct RootGovernance {
+pub struct GovernanceRealm {
     /// Governance account type
     pub account_type: GovernanceAccountType,
 
@@ -18,12 +18,12 @@ pub struct RootGovernance {
     /// Council mint
     pub council_mint: Option<Pubkey>,
 
-    /// Governance name
+    /// Governance Realm name
     pub name: String,
 }
 
-impl IsInitialized for RootGovernance {
+impl IsInitialized for GovernanceRealm {
     fn is_initialized(&self) -> bool {
-        self.account_type == GovernanceAccountType::RootGovernance
+        self.account_type == GovernanceAccountType::GovernanceRealm
     }
 }
