@@ -10,12 +10,11 @@ use solana_program::{
 use crate::{
     error::GovernanceError,
     state::{
-        enums::GovernanceAccountType, governance_realm::GovernanceRealm, voter_record::VoterRecord,
+        enums::GovernanceAccountType,
+        governance_realm::deserialize_governance_realm,
+        voter_record::{deserialize_voter_record, VoterRecord},
     },
-    tools::{
-        account::{create_and_serialize_account, deserialize_account},
-        token::transfer_spl_tokens,
-    },
+    tools::{account::create_and_serialize_account, token::transfer_spl_tokens},
 };
 
 /// process deposit governing tokens
@@ -31,13 +30,11 @@ pub fn process_deposit_governing_tokens(
     let governing_token_holding_info = next_account_info(account_info_iter)?; // 3
     let governing_token_source_info = next_account_info(account_info_iter)?; // 4
     let voter_record_info = next_account_info(account_info_iter)?; // 5
-    let payer_info = next_account_info(account_info_iter)?; // 6
+    let voter_info = next_account_info(account_info_iter)?; // 6
     let system_info = next_account_info(account_info_iter)?; // 7
     let spl_token_info = next_account_info(account_info_iter)?; // 8
-    let _rent_sysvar_info = next_account_info(account_info_iter)?; // 9
 
-    let governance_realm_data =
-        deserialize_account::<GovernanceRealm>(governance_realm_info, program_id)?;
+    let governance_realm_data = deserialize_governance_realm(governance_realm_info)?;
 
     let amount = amount.unwrap();
 
@@ -55,7 +52,7 @@ pub fn process_deposit_governing_tokens(
     transfer_spl_tokens(
         &governing_token_source_info,
         &governing_token_holding_info,
-        &payer_info,
+        &voter_info,
         amount,
         spl_token_info,
     )?;
@@ -63,21 +60,21 @@ pub fn process_deposit_governing_tokens(
     if voter_record_info.data_len() == 0 {
         let voter_record_data = VoterRecord {
             account_type: GovernanceAccountType::VoterRecord,
+            voter: *voter_info.key,
             governance_token_amount: governance_token_amount_delta,
             council_token_amount: council_token_amount_delta,
             active_votes_count: 0,
         };
 
         create_and_serialize_account(
-            payer_info,
+            voter_info,
             voter_record_info,
             &voter_record_data,
             program_id,
             system_info,
         )?;
     } else {
-        let mut voter_record_data =
-            deserialize_account::<VoterRecord>(voter_record_info, program_id)?;
+        let mut voter_record_data = deserialize_voter_record(voter_record_info, voter_info)?;
 
         voter_record_data.governance_token_amount = voter_record_data
             .governance_token_amount

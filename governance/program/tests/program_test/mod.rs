@@ -18,8 +18,8 @@ use solana_sdk::{
 use spl_governance::{
     id,
     instruction::{
-        create_governance, create_governance_realm, create_proposal, deposit_governing_tokens,
-        withdraw_governing_tokens,
+        create_governance_realm, create_program_governance, create_proposal,
+        deposit_governing_tokens, withdraw_governing_tokens,
     },
     processor::process_instruction,
     state::{
@@ -191,7 +191,7 @@ impl GovernanceProgramTest {
         let min_instruction_hold_up_time: u64 = 10;
         let max_voting_time: u64 = 100;
 
-        let create_governance_instruction = create_governance(
+        let create_governance_instruction = create_program_governance(
             &governance_address,
             &governed_program.address,
             &governed_program.data_address,

@@ -165,6 +165,10 @@ pub enum GovernanceError {
     #[error("Invalid Governance Vote Record Key, must use program account id, proposal key, and voting account as tuple seed")]
     InvalidGovernanceVoteRecord,
 
+    /// InvalidVoterAccount
+    #[error("Invalid voter account")]
+    InvalidVoterAccount,
+
     /// Account Error: Invalid account owner
     #[error("Invalid account owner")]
     InvalidAccountOwnerError,
