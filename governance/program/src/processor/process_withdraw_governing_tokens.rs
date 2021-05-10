@@ -11,7 +11,7 @@ use crate::{
     error::GovernanceError,
     state::{governance_realm::GovernanceRealm, voter_record::VoterRecord},
     tools::{
-        accounts::deserialize_account, get_root_governance_address_seeds,
+        account::deserialize_account, get_root_governance_address_seeds,
         token::transfer_spl_tokens_signed,
     },
 };

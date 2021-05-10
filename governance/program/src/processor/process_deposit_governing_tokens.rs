@@ -13,7 +13,7 @@ use crate::{
         enums::GovernanceAccountType, governance_realm::GovernanceRealm, voter_record::VoterRecord,
     },
     tools::{
-        accounts::{create_and_serialize_account, deserialize_account},
+        account::{create_and_serialize_account, deserialize_account},
         token::transfer_spl_tokens,
     },
 };

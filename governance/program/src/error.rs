@@ -47,10 +47,6 @@ pub enum GovernanceError {
     #[error("Invalid mint owner program")]
     InvalidMintOwnerProgramError,
 
-    /// Invalid account owner
-    #[error("Invalid account owner")]
-    InvalidAccountOwnerError,
-
     /// The wrong signatory mint was given for this Proposal
     #[error("The wrong signatory mint was given for this Proposal")]
     InvalidSignatoryMintError,
@@ -168,6 +164,10 @@ pub enum GovernanceError {
     /// Invalid Governance Vote Record Key, must use program account id, proposal key, and voting account as tuple seed
     #[error("Invalid Governance Vote Record Key, must use program account id, proposal key, and voting account as tuple seed")]
     InvalidGovernanceVoteRecord,
+
+    /// Account Error: Invalid account owner
+    #[error("Invalid account owner")]
+    InvalidAccountOwnerError,
 }
 
 impl PrintProgramError for GovernanceError {

@@ -9,7 +9,7 @@ use solana_program::{
 use crate::{
     state::{enums::GovernanceAccountType, governance_realm::GovernanceRealm},
     tools::{
-        accounts::create_and_serialize_account_signed, get_root_governance_address_seeds,
+        account::create_and_serialize_account_signed, get_root_governance_address_seeds,
         token::create_spl_token_account,
     },
 };

@@ -10,7 +10,7 @@ use crate::{
     state::{
         enums::GovernanceAccountType, program_governance::ProgramGovernance, proposal::Proposal,
     },
-    tools::accounts::create_and_serialize_account,
+    tools::account::create_and_serialize_account,
     utils::deserialize_account,
 };
 
