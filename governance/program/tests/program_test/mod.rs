@@ -373,6 +373,7 @@ impl GovernanceProgramTest {
 
             governance_token_source: governance_token_source.pubkey(),
             council_token_deposit_amount: 0,
+            council_token_source_amount: 0,
 
             council_token_source: None,
         }
@@ -451,11 +452,12 @@ impl GovernanceProgramTest {
     pub async fn with_initial_council_token_deposit(
         &mut self,
         governance_realm_cookie: &GovernanceRealmCookie,
+        deposit_amount: Option<u64>,
     ) -> VoterRecordCookie {
-        let amount: u64 = 10;
-
         let voter_record_keypair = Keypair::new();
         let council_token_source_account = Keypair::new();
+
+        let source_amount = 100;
 
         self.create_token_account(
             &council_token_source_account,
@@ -464,12 +466,12 @@ impl GovernanceProgramTest {
                 .council_mint_authority
                 .as_ref()
                 .unwrap(),
-            amount + 100,
+            source_amount,
         )
         .await;
 
         let deposit_governing_tokens_instruction = deposit_governing_tokens(
-            Some(amount),
+            deposit_amount,
             &governance_realm_cookie.address,
             &governance_realm_cookie.council_mint.unwrap(),
             &governance_realm_cookie
@@ -493,7 +495,8 @@ impl GovernanceProgramTest {
             governance_token_deposit_amount: 0,
             governance_token_source_amount: 0,
             governance_token_source: Pubkey::new_unique(),
-            council_token_deposit_amount: amount,
+            council_token_deposit_amount: deposit_amount.unwrap_or(source_amount),
+            council_token_source_amount: source_amount,
             council_token_source: Some(council_token_source_account.pubkey()),
         }
     }

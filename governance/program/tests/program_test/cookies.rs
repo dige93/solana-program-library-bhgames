@@ -58,4 +58,6 @@ pub struct VoterRecordCookie {
     pub council_token_deposit_amount: u64,
 
     pub council_token_source: Option<Pubkey>,
+
+    pub council_token_source_amount: u64,
 }
