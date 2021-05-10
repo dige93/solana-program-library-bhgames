@@ -13,7 +13,7 @@ use solana_program::{
 
 /// Governance Proposal
 #[derive(Clone, Debug, PartialEq, BorshDeserialize, BorshSerialize, BorshSchema)]
-pub struct GovernanceRealm {
+pub struct Realm {
     /// Governance account type
     pub account_type: GovernanceAccountType,
 
@@ -27,14 +27,12 @@ pub struct GovernanceRealm {
     pub name: String,
 }
 
-impl IsInitialized for GovernanceRealm {
+impl IsInitialized for Realm {
     fn is_initialized(&self) -> bool {
-        self.account_type == GovernanceAccountType::GovernanceRealm
+        self.account_type == GovernanceAccountType::Realm
     }
 }
 
-pub fn deserialize_governance_realm(
-    governance_realm_info: &AccountInfo,
-) -> Result<GovernanceRealm, ProgramError> {
-    deserialize_account::<GovernanceRealm>(governance_realm_info, &id())
+pub fn deserialize_realm(governance_realm_info: &AccountInfo) -> Result<Realm, ProgramError> {
+    deserialize_account::<Realm>(governance_realm_info, &id())
 }

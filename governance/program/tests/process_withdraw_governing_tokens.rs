@@ -33,7 +33,7 @@ async fn test_withdraw_governance_tokens() {
         .get_voter_record_account(&voter_record_cookie.address)
         .await;
 
-    assert_eq!(deposit_amount, voter_record.governance_token_deposit_amount);
+    assert_eq!(deposit_amount, voter_record.token_deposit_amount);
 
     let holding_account = governance_test
         .get_token_account(&governance_realm_cookie.governance_token_holding_account)
@@ -72,7 +72,7 @@ async fn test_withdraw_all_governance_tokens() {
         .get_voter_record_account(&voter_record_cookie.address)
         .await;
 
-    assert_eq!(0, voter_record.governance_token_deposit_amount);
+    assert_eq!(0, voter_record.token_deposit_amount);
 
     let holding_account = governance_test
         .get_token_account(&governance_realm_cookie.governance_token_holding_account)
@@ -111,7 +111,7 @@ async fn test_withdraw_all_council_tokens() {
         .get_voter_record_account(&voter_record_cookie.address)
         .await;
 
-    assert_eq!(0, voter_record.council_token_deposit_amount);
+    assert_eq!(0, voter_record.token_deposit_amount);
 
     let holding_account = governance_test
         .get_token_account(
@@ -159,7 +159,7 @@ async fn test_withdraw_council_tokens() {
         .get_voter_record_account(&voter_record_cookie.address)
         .await;
 
-    assert_eq!(deposit_amount, voter_record.council_token_deposit_amount);
+    assert_eq!(deposit_amount, voter_record.token_deposit_amount);
 
     let holding_account = governance_test
         .get_token_account(

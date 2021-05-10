@@ -24,8 +24,10 @@ use spl_governance::{
     },
     processor::process_instruction,
     state::{
-        governance_realm::GovernanceRealm, program_governance::ProgramGovernance,
-        proposal::Proposal, voter_record::VoterRecord,
+        governance_realm::Realm,
+        program_governance::ProgramGovernance,
+        proposal::Proposal,
+        voter_record::{get_vote_record_address, VoterRecord},
     },
     tools::get_governance_realm_address,
     PROGRAM_AUTHORITY_SEED,
@@ -245,7 +247,7 @@ impl GovernanceProgramTest {
             .get_account(*address)
             .await
             .unwrap()
-            .expect("Account missing");
+            .expect("TEST: Account not found");
 
         T::try_from_slice(&raw_account.data).unwrap()
     }
@@ -340,7 +342,6 @@ impl GovernanceProgramTest {
         governance_realm_cookie: &GovernanceRealmCookie,
         deposit_amount: Option<u64>,
     ) -> VoterRecordCookie {
-        let voter_record_keypair = Keypair::new();
         let governance_token_source = Keypair::new();
 
         let source_amount = 100;
@@ -359,21 +360,24 @@ impl GovernanceProgramTest {
             &governance_realm_cookie.governance_mint,
             &governance_realm_cookie.governance_token_holding_account,
             &governance_token_source.pubkey(),
-            &voter_record_keypair.pubkey(),
             &self.payer.pubkey(),
-            true,
+            &self.payer.pubkey(),
+            &self.payer.pubkey(),
         )
         .unwrap();
 
-        self.process_transaction(
-            &[deposit_governing_tokens_instruction],
-            Some(&[&voter_record_keypair]),
-        )
-        .await
-        .unwrap();
+        self.process_transaction(&[deposit_governing_tokens_instruction], None)
+            .await
+            .unwrap();
+
+        let voter_record_address = get_vote_record_address(
+            &governance_realm_cookie.address,
+            &governance_realm_cookie.governance_mint,
+            &self.payer.pubkey(),
+        );
 
         VoterRecordCookie {
-            address: voter_record_keypair.pubkey(),
+            address: voter_record_address,
             governance_token_deposit_amount: deposit_amount.unwrap_or(source_amount),
             governance_token_source_amount: source_amount,
 
@@ -398,9 +402,9 @@ impl GovernanceProgramTest {
             &governance_realm_cookie.governance_mint,
             &governance_realm_cookie.governance_token_holding_account,
             &voter_record_cookie.governance_token_source,
-            &voter_record_cookie.address,
             &self.payer.pubkey(),
-            false,
+            &self.payer.pubkey(),
+            &self.payer.pubkey(),
         )
         .unwrap();
 
@@ -470,9 +474,9 @@ impl GovernanceProgramTest {
                 .council_token_holding_account
                 .unwrap(),
             &voter_record_cookie.council_token_source.unwrap(),
-            &voter_record_cookie.address,
             &self.payer.pubkey(),
-            false,
+            &self.payer.pubkey(),
+            &self.payer.pubkey(),
         )
         .unwrap();
 
@@ -510,9 +514,9 @@ impl GovernanceProgramTest {
                 .council_token_holding_account
                 .unwrap(),
             &council_token_source_account.pubkey(),
-            &voter_record_keypair.pubkey(),
             &self.payer.pubkey(),
-            true,
+            &self.payer.pubkey(),
+            &self.payer.pubkey(),
         )
         .unwrap();
 
@@ -540,12 +544,8 @@ impl GovernanceProgramTest {
     }
 
     #[allow(dead_code)]
-    pub async fn get_root_governnace_account(
-        &mut self,
-        root_governance_address: &Pubkey,
-    ) -> GovernanceRealm {
-        self.get_account::<GovernanceRealm>(root_governance_address)
-            .await
+    pub async fn get_root_governnace_account(&mut self, root_governance_address: &Pubkey) -> Realm {
+        self.get_account::<Realm>(root_governance_address).await
     }
 
     #[allow(dead_code)]

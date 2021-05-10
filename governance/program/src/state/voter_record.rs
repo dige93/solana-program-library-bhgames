@@ -1,6 +1,8 @@
 //! VoterRecord Account
 
-use crate::{error::GovernanceError, id, tools::account::deserialize_account};
+use crate::{
+    error::GovernanceError, id, tools::account::deserialize_account, PROGRAM_AUTHORITY_SEED,
+};
 
 use super::enums::GovernanceAccountType;
 
@@ -11,21 +13,27 @@ use solana_program::{
     pubkey::Pubkey,
 };
 
-/// Governance Proposal
+/// Governance Voter Record
+/// Account PDA seeds: ['governance', realm, token_mint, vote_authority ]
 #[derive(Clone, Debug, PartialEq, BorshDeserialize, BorshSerialize, BorshSchema)]
 pub struct VoterRecord {
     /// Governance account type
     pub account_type: GovernanceAccountType,
 
-    pub voter: Pubkey,
+    /// The owner (either single or multisig) of the deposited governing SPL Tokens
+    /// This is who can authorize a withdrawal
+    pub token_owner: Pubkey,
 
-    pub governance_token_deposit_amount: u64,
+    /// The amount of governing tokens deposited into the Realm
+    /// This amount is the voter weight used when voting on proposals
+    pub token_deposit_amount: u64,
 
-    pub active_governance_votes_count: u8,
+    /// A single account that is allowed to operate governance with the deposited governing tokens
+    /// It's delegated to by the token owner
+    pub vote_authority: Pubkey,
 
-    pub council_token_deposit_amount: u64,
-
-    pub active_council_votes_count: u8,
+    /// The number of active votes cast by vote authority
+    pub active_votes_count: u8,
 }
 
 impl IsInitialized for VoterRecord {
@@ -34,15 +42,43 @@ impl IsInitialized for VoterRecord {
     }
 }
 
+pub fn get_vote_record_address(
+    realm: &Pubkey,
+    governing_token_mint: &Pubkey,
+    vote_authority: &Pubkey,
+) -> Pubkey {
+    Pubkey::find_program_address(
+        &get_vote_record_address_seeds(realm, governing_token_mint, vote_authority)[..],
+        &id(),
+    )
+    .0
+}
+
+pub fn get_vote_record_address_seeds<'a>(
+    realm: &'a Pubkey,
+    governing_token_mint: &'a Pubkey,
+    vote_authority: &'a Pubkey,
+) -> Vec<&'a [u8]> {
+    vec![
+        PROGRAM_AUTHORITY_SEED,
+        realm.as_ref(),
+        governing_token_mint.as_ref(),
+        vote_authority.as_ref(),
+    ]
+}
+
 pub fn deserialize_voter_record(
     voter_record_info: &AccountInfo,
-    voter_info: &AccountInfo,
+    voter_record_seeds: Vec<&[u8]>,
 ) -> Result<VoterRecord, ProgramError> {
-    let voter_record_data = deserialize_account::<VoterRecord>(voter_record_info, &id())?;
+    let (voter_record_address, _) = Pubkey::find_program_address(&voter_record_seeds[..], &id());
 
-    if voter_record_data.voter != *voter_info.key {
-        return Err(GovernanceError::InvalidVoterAccount.into());
+    if voter_record_address != *voter_record_info.key {
+        return Err(GovernanceError::InvalidVoterAccountAddress.into());
     }
 
-    Ok(voter_record_data)
+    Ok(deserialize_account::<VoterRecord>(
+        voter_record_info,
+        &id(),
+    )?)
 }

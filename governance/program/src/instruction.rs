@@ -1,4 +1,10 @@
-use crate::{state::enums::Vote, tools::get_governance_realm_address};
+use crate::{
+    state::{
+        enums::Vote,
+        voter_record::{get_vote_record_address, get_vote_record_address_seeds},
+    },
+    tools::get_governance_realm_address,
+};
 use borsh::{BorshDeserialize, BorshSchema, BorshSerialize};
 
 use solana_program::{
@@ -395,21 +401,25 @@ pub fn withdraw_governing_tokens(
 /// Creates DepositGoverningTokens instruction
 pub fn deposit_governing_tokens(
     amount: Option<u64>,
-    governance_realm: &Pubkey,
+    realm: &Pubkey,
     governing_token_mint: &Pubkey,
     governing_token_holding: &Pubkey,
     governing_token_source: &Pubkey,
-    voter_record: &Pubkey,
-    voter: &Pubkey,
-    is_initial_deposit: bool,
+    governing_token_owner: &Pubkey,
+    vote_authority: &Pubkey,
+    payer: &Pubkey,
 ) -> Result<Instruction, ProgramError> {
+    let vote_record_address = get_vote_record_address(realm, governing_token_mint, vote_authority);
+
     let accounts = vec![
-        AccountMeta::new_readonly(*governance_realm, false),
+        AccountMeta::new_readonly(*realm, false),
         AccountMeta::new_readonly(*governing_token_mint, false),
         AccountMeta::new(*governing_token_holding, false),
         AccountMeta::new(*governing_token_source, false),
-        AccountMeta::new(*voter_record, is_initial_deposit),
-        AccountMeta::new_readonly(*voter, true),
+        AccountMeta::new_readonly(*governing_token_owner, true),
+        AccountMeta::new(vote_record_address, false),
+        AccountMeta::new_readonly(*vote_authority, false),
+        AccountMeta::new_readonly(*payer, true),
         AccountMeta::new_readonly(system_program::id(), false),
         AccountMeta::new_readonly(spl_token::id(), false),
     ];
