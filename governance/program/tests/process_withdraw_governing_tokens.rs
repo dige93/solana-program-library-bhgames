@@ -10,14 +10,14 @@ use program_test::*;
 async fn test_withdraw_governance_tokens() {
     // Arrange
     let mut governance_test = GovernanceProgramTest::start_new().await;
-    let root_governance_cookie = governance_test.with_governance_realm().await;
+    let governance_realm_cookie = governance_test.with_governance_realm().await;
     let voter_record_cookie = governance_test
-        .with_initial_governance_token_deposit(&root_governance_cookie)
+        .with_initial_governance_token_deposit(&governance_realm_cookie, Some(50))
         .await;
 
     // Act
     governance_test
-        .withdraw_governance_token_deposit(&root_governance_cookie, &voter_record_cookie, 50)
+        .withdraw_governance_token_deposit(&governance_realm_cookie, &voter_record_cookie, 50)
         .await;
 
     // Assert
