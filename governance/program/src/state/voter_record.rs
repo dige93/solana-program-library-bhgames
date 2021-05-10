@@ -19,11 +19,13 @@ pub struct VoterRecord {
 
     pub voter: Pubkey,
 
-    pub governance_token_amount: u64,
+    pub governance_token_deposit_amount: u64,
 
-    pub council_token_amount: u64,
+    pub active_governance_votes_count: u8,
 
-    pub active_votes_count: u8,
+    pub council_token_deposit_amount: u64,
+
+    pub active_council_votes_count: u8,
 }
 
 impl IsInitialized for VoterRecord {

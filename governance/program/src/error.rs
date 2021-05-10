@@ -145,6 +145,18 @@ pub enum GovernanceError {
     #[error("Current program upgrade authority must sign transaction")]
     UpgradeAuthorityMustSign,
 
+    /// Voter must sign transaction
+    #[error("Voter must sign transaction")]
+    VoterMustSign,
+
+    /// All active votes must be relinquished to withdraw governing tokens
+    #[error("All active votes must be relinquished to withdraw governing tokens")]
+    CannotWithdrawGoverningTokensWhenActiveVotesExist,
+
+    /// Cannot withdraw more governing tokens then deposited
+    #[error("Cannot withdraw more governing tokens then deposited")]
+    CannotWithdrawMoreGoverningTokensThenDeposited,
+
     /// Invalid ProgramData account data
     #[error("Invalid ProgramData account Data")]
     InvalidProgramDataAccountData,

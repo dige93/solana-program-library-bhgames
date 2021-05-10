@@ -2,6 +2,7 @@ use borsh::BorshDeserialize;
 use solana_program::{
     bpf_loader_upgradeable::{self, UpgradeableLoaderState},
     instruction::Instruction,
+    program_error::ProgramError,
     program_pack::{IsInitialized, Pack},
     pubkey::Pubkey,
     rent::Rent,
@@ -36,8 +37,8 @@ use self::cookies::{
     VoterRecordCookie,
 };
 
-pub mod programs;
-use self::programs::read_test_program_elf;
+pub mod tools;
+use self::tools::{map_transaction_error, read_test_program_elf};
 
 pub struct GovernanceProgramTest {
     pub banks_client: BanksClient,
@@ -76,7 +77,7 @@ impl GovernanceProgramTest {
         &mut self,
         instructions: &[Instruction],
         signers: Option<&[&Keypair]>,
-    ) {
+    ) -> Result<(), ProgramError> {
         let mut transaction =
             Transaction::new_with_payer(&instructions, Some(&self.payer.pubkey()));
 
@@ -91,7 +92,7 @@ impl GovernanceProgramTest {
         self.banks_client
             .process_transaction(transaction)
             .await
-            .unwrap();
+            .map_err(map_transaction_error)
     }
 
     #[allow(dead_code)]
@@ -156,7 +157,8 @@ impl GovernanceProgramTest {
                 &program_buffer_keypair,
             ]),
         )
-        .await;
+        .await
+        .unwrap();
 
         GovernedProgramCookie {
             address: program_address_keypair.pubkey(),
@@ -209,7 +211,8 @@ impl GovernanceProgramTest {
             &[create_governance_instruction],
             Some(&[&governed_program.upgrade_authority]),
         )
-        .await;
+        .await
+        .unwrap();
 
         ProgramGovernanceCookie {
             address: governance_address,
@@ -265,7 +268,8 @@ impl GovernanceProgramTest {
         .unwrap();
 
         self.process_transaction(&[create_proposal_instruction], Some(&[&proposal_key]))
-            .await;
+            .await
+            .unwrap();
 
         ProposalCookie {
             address: proposal_key.pubkey(),
@@ -315,7 +319,8 @@ impl GovernanceProgramTest {
                 &council_token_holding_keypair,
             ]),
         )
-        .await;
+        .await
+        .unwrap();
 
         GovernanceRealmCookie {
             address: root_governance_key,
@@ -364,7 +369,8 @@ impl GovernanceProgramTest {
             &[deposit_governing_tokens_instruction],
             Some(&[&voter_record_keypair]),
         )
-        .await;
+        .await
+        .unwrap();
 
         VoterRecordCookie {
             address: voter_record_keypair.pubkey(),
@@ -399,7 +405,8 @@ impl GovernanceProgramTest {
         .unwrap();
 
         self.process_transaction(&[deposit_governing_tokens_instruction], None)
-            .await;
+            .await
+            .unwrap();
     }
 
     #[allow(dead_code)]
@@ -407,20 +414,45 @@ impl GovernanceProgramTest {
         &mut self,
         governance_realm_cookie: &GovernanceRealmCookie,
         voter_record_cookie: &VoterRecordCookie,
-        amount: u64,
-    ) {
+        amount: Option<u64>,
+    ) -> Result<(), ProgramError> {
         let deposit_governing_tokens_instruction = withdraw_governing_tokens(
-            Some(amount),
+            amount,
             &governance_realm_cookie.address,
             &governance_realm_cookie.governance_mint,
             &governance_realm_cookie.governance_token_holding_account,
             &voter_record_cookie.governance_token_source,
             &voter_record_cookie.address,
+            &self.payer.pubkey(),
         )
         .unwrap();
 
         self.process_transaction(&[deposit_governing_tokens_instruction], None)
-            .await;
+            .await
+    }
+
+    #[allow(dead_code)]
+    pub async fn withdraw_council_token_deposit(
+        &mut self,
+        governance_realm_cookie: &GovernanceRealmCookie,
+        voter_record_cookie: &VoterRecordCookie,
+        amount: Option<u64>,
+    ) -> Result<(), ProgramError> {
+        let deposit_governing_tokens_instruction = withdraw_governing_tokens(
+            amount,
+            &governance_realm_cookie.address,
+            &governance_realm_cookie.council_mint.unwrap(),
+            &governance_realm_cookie
+                .council_token_holding_account
+                .unwrap(),
+            &voter_record_cookie.council_token_source.unwrap(),
+            &voter_record_cookie.address,
+            &self.payer.pubkey(),
+        )
+        .unwrap();
+
+        self.process_transaction(&[deposit_governing_tokens_instruction], None)
+            .await
     }
 
     #[allow(dead_code)]
@@ -429,7 +461,7 @@ impl GovernanceProgramTest {
         governance_realm_cookie: &GovernanceRealmCookie,
         voter_record_cookie: &VoterRecordCookie,
         amount: u64,
-    ) {
+    ) -> Result<(), ProgramError> {
         let deposit_governing_tokens_instruction = deposit_governing_tokens(
             Some(amount),
             &governance_realm_cookie.address,
@@ -445,7 +477,7 @@ impl GovernanceProgramTest {
         .unwrap();
 
         self.process_transaction(&[deposit_governing_tokens_instruction], None)
-            .await;
+            .await
     }
 
     #[allow(dead_code)]
@@ -488,7 +520,8 @@ impl GovernanceProgramTest {
             &[deposit_governing_tokens_instruction],
             Some(&[&voter_record_keypair]),
         )
-        .await;
+        .await
+        .unwrap();
 
         VoterRecordCookie {
             address: voter_record_keypair.pubkey(),
@@ -559,7 +592,8 @@ impl GovernanceProgramTest {
         ];
 
         self.process_transaction(&instructions, Some(&[&mint_keypair]))
-            .await;
+            .await
+            .unwrap();
     }
 
     pub async fn create_token_account(
@@ -604,6 +638,7 @@ impl GovernanceProgramTest {
             ],
             Some(&[&token_account_keypair, &token_mint_authority]),
         )
-        .await;
+        .await
+        .unwrap();
     }
 }

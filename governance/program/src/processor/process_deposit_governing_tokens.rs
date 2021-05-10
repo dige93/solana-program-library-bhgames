@@ -65,9 +65,10 @@ pub fn process_deposit_governing_tokens(
         let voter_record_data = VoterRecord {
             account_type: GovernanceAccountType::VoterRecord,
             voter: *voter_info.key,
-            governance_token_amount: governance_token_amount_delta,
-            council_token_amount: council_token_amount_delta,
-            active_votes_count: 0,
+            governance_token_deposit_amount: governance_token_amount_delta,
+            active_governance_votes_count: 0,
+            council_token_deposit_amount: council_token_amount_delta,
+            active_council_votes_count: 0,
         };
 
         create_and_serialize_account(
@@ -80,13 +81,13 @@ pub fn process_deposit_governing_tokens(
     } else {
         let mut voter_record_data = deserialize_voter_record(voter_record_info, voter_info)?;
 
-        voter_record_data.governance_token_amount = voter_record_data
-            .governance_token_amount
+        voter_record_data.governance_token_deposit_amount = voter_record_data
+            .governance_token_deposit_amount
             .checked_add(governance_token_amount_delta)
             .unwrap();
 
-        voter_record_data.council_token_amount = voter_record_data
-            .council_token_amount
+        voter_record_data.council_token_deposit_amount = voter_record_data
+            .council_token_deposit_amount
             .checked_add(council_token_amount_delta)
             .unwrap();
 
