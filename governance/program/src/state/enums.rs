@@ -17,7 +17,7 @@ pub enum GovernanceAccountType {
     ProposalState,
 
     /// 4 - Vote record account for a given Proposal.  Proposal can have 0..n voting records
-    VoteRecord,
+    ProposalVoteRecord,
 
     /// 5 Custom Single Signer Transaction account which holds instructions to execute for Proposal
     CustomSingleSignerTransaction,

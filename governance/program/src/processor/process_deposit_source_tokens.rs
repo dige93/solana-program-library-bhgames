@@ -88,7 +88,7 @@ pub fn process_deposit_source_tokens(
     if !voting_record.is_initialized() {
         let voting_account: Account = assert_initialized(voting_account_info)?;
 
-        voting_record.account_type = GovernanceAccountType::VoteRecord;
+        voting_record.account_type = GovernanceAccountType::ProposalVoteRecord;
         voting_record.proposal = *proposal_account_info.key;
         voting_record.voter = voting_account.owner;
 

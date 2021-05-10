@@ -52,7 +52,7 @@ impl Pack for GovernanceVoteRecord {
 
         let account_type = match account_type {
             0 => GovernanceAccountType::Uninitialized,
-            4 => GovernanceAccountType::VoteRecord,
+            4 => GovernanceAccountType::ProposalVoteRecord,
             _ => return Err(ProgramError::InvalidAccountData),
         };
         Ok(Self {
@@ -74,7 +74,7 @@ impl Pack for GovernanceVoteRecord {
 
         *account_type_value = match self.account_type {
             GovernanceAccountType::Uninitialized => 0_u8,
-            GovernanceAccountType::VoteRecord => 4_u8,
+            GovernanceAccountType::ProposalVoteRecord => 4_u8,
             _ => panic!("Account type was invalid"),
         }
         .to_le_bytes();
