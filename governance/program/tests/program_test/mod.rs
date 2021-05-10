@@ -1,5 +1,3 @@
-use std::{env, fs::File, io::Read, path::PathBuf};
-
 use borsh::BorshDeserialize;
 use solana_program::{
     bpf_loader_upgradeable::{self, UpgradeableLoaderState},
@@ -32,63 +30,14 @@ use spl_governance::{
     PROGRAM_AUTHORITY_SEED,
 };
 
-#[derive(Debug)]
-pub struct GovernedProgramSetup {
-    pub address: Pubkey,
-    pub upgrade_authority: Keypair,
-    pub data_address: Pubkey,
-}
+pub mod cookies;
+use self::cookies::{
+    GovernanceRealmCookie, GovernedProgramCookie, ProgramGovernanceCookie, ProposalCookie,
+    VoterRecordCookie,
+};
 
-#[derive(Debug)]
-pub struct ProgramGovernanceSetup {
-    pub address: Pubkey,
-    pub governance_mint: Pubkey,
-    pub council_mint: Option<Pubkey>,
-    pub vote_threshold: u8,
-    pub min_instruction_hold_up_time: u64,
-    pub max_voting_time: u64,
-}
-#[derive(Debug)]
-pub struct ProposalSetup {
-    pub address: Pubkey,
-    /// bla
-    pub description_link: String,
-    /// UTF-8 encoded name of the proposal
-    pub name: String,
-}
-
-#[derive(Debug)]
-pub struct GovernanceRealmCookie {
-    pub address: Pubkey,
-
-    /// UTF-8 encoded name of the proposal
-    pub name: String,
-
-    pub governance_mint: Pubkey,
-
-    pub governance_mint_authority: Keypair,
-
-    pub governance_token_holding_account: Pubkey,
-
-    pub council_mint: Option<Pubkey>,
-
-    pub council_mint_authority: Option<Keypair>,
-
-    pub council_token_holding_account: Option<Pubkey>,
-}
-
-#[derive(Debug)]
-pub struct VoterRecordSetup {
-    pub address: Pubkey,
-
-    pub governance_token_deposit_amount: u64,
-
-    pub governance_token_source: Pubkey,
-
-    pub council_token_deposit_amount: u64,
-
-    pub council_token_source: Option<Pubkey>,
-}
+pub mod programs;
+use self::programs::read_test_program_elf;
 
 pub struct GovernanceProgramTest {
     pub banks_client: BanksClient,
@@ -146,7 +95,7 @@ impl GovernanceProgramTest {
     }
 
     #[allow(dead_code)]
-    pub async fn with_governed_program(&mut self) -> GovernedProgramSetup {
+    pub async fn with_governed_program(&mut self) -> GovernedProgramCookie {
         let program_address_keypair = Keypair::new();
         let program_buffer_keypair = Keypair::new();
         let program_upgrade_authority_keypair = Keypair::new();
@@ -157,7 +106,7 @@ impl GovernanceProgramTest {
         );
 
         // Load solana_bpf_rust_upgradeable program taken from solana test programs
-        let program_data = read_governed_program("solana_bpf_rust_upgradeable");
+        let program_data = read_test_program_elf("solana_bpf_rust_upgradeable");
 
         let program_buffer_rent = self
             .rent
@@ -209,7 +158,7 @@ impl GovernanceProgramTest {
         )
         .await;
 
-        GovernedProgramSetup {
+        GovernedProgramCookie {
             address: program_address_keypair.pubkey(),
             upgrade_authority: program_upgrade_authority_keypair,
             data_address: program_data_address,
@@ -217,8 +166,8 @@ impl GovernanceProgramTest {
     }
 
     #[allow(dead_code)]
-    pub async fn with_dummy_governed_program(&mut self) -> GovernedProgramSetup {
-        GovernedProgramSetup {
+    pub async fn with_dummy_governed_program(&mut self) -> GovernedProgramCookie {
+        GovernedProgramCookie {
             address: Pubkey::new_unique(),
             upgrade_authority: Keypair::new(),
             data_address: Pubkey::new_unique(),
@@ -228,8 +177,8 @@ impl GovernanceProgramTest {
     #[allow(dead_code)]
     pub async fn with_program_governance(
         &mut self,
-        governed_program: &GovernedProgramSetup,
-    ) -> ProgramGovernanceSetup {
+        governed_program: &GovernedProgramCookie,
+    ) -> ProgramGovernanceCookie {
         let (governance_address, _) = Pubkey::find_program_address(
             &[PROGRAM_AUTHORITY_SEED, governed_program.address.as_ref()],
             &id(),
@@ -262,7 +211,7 @@ impl GovernanceProgramTest {
         )
         .await;
 
-        ProgramGovernanceSetup {
+        ProgramGovernanceCookie {
             address: governance_address,
             governance_mint,
             council_mint,
@@ -299,7 +248,7 @@ impl GovernanceProgramTest {
     }
 
     #[allow(dead_code)]
-    pub async fn with_proposal(&mut self, governance: &ProgramGovernanceSetup) -> ProposalSetup {
+    pub async fn with_proposal(&mut self, governance: &ProgramGovernanceCookie) -> ProposalCookie {
         let description_link = "proposal description".to_string();
         let name = "proposal_name".to_string();
 
@@ -318,7 +267,7 @@ impl GovernanceProgramTest {
         self.process_transaction(&[create_proposal_instruction], Some(&[&proposal_key]))
             .await;
 
-        ProposalSetup {
+        ProposalCookie {
             address: proposal_key.pubkey(),
             description_link: description_link,
             name: name,
@@ -384,7 +333,7 @@ impl GovernanceProgramTest {
     pub async fn with_initial_governance_token_deposit(
         &mut self,
         root_governance_setup: &GovernanceRealmCookie,
-    ) -> VoterRecordSetup {
+    ) -> VoterRecordCookie {
         let amount: u64 = 100;
 
         let voter_record_keypair = Keypair::new();
@@ -416,7 +365,7 @@ impl GovernanceProgramTest {
         )
         .await;
 
-        VoterRecordSetup {
+        VoterRecordCookie {
             address: voter_record_keypair.pubkey(),
             governance_token_deposit_amount: amount,
 
@@ -431,7 +380,7 @@ impl GovernanceProgramTest {
     pub async fn with_governance_token_deposit(
         &mut self,
         root_governance_setup: &GovernanceRealmCookie,
-        voter_record_setup: &VoterRecordSetup,
+        voter_record_setup: &VoterRecordCookie,
         amount: u64,
     ) {
         let deposit_governing_tokens_instruction = deposit_governing_tokens(
@@ -454,7 +403,7 @@ impl GovernanceProgramTest {
     pub async fn withdraw_governance_token_deposit(
         &mut self,
         root_governance_setup: &GovernanceRealmCookie,
-        voter_record_setup: &VoterRecordSetup,
+        voter_record_setup: &VoterRecordCookie,
         amount: u64,
     ) {
         let deposit_governing_tokens_instruction = withdraw_governing_tokens(
@@ -475,7 +424,7 @@ impl GovernanceProgramTest {
     pub async fn with_council_token_deposit(
         &mut self,
         root_governance_setup: &GovernanceRealmCookie,
-        voter_record_setup: &VoterRecordSetup,
+        voter_record_setup: &VoterRecordCookie,
         amount: u64,
     ) {
         let deposit_governing_tokens_instruction = deposit_governing_tokens(
@@ -498,7 +447,7 @@ impl GovernanceProgramTest {
     pub async fn with_initial_council_token_deposit(
         &mut self,
         root_governance_setup: &GovernanceRealmCookie,
-    ) -> VoterRecordSetup {
+    ) -> VoterRecordCookie {
         let amount: u64 = 10;
 
         let voter_record_keypair = Keypair::new();
@@ -533,7 +482,7 @@ impl GovernanceProgramTest {
         )
         .await;
 
-        VoterRecordSetup {
+        VoterRecordCookie {
             address: voter_record_keypair.pubkey(),
             governance_token_deposit_amount: 0,
             governance_token_source: Pubkey::new_unique(),
@@ -647,23 +596,4 @@ impl GovernanceProgramTest {
         )
         .await;
     }
-}
-
-fn get_governed_program_path(name: &str) -> PathBuf {
-    let mut pathbuf = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    pathbuf.push("tests/program_test/programs");
-    pathbuf.push(name);
-    pathbuf.set_extension("_so");
-    pathbuf
-}
-
-fn read_governed_program(name: &str) -> Vec<u8> {
-    let path = get_governed_program_path(name);
-    let mut file = File::open(&path).unwrap_or_else(|err| {
-        panic!("Failed to open {}: {}", path.display(), err);
-    });
-    let mut elf = Vec::new();
-    file.read_to_end(&mut elf).unwrap();
-
-    elf
 }
