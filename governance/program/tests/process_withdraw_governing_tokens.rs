@@ -42,11 +42,11 @@ async fn test_withdraw_governance_tokens() {
     assert_eq!(deposit_amount, holding_account.amount);
 
     let source_account = governance_test
-        .get_token_account(&voter_record_cookie.governance_token_source)
+        .get_token_account(&voter_record_cookie.token_source)
         .await;
 
     assert_eq!(
-        voter_record_cookie.governance_token_source_amount - deposit_amount,
+        voter_record_cookie.token_source_amount - deposit_amount,
         source_account.amount
     );
 }
@@ -81,11 +81,11 @@ async fn test_withdraw_all_governance_tokens() {
     assert_eq!(0, holding_account.amount);
 
     let source_account = governance_test
-        .get_token_account(&voter_record_cookie.governance_token_source)
+        .get_token_account(&voter_record_cookie.token_source)
         .await;
 
     assert_eq!(
-        voter_record_cookie.governance_token_source_amount,
+        voter_record_cookie.token_source_amount,
         source_account.amount
     );
 }
@@ -124,11 +124,11 @@ async fn test_withdraw_all_council_tokens() {
     assert_eq!(0, holding_account.amount);
 
     let source_account = governance_test
-        .get_token_account(&voter_record_cookie.council_token_source.unwrap())
+        .get_token_account(&voter_record_cookie.token_source)
         .await;
 
     assert_eq!(
-        voter_record_cookie.council_token_source_amount,
+        voter_record_cookie.token_source_amount,
         source_account.amount
     );
 }
@@ -172,11 +172,11 @@ async fn test_withdraw_council_tokens() {
     assert_eq!(deposit_amount, holding_account.amount);
 
     let source_account = governance_test
-        .get_token_account(&voter_record_cookie.council_token_source.unwrap())
+        .get_token_account(&voter_record_cookie.token_source)
         .await;
 
     assert_eq!(
-        voter_record_cookie.council_token_source_amount - deposit_amount,
+        voter_record_cookie.token_source_amount - deposit_amount,
         source_account.amount
     );
 }

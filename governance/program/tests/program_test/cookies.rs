@@ -49,15 +49,9 @@ pub struct GovernanceRealmCookie {
 pub struct VoterRecordCookie {
     pub address: Pubkey,
 
-    pub governance_token_deposit_amount: u64,
+    pub token_deposit_amount: u64,
 
-    pub governance_token_source: Pubkey,
+    pub token_source: Pubkey,
 
-    pub governance_token_source_amount: u64,
-
-    pub council_token_deposit_amount: u64,
-
-    pub council_token_source: Option<Pubkey>,
-
-    pub council_token_source_amount: u64,
+    pub token_source_amount: u64,
 }

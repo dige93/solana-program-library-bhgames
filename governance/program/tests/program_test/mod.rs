@@ -378,14 +378,10 @@ impl GovernanceProgramTest {
 
         VoterRecordCookie {
             address: voter_record_address,
-            governance_token_deposit_amount: deposit_amount.unwrap_or(source_amount),
-            governance_token_source_amount: source_amount,
+            token_deposit_amount: deposit_amount.unwrap_or(source_amount),
+            token_source_amount: source_amount,
 
-            governance_token_source: governance_token_source.pubkey(),
-            council_token_deposit_amount: 0,
-            council_token_source_amount: 0,
-
-            council_token_source: None,
+            token_source: governance_token_source.pubkey(),
         }
     }
 
@@ -401,7 +397,7 @@ impl GovernanceProgramTest {
             &governance_realm_cookie.address,
             &governance_realm_cookie.governance_mint,
             &governance_realm_cookie.governance_token_holding_account,
-            &voter_record_cookie.governance_token_source,
+            &voter_record_cookie.token_source,
             &self.payer.pubkey(),
             &self.payer.pubkey(),
             &self.payer.pubkey(),
@@ -425,7 +421,7 @@ impl GovernanceProgramTest {
             &governance_realm_cookie.address,
             &governance_realm_cookie.governance_mint,
             &governance_realm_cookie.governance_token_holding_account,
-            &voter_record_cookie.governance_token_source,
+            &voter_record_cookie.token_source,
             &voter_record_cookie.address,
             &self.payer.pubkey(),
         )
@@ -449,7 +445,7 @@ impl GovernanceProgramTest {
             &governance_realm_cookie
                 .council_token_holding_account
                 .unwrap(),
-            &voter_record_cookie.council_token_source.unwrap(),
+            &voter_record_cookie.token_source,
             &voter_record_cookie.address,
             &self.payer.pubkey(),
         )
@@ -473,7 +469,7 @@ impl GovernanceProgramTest {
             &governance_realm_cookie
                 .council_token_holding_account
                 .unwrap(),
-            &voter_record_cookie.council_token_source.unwrap(),
+            &voter_record_cookie.token_source,
             &self.payer.pubkey(),
             &self.payer.pubkey(),
             &self.payer.pubkey(),
@@ -529,12 +525,10 @@ impl GovernanceProgramTest {
 
         VoterRecordCookie {
             address: voter_record_keypair.pubkey(),
-            governance_token_deposit_amount: 0,
-            governance_token_source_amount: 0,
-            governance_token_source: Pubkey::new_unique(),
-            council_token_deposit_amount: deposit_amount.unwrap_or(source_amount),
-            council_token_source_amount: source_amount,
-            council_token_source: Some(council_token_source_account.pubkey()),
+
+            token_deposit_amount: deposit_amount.unwrap_or(source_amount),
+            token_source_amount: source_amount,
+            token_source: council_token_source_account.pubkey(),
         }
     }
 
