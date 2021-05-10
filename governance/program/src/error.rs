@@ -172,6 +172,10 @@ pub enum GovernanceError {
     /// Account Error: Invalid account owner
     #[error("Invalid account owner")]
     InvalidAccountOwnerError,
+
+    /// Token Account Error: Invalid Token account owner
+    #[error("Invalid Token account owner")]
+    InvalidTokenAccountOwnerError,
 }
 
 impl PrintProgramError for GovernanceError {

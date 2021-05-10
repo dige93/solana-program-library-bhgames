@@ -16,7 +16,7 @@ async fn test_deposited_initial_governance_tokens() {
 
     // Act
     let voter_record_cookie = governance_test
-        .with_initial_governance_token_deposit(&root_governance_cookie)
+        .with_initial_governance_token_deposit(&root_governance_cookie, Some(10))
         .await;
 
     // Assert
@@ -97,7 +97,7 @@ async fn test_deposited_subsequent_governance_tokens() {
     let governance_token_holding_account = root_governance_cookie.governance_token_holding_account;
 
     let voter_record_cookie = governance_test
-        .with_initial_governance_token_deposit(&root_governance_cookie)
+        .with_initial_governance_token_deposit(&root_governance_cookie, Some(10))
         .await;
 
     let deposit_amount = 10;
@@ -164,4 +164,42 @@ async fn test_deposited_subsequent_council_tokens() {
         .await;
 
     assert_eq!(total_deposit_amount, holding_account.amount);
+}
+
+#[tokio::test]
+async fn test_deposited_all_initial_governance_tokens() {
+    // Arrange
+    let mut governance_test = GovernanceProgramTest::start_new().await;
+    let governance_realm_cookie = governance_test.with_governance_realm().await;
+
+    // Act
+    let voter_record_cookie = governance_test
+        .with_initial_governance_token_deposit(&governance_realm_cookie, None)
+        .await;
+
+    // Assert
+    let voter_record = governance_test
+        .get_voter_record_account(&voter_record_cookie.address)
+        .await;
+
+    assert_eq!(
+        voter_record_cookie.governance_token_deposit_amount,
+        voter_record.governance_token_amount
+    );
+
+    assert_eq!(
+        voter_record_cookie.council_token_deposit_amount,
+        voter_record.council_token_amount
+    );
+
+    let source_account = governance_test
+        .get_token_account(&voter_record_cookie.governance_token_source)
+        .await;
+    assert_eq!(0, source_account.amount);
+
+    let holding_account = governance_test
+        .get_token_account(&governance_realm_cookie.governance_token_holding_account)
+        .await;
+
+    assert_eq!(voter_record.governance_token_amount, holding_account.amount);
 }

@@ -333,22 +333,23 @@ impl GovernanceProgramTest {
     pub async fn with_initial_governance_token_deposit(
         &mut self,
         root_governance_cookie: &GovernanceRealmCookie,
+        deposit_amount: Option<u64>,
     ) -> VoterRecordCookie {
-        let amount: u64 = 100;
-
         let voter_record_keypair = Keypair::new();
         let governance_token_source = Keypair::new();
+
+        let source_amount = 100;
 
         self.create_token_account(
             &governance_token_source,
             &root_governance_cookie.governance_mint,
             &root_governance_cookie.governance_mint_authority,
-            amount + 100,
+            source_amount,
         )
         .await;
 
         let deposit_governing_tokens_instruction = deposit_governing_tokens(
-            Some(amount),
+            deposit_amount,
             &root_governance_cookie.address,
             &root_governance_cookie.governance_mint,
             &root_governance_cookie.governance_token_holding_account,
@@ -367,7 +368,7 @@ impl GovernanceProgramTest {
 
         VoterRecordCookie {
             address: voter_record_keypair.pubkey(),
-            governance_token_deposit_amount: amount,
+            governance_token_deposit_amount: deposit_amount.unwrap_or(source_amount),
 
             governance_token_source: governance_token_source.pubkey(),
             council_token_deposit_amount: 0,

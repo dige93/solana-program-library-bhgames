@@ -14,7 +14,10 @@ use crate::{
         governance_realm::deserialize_governance_realm,
         voter_record::{deserialize_voter_record, VoterRecord},
     },
-    tools::{account::create_and_serialize_account, token::transfer_spl_tokens},
+    tools::{
+        account::create_and_serialize_account,
+        token::{get_amount_from_token_account, transfer_spl_tokens},
+    },
 };
 
 /// process deposit governing tokens
@@ -36,7 +39,8 @@ pub fn process_deposit_governing_tokens(
 
     let governance_realm_data = deserialize_governance_realm(governance_realm_info)?;
 
-    let amount = amount.unwrap();
+    let amount = amount
+        .unwrap_or_else(|| get_amount_from_token_account(governing_token_source_info).unwrap());
 
     let mut governance_token_amount_delta = 0;
     let mut council_token_amount_delta = 0;

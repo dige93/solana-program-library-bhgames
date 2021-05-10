@@ -1,5 +1,6 @@
 //! General purpose token utility functions
 
+use arrayref::array_ref;
 use solana_program::{
     account_info::AccountInfo,
     entrypoint::ProgramResult,
@@ -11,6 +12,8 @@ use solana_program::{
     rent::Rent,
     system_instruction,
 };
+
+use crate::error::GovernanceError;
 
 pub fn create_spl_token_account<'a>(
     payer_info: &AccountInfo<'a>,
@@ -137,4 +140,18 @@ pub fn transfer_spl_tokens_signed<'a>(
     )?;
 
     Ok(())
+}
+
+/// Computationally cheap method to get amount from a token account. It reads amount without deserializing full account data
+pub fn get_amount_from_token_account(
+    token_account_info: &AccountInfo,
+) -> Result<u64, ProgramError> {
+    if token_account_info.owner != &spl_token::id() {
+        return Err(GovernanceError::InvalidTokenAccountOwnerError.into());
+    }
+
+    // TokeAccount layout:   mint(32), owner(32), amount(8)
+    let data = token_account_info.try_borrow_data()?;
+    let amount = array_ref![data, 64, 8];
+    Ok(u64::from_le_bytes(*amount))
 }
