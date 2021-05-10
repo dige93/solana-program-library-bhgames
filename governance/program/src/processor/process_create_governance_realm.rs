@@ -9,20 +9,20 @@ use solana_program::{
 use crate::{
     state::{enums::GovernanceAccountType, governance_realm::GovernanceRealm},
     tools::{
-        account::create_and_serialize_account_signed, get_root_governance_address_seeds,
+        account::create_and_serialize_account_signed, get_governance_realm_address_seeds,
         token::create_spl_token_account,
     },
 };
 
-/// process_create_root_governance
-pub fn process_create_root_governance(
+/// process_create_governance_realm
+pub fn process_create_governance_realm(
     program_id: &Pubkey,
     accounts: &[AccountInfo],
     name: String,
 ) -> ProgramResult {
     let account_info_iter = &mut accounts.iter();
 
-    let root_governance_info = next_account_info(account_info_iter)?; // 1
+    let governance_realm_info = next_account_info(account_info_iter)?; // 1
     let governance_token_mint_info = next_account_info(account_info_iter)?; // 2
     let governance_token_holding_info = next_account_info(account_info_iter)?; // 3
     let payer_info = next_account_info(account_info_iter)?; // 4
@@ -42,7 +42,7 @@ pub fn process_create_root_governance(
             payer_info,
             council_token_holding_info,
             council_mint_info,
-            root_governance_info,
+            governance_realm_info,
             system_info,
             spl_token_info,
             rent_sysvar_info,
@@ -53,13 +53,13 @@ pub fn process_create_root_governance(
         payer_info,
         governance_token_holding_info,
         governance_token_mint_info,
-        root_governance_info,
+        governance_realm_info,
         system_info,
         spl_token_info,
         rent_sysvar_info,
     )?;
 
-    let root_governance_data = GovernanceRealm {
+    let governance_realm_data = GovernanceRealm {
         account_type: GovernanceAccountType::GovernanceRealm,
         governance_mint: *governance_token_mint_info.key,
         council_mint: council_mint_address,
@@ -68,9 +68,9 @@ pub fn process_create_root_governance(
 
     create_and_serialize_account_signed::<GovernanceRealm>(
         payer_info,
-        &root_governance_info,
-        &root_governance_data,
-        get_root_governance_address_seeds(&name),
+        &governance_realm_info,
+        &governance_realm_data,
+        get_governance_realm_address_seeds(&name),
         program_id,
         system_info,
     )?;

@@ -22,7 +22,7 @@ use borsh::BorshDeserialize;
 use process_add_custom_single_signer_transaction::process_add_custom_single_signer_transaction;
 use process_add_signer::process_add_signer;
 use process_create_empty_governance_voting_record::process_create_empty_governance_voting_record;
-use process_create_governance_realm::process_create_root_governance;
+use process_create_governance_realm::process_create_governance_realm;
 use process_create_program_governance::process_create_program_governance;
 use process_create_proposal::process_create_proposal;
 use process_delete_proposal::process_cancel_proposal;
@@ -145,8 +145,8 @@ pub fn process_instruction(
         }
 
         GovernanceInstruction::CreateGovernanceRealm { name } => {
-            msg!("Instruction:CreateRootGovernance");
-            process_create_root_governance(program_id, accounts, name)
+            msg!("Instruction:CreateGovernanceRealm");
+            process_create_governance_realm(program_id, accounts, name)
         }
 
         GovernanceInstruction::DepositGoverningTokens { amount } => {

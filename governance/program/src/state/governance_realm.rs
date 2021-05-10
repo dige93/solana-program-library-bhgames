@@ -1,4 +1,4 @@
-//! RootGovernance Account
+//! GovernanceRealm Account
 
 use super::enums::GovernanceAccountType;
 

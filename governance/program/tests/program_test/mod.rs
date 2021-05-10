@@ -26,7 +26,7 @@ use spl_governance::{
         governance_realm::GovernanceRealm, program_governance::ProgramGovernance,
         proposal::Proposal, voter_record::VoterRecord,
     },
-    tools::get_root_governance_address,
+    tools::get_governance_realm_address,
     PROGRAM_AUTHORITY_SEED,
 };
 
@@ -279,7 +279,7 @@ impl GovernanceProgramTest {
         let name = "Governance Realm".to_string();
 
         //let proposal_count = 0;
-        let root_governance_key = get_root_governance_address(&name);
+        let root_governance_key = get_governance_realm_address(&name);
 
         let governance_token_mint_keypair = Keypair::new();
         let governance_token_mint_authority = Keypair::new();

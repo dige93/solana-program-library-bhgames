@@ -1,4 +1,4 @@
-use crate::{state::enums::Vote, tools::get_root_governance_address};
+use crate::{state::enums::Vote, tools::get_governance_realm_address};
 use borsh::{BorshDeserialize, BorshSchema, BorshSerialize};
 
 use solana_program::{
@@ -327,7 +327,7 @@ pub enum GovernanceInstruction {
     },
 }
 
-/// create_root_governance
+/// create_governance_realm
 pub fn create_governance_realm(
     name: String,
     governance_token_mint: &Pubkey,
@@ -336,10 +336,10 @@ pub fn create_governance_realm(
     council_token_mint: Option<Pubkey>,
     council_token_holding_account: Option<Pubkey>,
 ) -> Result<Instruction, ProgramError> {
-    let root_governance_address = get_root_governance_address(&name);
+    let governance_realm_address = get_governance_realm_address(&name);
 
     let mut accounts = vec![
-        AccountMeta::new(root_governance_address, false),
+        AccountMeta::new(governance_realm_address, false),
         AccountMeta::new_readonly(*governance_token_mint, false),
         AccountMeta::new(*governance_token_holding_account, true),
         AccountMeta::new_readonly(*payer, true),
@@ -367,14 +367,14 @@ pub fn create_governance_realm(
 
 pub fn withdraw_governing_tokens(
     amount: Option<u64>,
-    root_governance_account: &Pubkey,
+    governance_realm_account: &Pubkey,
     governing_token_mint: &Pubkey,
     governing_token_holding_account: &Pubkey,
     governing_token_source_account: &Pubkey,
     voter_record_account: &Pubkey,
 ) -> Result<Instruction, ProgramError> {
     let accounts = vec![
-        AccountMeta::new_readonly(*root_governance_account, false),
+        AccountMeta::new_readonly(*governance_realm_account, false),
         AccountMeta::new_readonly(*governing_token_mint, false),
         AccountMeta::new(*governing_token_holding_account, false),
         AccountMeta::new(*governing_token_source_account, false),
@@ -394,7 +394,7 @@ pub fn withdraw_governing_tokens(
 
 pub fn deposit_governing_tokens(
     amount: Option<u64>,
-    root_governance_account: &Pubkey,
+    governance_realm_account: &Pubkey,
     governing_token_mint: &Pubkey,
     governing_token_holding_account: &Pubkey,
     governing_token_source_account: &Pubkey,
@@ -403,7 +403,7 @@ pub fn deposit_governing_tokens(
     initial_deposit: bool,
 ) -> Result<Instruction, ProgramError> {
     let accounts = vec![
-        AccountMeta::new_readonly(*root_governance_account, false),
+        AccountMeta::new_readonly(*governance_realm_account, false),
         AccountMeta::new_readonly(*governing_token_mint, false),
         AccountMeta::new(*governing_token_holding_account, false),
         AccountMeta::new(*governing_token_source_account, false),
