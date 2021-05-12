@@ -43,6 +43,7 @@ async fn test_deposited_initial_governance_tokens() {
     assert_eq!(governance_realm_cookie.address, voter_record.realm);
 
     assert_eq!(0, voter_record.active_votes_count);
+    assert_eq!(0, voter_record.total_votes_count);
 
     assert_eq!(GoverningTokenType::Governance, voter_record.token_type);
 
@@ -97,7 +98,10 @@ async fn test_deposited_initial_council_tokens() {
         voter_record.vote_authority
     );
 
+    assert_eq!(governance_realm_cookie.address, voter_record.realm);
+
     assert_eq!(0, voter_record.active_votes_count);
+    assert_eq!(0, voter_record.total_votes_count);
 
     assert_eq!(GoverningTokenType::Council, voter_record.token_type);
 

@@ -73,6 +73,7 @@ pub fn process_deposit_governing_tokens(
             token_type: governing_token_type,
             vote_authority: *vote_authority_info.key,
             active_votes_count: 0,
+            total_votes_count: 0,
         };
 
         create_and_serialize_account_signed(

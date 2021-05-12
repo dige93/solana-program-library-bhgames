@@ -38,8 +38,11 @@ pub struct VoterRecord {
     /// It's delegated to by the token owner
     pub vote_authority: Pubkey,
 
-    /// The number of active votes cast by vote authority
+    /// The number of active votes cast by voter
     pub active_votes_count: u8,
+
+    /// The total number ov votes cast by the voter
+    pub total_votes_count: u8,
 }
 
 impl IsInitialized for VoterRecord {
