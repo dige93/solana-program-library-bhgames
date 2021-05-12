@@ -155,3 +155,17 @@ pub fn get_amount_from_token_account(
     let amount = array_ref![data, 64, 8];
     Ok(u64::from_le_bytes(*amount))
 }
+
+/// Computationally cheap method to get mint from a token account. It reads mint without deserializing full account data
+pub fn get_mint_from_token_account(
+    token_account_info: &AccountInfo,
+) -> Result<Pubkey, ProgramError> {
+    if token_account_info.owner != &spl_token::id() {
+        return Err(GovernanceError::InvalidTokenAccountOwnerError.into());
+    }
+
+    // TokeAccount layout:   mint(32), owner(32), amount(8)
+    let data = token_account_info.try_borrow_data().unwrap();
+    let mint_data = array_ref![data, 0, 32];
+    Ok(Pubkey::new_from_array(*mint_data))
+}

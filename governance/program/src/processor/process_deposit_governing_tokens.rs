@@ -16,7 +16,7 @@ use crate::{
     },
     tools::{
         account::create_and_serialize_account_signed,
-        token::{get_amount_from_token_account, transfer_spl_tokens},
+        token::{get_amount_from_token_account, get_mint_from_token_account, transfer_spl_tokens},
     },
 };
 
@@ -24,25 +24,25 @@ use crate::{
 pub fn process_deposit_governing_tokens(
     program_id: &Pubkey,
     accounts: &[AccountInfo],
+    vote_authority: Option<Pubkey>,
 ) -> ProgramResult {
     let account_info_iter = &mut accounts.iter();
 
     let realm_info = next_account_info(account_info_iter)?; // 0
-    let governing_token_mint_info = next_account_info(account_info_iter)?; // 1
-    let governing_token_holding_info = next_account_info(account_info_iter)?; // 2
-    let governing_token_source_info = next_account_info(account_info_iter)?; // 3
-    let governing_token_owner_info = next_account_info(account_info_iter)?; // 4
-    let voter_record_info = next_account_info(account_info_iter)?; // 5
-    let vote_authority_info = next_account_info(account_info_iter)?; // 6
-    let payer_info = next_account_info(account_info_iter)?; // 7
-    let system_info = next_account_info(account_info_iter)?; // 8
-    let spl_token_info = next_account_info(account_info_iter)?; // 9
+    let governing_token_holding_info = next_account_info(account_info_iter)?; // 1
+    let governing_token_source_info = next_account_info(account_info_iter)?; // 2
+    let governing_token_owner_info = next_account_info(account_info_iter)?; // 3
+    let voter_record_info = next_account_info(account_info_iter)?; // 4
+    let payer_info = next_account_info(account_info_iter)?; // 5
+    let system_info = next_account_info(account_info_iter)?; // 6
+    let spl_token_info = next_account_info(account_info_iter)?; // 7
 
     let realm_data = deserialize_realm(realm_info)?;
+    let governing_token_mint = get_mint_from_token_account(governing_token_source_info)?;
 
-    let governing_token_type = if *governing_token_mint_info.key == realm_data.governance_mint {
+    let governing_token_type = if governing_token_mint == realm_data.governance_mint {
         GoverningTokenType::Governance
-    } else if Some(*governing_token_mint_info.key) == realm_data.council_mint {
+    } else if Some(governing_token_mint) == realm_data.council_mint {
         GoverningTokenType::Council
     } else {
         return Err(GovernanceError::InvalidGoverningTokenMint.into());
@@ -60,7 +60,7 @@ pub fn process_deposit_governing_tokens(
 
     let voter_record_address_seeds = get_vote_record_address_seeds(
         realm_info.key,
-        governing_token_mint_info.key,
+        &governing_token_mint,
         governing_token_owner_info.key,
     );
 
@@ -71,7 +71,7 @@ pub fn process_deposit_governing_tokens(
             token_owner: *governing_token_owner_info.key,
             token_deposit_amount: amount,
             token_type: governing_token_type,
-            vote_authority: *vote_authority_info.key,
+            vote_authority: vote_authority.unwrap_or(*governing_token_owner_info.key),
             active_votes_count: 0,
             total_votes_count: 0,
         };

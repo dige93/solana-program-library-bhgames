@@ -427,8 +427,8 @@ impl GovernanceProgramTest {
             governing_token_holding,
             &token_source.pubkey(),
             &token_owner.pubkey(),
-            &vote_authority.pubkey(),
             &self.payer.pubkey(),
+            &Some(vote_authority.pubkey()),
         )
         .unwrap();
 
@@ -476,8 +476,8 @@ impl GovernanceProgramTest {
             governing_token_holding,
             &voter_record_cookie.token_source,
             &voter_record_cookie.token_owner.pubkey(),
-            &voter_record_cookie.vote_authority.pubkey(),
             &self.payer.pubkey(),
+            &Some(voter_record_cookie.vote_authority.pubkey()),
         )
         .unwrap();
 

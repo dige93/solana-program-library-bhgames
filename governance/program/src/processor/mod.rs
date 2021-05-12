@@ -149,9 +149,9 @@ pub fn process_instruction(
             process_create_realm(program_id, accounts, name)
         }
 
-        GovernanceInstruction::DepositGoverningTokens {} => {
+        GovernanceInstruction::DepositGoverningTokens { vote_authority } => {
             msg!("Instruction:DepositGoverningTokens");
-            process_deposit_governing_tokens(program_id, accounts)
+            process_deposit_governing_tokens(program_id, accounts, vote_authority)
         }
 
         GovernanceInstruction::WithdrawGoverningTokens {} => {
