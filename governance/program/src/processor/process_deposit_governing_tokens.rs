@@ -61,7 +61,7 @@ pub fn process_deposit_governing_tokens(
     let voter_record_address_seeds = get_vote_record_address_seeds(
         realm_info.key,
         governing_token_mint_info.key,
-        vote_authority_info.key,
+        governing_token_owner_info.key,
     );
 
     if voter_record_info.data_len() == 0 {

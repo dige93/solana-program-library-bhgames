@@ -452,7 +452,7 @@ impl GovernanceProgramTest {
         .unwrap();
 
         let voter_record_address =
-            get_vote_record_address(realm_address, &governing_mint, &vote_authority.pubkey());
+            get_vote_record_address(realm_address, &governing_mint, &token_owner.pubkey());
 
         VoterRecordCookie {
             address: voter_record_address,

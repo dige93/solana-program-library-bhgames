@@ -14,7 +14,7 @@ use solana_program::{
 };
 
 /// Governance Voter Record
-/// Account PDA seeds: ['governance', realm, token_mint, vote_authority ]
+/// Account PDA seeds: ['governance', realm, token_mint, token_owner ]
 #[derive(Clone, Debug, PartialEq, BorshDeserialize, BorshSerialize, BorshSchema)]
 pub struct VoterRecord {
     /// Governance account type
@@ -51,10 +51,10 @@ impl IsInitialized for VoterRecord {
 pub fn get_vote_record_address(
     realm: &Pubkey,
     governing_token_mint: &Pubkey,
-    vote_authority: &Pubkey,
+    governing_token_owner: &Pubkey,
 ) -> Pubkey {
     Pubkey::find_program_address(
-        &get_vote_record_address_seeds(realm, governing_token_mint, vote_authority)[..],
+        &get_vote_record_address_seeds(realm, governing_token_mint, governing_token_owner)[..],
         &id(),
     )
     .0
@@ -63,13 +63,13 @@ pub fn get_vote_record_address(
 pub fn get_vote_record_address_seeds<'a>(
     realm: &'a Pubkey,
     governing_token_mint: &'a Pubkey,
-    vote_authority: &'a Pubkey,
+    governing_token_owner: &'a Pubkey,
 ) -> Vec<&'a [u8]> {
     vec![
         PROGRAM_AUTHORITY_SEED,
         realm.as_ref(),
         governing_token_mint.as_ref(),
-        vote_authority.as_ref(),
+        governing_token_owner.as_ref(),
     ]
 }
 

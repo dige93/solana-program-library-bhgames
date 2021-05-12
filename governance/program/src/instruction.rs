@@ -402,7 +402,8 @@ pub fn deposit_governing_tokens(
     vote_authority: &Pubkey,
     payer: &Pubkey,
 ) -> Result<Instruction, ProgramError> {
-    let vote_record_address = get_vote_record_address(realm, governing_token_mint, vote_authority);
+    let vote_record_address =
+        get_vote_record_address(realm, governing_token_mint, governing_token_owner);
 
     let accounts = vec![
         AccountMeta::new_readonly(*realm, false),
