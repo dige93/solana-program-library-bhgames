@@ -154,9 +154,9 @@ pub fn process_instruction(
             process_deposit_governing_tokens(program_id, accounts)
         }
 
-        GovernanceInstruction::WithdrawGoverningTokens { amount } => {
+        GovernanceInstruction::WithdrawGoverningTokens {} => {
             msg!("Instruction:WithdrawGoverningTokens");
-            process_withdraw_governing_tokens(program_id, accounts, amount)
+            process_withdraw_governing_tokens(program_id, accounts)
         }
     }
 }

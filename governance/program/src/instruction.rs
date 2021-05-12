@@ -321,10 +321,7 @@ pub enum GovernanceInstruction {
 
     DepositGoverningTokens {},
 
-    WithdrawGoverningTokens {
-        #[allow(dead_code)]
-        amount: Option<u64>,
-    },
+    WithdrawGoverningTokens {},
 }
 
 /// Creates CreateGovernanceRealm instruction
@@ -364,26 +361,26 @@ pub fn create_governance_realm(
 
 /// Creates WithdrawGoverningTokens instruction
 pub fn withdraw_governing_tokens(
-    amount: Option<u64>,
-    governance_realm: &Pubkey,
+    realm: &Pubkey,
     governing_token_mint: &Pubkey,
     governing_token_holding: &Pubkey,
-    governing_token_source: &Pubkey,
-    voter_record: &Pubkey,
-    voter: &Pubkey,
+    governing_token_destination: &Pubkey,
+    governing_token_owner: &Pubkey,
 ) -> Result<Instruction, ProgramError> {
+    let vote_record_address =
+        get_vote_record_address(realm, governing_token_mint, governing_token_owner);
+
     let accounts = vec![
-        AccountMeta::new_readonly(*governance_realm, false),
+        AccountMeta::new_readonly(*realm, false),
         AccountMeta::new_readonly(*governing_token_mint, false),
         AccountMeta::new(*governing_token_holding, false),
-        AccountMeta::new(*governing_token_source, false),
-        AccountMeta::new(*voter_record, false),
-        AccountMeta::new_readonly(*voter, true),
+        AccountMeta::new(*governing_token_destination, false),
+        AccountMeta::new_readonly(*governing_token_owner, true),
+        AccountMeta::new(vote_record_address, false),
         AccountMeta::new_readonly(spl_token::id(), false),
-        AccountMeta::new_readonly(sysvar::rent::id(), false),
     ];
 
-    let instruction = GovernanceInstruction::WithdrawGoverningTokens { amount };
+    let instruction = GovernanceInstruction::WithdrawGoverningTokens {};
 
     Ok(Instruction {
         program_id: id(),

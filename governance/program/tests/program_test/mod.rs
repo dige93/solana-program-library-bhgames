@@ -502,49 +502,59 @@ impl GovernanceProgramTest {
     }
 
     #[allow(dead_code)]
-    pub async fn withdraw_governance_token_deposit(
+    pub async fn withdraw_governance_tokens(
         &mut self,
         governance_realm_cookie: &GovernanceRealmCookie,
         voter_record_cookie: &VoterRecordCookie,
-        amount: Option<u64>,
     ) -> Result<(), ProgramError> {
-        let deposit_governing_tokens_instruction = withdraw_governing_tokens(
-            amount,
-            &governance_realm_cookie.address,
+        self.withdraw_governing_tokens(
+            governance_realm_cookie,
+            voter_record_cookie,
             &governance_realm_cookie.governance_mint,
             &governance_realm_cookie.governance_token_holding_account,
-            &voter_record_cookie.token_source,
-            &voter_record_cookie.address,
-            &self.payer.pubkey(),
         )
-        .unwrap();
-
-        self.process_transaction(&[deposit_governing_tokens_instruction], None)
-            .await
+        .await
     }
 
     #[allow(dead_code)]
-    pub async fn withdraw_council_token_deposit(
+    pub async fn withdraw_council_tokens(
         &mut self,
         governance_realm_cookie: &GovernanceRealmCookie,
         voter_record_cookie: &VoterRecordCookie,
-        amount: Option<u64>,
     ) -> Result<(), ProgramError> {
-        let deposit_governing_tokens_instruction = withdraw_governing_tokens(
-            amount,
-            &governance_realm_cookie.address,
+        self.withdraw_governing_tokens(
+            governance_realm_cookie,
+            voter_record_cookie,
             &governance_realm_cookie.council_mint.unwrap(),
             &governance_realm_cookie
                 .council_token_holding_account
                 .unwrap(),
+        )
+        .await
+    }
+
+    #[allow(dead_code)]
+    async fn withdraw_governing_tokens(
+        &mut self,
+        realm_cookie: &GovernanceRealmCookie,
+        voter_record_cookie: &VoterRecordCookie,
+        governing_token_mint: &Pubkey,
+        governing_token_holding: &Pubkey,
+    ) -> Result<(), ProgramError> {
+        let deposit_governing_tokens_instruction = withdraw_governing_tokens(
+            &realm_cookie.address,
+            governing_token_mint,
+            governing_token_holding,
             &voter_record_cookie.token_source,
-            &voter_record_cookie.address,
-            &self.payer.pubkey(),
+            &voter_record_cookie.token_owner.pubkey(),
         )
         .unwrap();
 
-        self.process_transaction(&[deposit_governing_tokens_instruction], None)
-            .await
+        self.process_transaction(
+            &[deposit_governing_tokens_instruction],
+            Some(&[&voter_record_cookie.token_owner]),
+        )
+        .await
     }
 
     #[allow(dead_code)]
