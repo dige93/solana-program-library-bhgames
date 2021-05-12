@@ -342,15 +342,18 @@ impl GovernanceProgramTest {
         governance_realm_cookie: &GovernanceRealmCookie,
         deposit_amount: Option<u64>,
     ) -> VoterRecordCookie {
-        let governance_token_source = Keypair::new();
+        let token_owner = Keypair::new();
+        let token_source = Keypair::new();
 
         let source_amount = 100;
+        let vote_authority = Keypair::new();
 
         self.create_token_account(
-            &governance_token_source,
+            &token_source,
             &governance_realm_cookie.governance_mint,
             &governance_realm_cookie.governance_mint_authority,
             source_amount,
+            token_owner.pubkey(),
         )
         .await;
 
@@ -359,29 +362,33 @@ impl GovernanceProgramTest {
             &governance_realm_cookie.address,
             &governance_realm_cookie.governance_mint,
             &governance_realm_cookie.governance_token_holding_account,
-            &governance_token_source.pubkey(),
-            &self.payer.pubkey(),
-            &self.payer.pubkey(),
+            &token_source.pubkey(),
+            &token_owner.pubkey(),
+            &vote_authority.pubkey(),
             &self.payer.pubkey(),
         )
         .unwrap();
 
-        self.process_transaction(&[deposit_governing_tokens_instruction], None)
-            .await
-            .unwrap();
+        self.process_transaction(
+            &[deposit_governing_tokens_instruction],
+            Some(&[&token_owner]),
+        )
+        .await
+        .unwrap();
 
         let voter_record_address = get_vote_record_address(
             &governance_realm_cookie.address,
             &governance_realm_cookie.governance_mint,
-            &self.payer.pubkey(),
+            &vote_authority.pubkey(),
         );
 
         VoterRecordCookie {
             address: voter_record_address,
             token_deposit_amount: deposit_amount.unwrap_or(source_amount),
             token_source_amount: source_amount,
-
-            token_source: governance_token_source.pubkey(),
+            token_source: token_source.pubkey(),
+            token_owner,
+            vote_authority,
         }
     }
 
@@ -398,15 +405,18 @@ impl GovernanceProgramTest {
             &governance_realm_cookie.governance_mint,
             &governance_realm_cookie.governance_token_holding_account,
             &voter_record_cookie.token_source,
-            &self.payer.pubkey(),
-            &self.payer.pubkey(),
+            &voter_record_cookie.token_owner.pubkey(),
+            &voter_record_cookie.vote_authority.pubkey(),
             &self.payer.pubkey(),
         )
         .unwrap();
 
-        self.process_transaction(&[deposit_governing_tokens_instruction], None)
-            .await
-            .unwrap();
+        self.process_transaction(
+            &[deposit_governing_tokens_instruction],
+            Some(&[&voter_record_cookie.token_owner]),
+        )
+        .await
+        .unwrap();
     }
 
     #[allow(dead_code)]
@@ -470,14 +480,17 @@ impl GovernanceProgramTest {
                 .council_token_holding_account
                 .unwrap(),
             &voter_record_cookie.token_source,
-            &self.payer.pubkey(),
-            &self.payer.pubkey(),
+            &voter_record_cookie.token_owner.pubkey(),
+            &voter_record_cookie.vote_authority.pubkey(),
             &self.payer.pubkey(),
         )
         .unwrap();
 
-        self.process_transaction(&[deposit_governing_tokens_instruction], None)
-            .await
+        self.process_transaction(
+            &[deposit_governing_tokens_instruction],
+            Some(&[&voter_record_cookie.token_owner]),
+        )
+        .await
     }
 
     #[allow(dead_code)]
@@ -486,8 +499,10 @@ impl GovernanceProgramTest {
         governance_realm_cookie: &GovernanceRealmCookie,
         deposit_amount: Option<u64>,
     ) -> VoterRecordCookie {
-        let voter_record_keypair = Keypair::new();
         let council_token_source_account = Keypair::new();
+
+        let token_owner = Keypair::new();
+        let vote_authority = Keypair::new();
 
         let source_amount = 100;
 
@@ -499,6 +514,7 @@ impl GovernanceProgramTest {
                 .as_ref()
                 .unwrap(),
             source_amount,
+            token_owner.pubkey(),
         )
         .await;
 
@@ -510,25 +526,33 @@ impl GovernanceProgramTest {
                 .council_token_holding_account
                 .unwrap(),
             &council_token_source_account.pubkey(),
-            &self.payer.pubkey(),
-            &self.payer.pubkey(),
+            &token_owner.pubkey(),
+            &vote_authority.pubkey(),
             &self.payer.pubkey(),
         )
         .unwrap();
 
         self.process_transaction(
             &[deposit_governing_tokens_instruction],
-            Some(&[&voter_record_keypair]),
+            Some(&[&token_owner]),
         )
         .await
         .unwrap();
 
+        let voter_record_address = get_vote_record_address(
+            &governance_realm_cookie.address,
+            &governance_realm_cookie.council_mint.unwrap(),
+            &vote_authority.pubkey(),
+        );
+
         VoterRecordCookie {
-            address: voter_record_keypair.pubkey(),
+            address: voter_record_address,
 
             token_deposit_amount: deposit_amount.unwrap_or(source_amount),
             token_source_amount: source_amount,
             token_source: council_token_source_account.pubkey(),
+            token_owner,
+            vote_authority,
         }
     }
 
@@ -596,6 +620,7 @@ impl GovernanceProgramTest {
         token_mint: &Pubkey,
         token_mint_authority: &Keypair,
         amount: u64,
+        owner: Pubkey,
     ) {
         let create_account_instruction = system_instruction::create_account(
             &self.payer.pubkey(),
@@ -610,7 +635,7 @@ impl GovernanceProgramTest {
             &spl_token::id(),
             &token_account_keypair.pubkey(),
             token_mint,
-            &self.payer.pubkey(),
+            &owner,
         )
         .unwrap();
 

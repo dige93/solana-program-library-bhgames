@@ -54,4 +54,8 @@ pub struct VoterRecordCookie {
     pub token_source: Pubkey,
 
     pub token_source_amount: u64,
+
+    pub token_owner: Keypair,
+
+    pub vote_authority: Keypair,
 }
