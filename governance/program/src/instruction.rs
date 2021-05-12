@@ -418,7 +418,6 @@ pub fn withdraw_governing_tokens(
 
     let accounts = vec![
         AccountMeta::new_readonly(*realm, false),
-        AccountMeta::new_readonly(*governing_token_mint, false),
         AccountMeta::new(*governing_token_holding, false),
         AccountMeta::new(*governing_token_destination, false),
         AccountMeta::new_readonly(*governing_token_owner, true),

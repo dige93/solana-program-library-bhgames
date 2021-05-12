@@ -112,7 +112,7 @@ async fn test_withdraw_governance_tokens_for_owner_must_sign_error() {
     )
     .unwrap();
 
-    instruction.accounts[4] =
+    instruction.accounts[3] =
         AccountMeta::new_readonly(voter_record_cookie.token_owner.pubkey(), false);
 
     // Act
@@ -156,7 +156,7 @@ async fn test_withdraw_governance_tokens_for_voter_record_address_mismatch_error
     )
     .unwrap();
 
-    instruction.accounts[5] = AccountMeta::new(vote_record_address, false);
+    instruction.accounts[4] = AccountMeta::new(vote_record_address, false);
 
     // Act
     let err = governance_test

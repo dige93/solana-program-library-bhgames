@@ -37,7 +37,7 @@ pub fn process_deposit_governing_tokens(
     let spl_token_info = next_account_info(account_info_iter)?; // 7
 
     let realm_data = deserialize_realm(realm_info)?;
-    let governing_token_mint = get_mint_from_token_account(governing_token_source_info)?;
+    let governing_token_mint = get_mint_from_token_account(governing_token_holding_info)?;
 
     let governing_token_type = if governing_token_mint == realm_data.governance_mint {
         GoverningTokenType::Governance

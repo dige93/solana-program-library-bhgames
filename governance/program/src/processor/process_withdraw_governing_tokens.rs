@@ -13,7 +13,10 @@ use crate::{
         realm::deserialize_realm,
         voter_record::{deserialize_voter_record, get_voter_record_address_seeds},
     },
-    tools::{get_realm_address_seeds, token::transfer_spl_tokens_signed},
+    tools::{
+        get_realm_address_seeds,
+        token::{get_mint_from_token_account, transfer_spl_tokens_signed},
+    },
 };
 
 /// process_withdraw_governing_tokens
@@ -24,22 +27,22 @@ pub fn process_withdraw_governing_tokens(
     let account_info_iter = &mut accounts.iter();
 
     let realm_info = next_account_info(account_info_iter)?; // 0
-    let governing_token_mint_info = next_account_info(account_info_iter)?; // 1
-    let governing_token_holding_info = next_account_info(account_info_iter)?; // 2
-    let governing_token_destination_info = next_account_info(account_info_iter)?; // 3
-    let governing_token_owner_info = next_account_info(account_info_iter)?; // 4
-    let voter_record_info = next_account_info(account_info_iter)?; // 5
-    let spl_token_info = next_account_info(account_info_iter)?; // 6
+    let governing_token_holding_info = next_account_info(account_info_iter)?; // 1
+    let governing_token_destination_info = next_account_info(account_info_iter)?; // 2
+    let governing_token_owner_info = next_account_info(account_info_iter)?; // 3
+    let voter_record_info = next_account_info(account_info_iter)?; // 4
+    let spl_token_info = next_account_info(account_info_iter)?; // 5
 
     if !governing_token_owner_info.is_signer {
         return Err(GovernanceError::GoverningTokenOwnerMustSign.into());
     }
 
     let realm_data = deserialize_realm(realm_info)?;
+    let governing_token_mint = get_mint_from_token_account(governing_token_holding_info)?;
 
     let voter_record_address_seeds = get_voter_record_address_seeds(
         realm_info.key,
-        governing_token_mint_info.key,
+        &governing_token_mint,
         governing_token_owner_info.key,
     );
 
