@@ -25,7 +25,7 @@ use spl_governance::{
     state::{
         program_governance::ProgramGovernance,
         proposal::Proposal,
-        realm::Realm,
+        realm::{get_governing_token_holding_address, Realm},
         voter_record::{get_voter_record_address, VoterRecord},
     },
     tools::get_realm_address,
@@ -282,55 +282,57 @@ impl GovernanceProgramTest {
     pub async fn with_realm(&mut self) -> RealmCookie {
         let name = "Realm".to_string();
 
-        //let proposal_count = 0;
-        let root_governance_key = get_realm_address(&name);
+        let realm_address = get_realm_address(&name);
 
         let governance_token_mint_keypair = Keypair::new();
         let governance_token_mint_authority = Keypair::new();
+
+        let governance_token_holding_address = get_governing_token_holding_address(
+            &realm_address,
+            &governance_token_mint_keypair.pubkey(),
+        );
+
         self.create_mint(
             &governance_token_mint_keypair,
             &governance_token_mint_authority.pubkey(),
         )
         .await;
 
-        let governance_token_holding_keypair = Keypair::new();
+        let council_token_mint_keypair = Keypair::new();
+        let council_token_mint_authority = Keypair::new();
 
-        let council_mint_keypair = Keypair::new();
-        let council_mint_authority = Keypair::new();
-        self.create_mint(&council_mint_keypair, &council_mint_authority.pubkey())
-            .await;
+        let council_token_holding_address = get_governing_token_holding_address(
+            &realm_address,
+            &council_token_mint_keypair.pubkey(),
+        );
 
-        let council_token_holding_keypair = Keypair::new();
+        self.create_mint(
+            &council_token_mint_keypair,
+            &council_token_mint_authority.pubkey(),
+        )
+        .await;
 
         let create_proposal_instruction = create_realm(
             name.clone(),
             &governance_token_mint_keypair.pubkey(),
-            &governance_token_holding_keypair.pubkey(),
             &self.payer.pubkey(),
-            Some(council_mint_keypair.pubkey()),
-            Some(council_token_holding_keypair.pubkey()),
+            Some(council_token_mint_keypair.pubkey()),
         )
         .unwrap();
 
-        self.process_transaction(
-            &[create_proposal_instruction],
-            Some(&[
-                &governance_token_holding_keypair,
-                &council_token_holding_keypair,
-            ]),
-        )
-        .await
-        .unwrap();
+        self.process_transaction(&[create_proposal_instruction], None)
+            .await
+            .unwrap();
 
         RealmCookie {
-            address: root_governance_key,
+            address: realm_address,
             name,
             governance_mint: governance_token_mint_keypair.pubkey(),
             governance_mint_authority: governance_token_mint_authority,
-            governance_token_holding_account: governance_token_holding_keypair.pubkey(),
-            council_mint: Some(council_mint_keypair.pubkey()),
-            council_token_holding_account: Some(council_token_holding_keypair.pubkey()),
-            council_mint_authority: Some(council_mint_authority),
+            governance_token_holding_account: governance_token_holding_address,
+            council_mint: Some(council_token_mint_keypair.pubkey()),
+            council_token_holding_account: Some(council_token_holding_address),
+            council_mint_authority: Some(council_token_mint_authority),
         }
     }
 

@@ -63,6 +63,73 @@ pub fn create_spl_token_account<'a>(
     Ok(())
 }
 
+pub fn create_spl_token_account_signed<'a>(
+    payer_info: &AccountInfo<'a>,
+    token_account_info: &AccountInfo<'a>,
+    token_account_address_seeds: Vec<&[u8]>,
+    token_mint_info: &AccountInfo<'a>,
+    token_account_owner_info: &AccountInfo<'a>,
+    program_id: &Pubkey,
+    system_info: &AccountInfo<'a>,
+    spl_token_info: &AccountInfo<'a>,
+    rent_sysvar_info: &AccountInfo<'a>,
+) -> Result<(), ProgramError> {
+    let create_account_instruction = system_instruction::create_account(
+        payer_info.key,
+        token_account_info.key,
+        1.max(Rent::default().minimum_balance(spl_token::state::Account::get_packed_len())),
+        spl_token::state::Account::get_packed_len() as u64,
+        &spl_token::id(),
+    );
+
+    let (account_address, bump_seed) =
+        Pubkey::find_program_address(&token_account_address_seeds[..], program_id);
+
+    if account_address != *token_account_info.key {
+        msg!(
+                "Create SPL Token Account with Program Derived Address: {:?} was requested while Address: {:?} was expected",
+                token_account_info.key,
+                account_address
+            );
+        return Err(ProgramError::InvalidSeeds);
+    }
+
+    let mut signers_seeds = token_account_address_seeds.to_vec();
+    let bump = &[bump_seed];
+    signers_seeds.push(bump);
+
+    invoke_signed(
+        &create_account_instruction,
+        &[
+            payer_info.clone(),
+            token_account_info.clone(),
+            system_info.clone(),
+        ],
+        &[&signers_seeds[..]],
+    )?;
+
+    let initialize_account_instruction = spl_token::instruction::initialize_account(
+        &spl_token::id(),
+        token_account_info.key,
+        token_mint_info.key,
+        token_account_owner_info.key,
+    )?;
+
+    invoke(
+        &initialize_account_instruction,
+        &[
+            payer_info.clone(),
+            token_account_info.clone(),
+            token_account_owner_info.clone(),
+            token_mint_info.clone(),
+            spl_token_info.clone(),
+            rent_sysvar_info.clone(),
+        ],
+    )?;
+
+    Ok(())
+}
+
 pub fn transfer_spl_tokens<'a>(
     source_info: &AccountInfo<'a>,
     destination_info: &AccountInfo<'a>,

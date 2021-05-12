@@ -1,5 +1,8 @@
 use crate::{
-    state::{enums::Vote, voter_record::get_voter_record_address},
+    state::{
+        enums::Vote, realm::get_governing_token_holding_address,
+        voter_record::get_voter_record_address,
+    },
     tools::get_realm_address,
 };
 use borsh::{BorshDeserialize, BorshSchema, BorshSerialize};
@@ -374,26 +377,29 @@ pub fn set_vote_authority(
 pub fn create_realm(
     name: String,
     governance_token_mint: &Pubkey,
-    governance_token_holding: &Pubkey,
     payer: &Pubkey,
     council_token_mint: Option<Pubkey>,
-    council_token_holding: Option<Pubkey>,
 ) -> Result<Instruction, ProgramError> {
     let realm_address = get_realm_address(&name);
+    let governance_token_holding_address =
+        get_governing_token_holding_address(&realm_address, &governance_token_mint);
 
     let mut accounts = vec![
         AccountMeta::new(realm_address, false),
         AccountMeta::new_readonly(*governance_token_mint, false),
-        AccountMeta::new(*governance_token_holding, true),
+        AccountMeta::new(governance_token_holding_address, false),
         AccountMeta::new_readonly(*payer, true),
         AccountMeta::new_readonly(system_program::id(), false),
         AccountMeta::new_readonly(spl_token::id(), false),
         AccountMeta::new_readonly(sysvar::rent::id(), false),
     ];
 
-    if let Some(council_mint) = council_token_mint {
-        accounts.push(AccountMeta::new_readonly(council_mint, false));
-        accounts.push(AccountMeta::new(council_token_holding.unwrap(), true));
+    if let Some(council_token_mint) = council_token_mint {
+        let council_token_holding_address =
+            get_governing_token_holding_address(&realm_address, &council_token_mint);
+
+        accounts.push(AccountMeta::new_readonly(council_token_mint, false));
+        accounts.push(AccountMeta::new(council_token_holding_address, false));
     }
 
     let instruction = GovernanceInstruction::CreateRealm { name };

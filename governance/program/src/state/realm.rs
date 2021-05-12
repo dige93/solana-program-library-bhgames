@@ -1,6 +1,6 @@
 //! GovernanceRealm Account
 
-use crate::{id, tools::account::deserialize_account};
+use crate::{id, tools::account::deserialize_account, PROGRAM_AUTHORITY_SEED};
 
 use super::enums::GovernanceAccountType;
 
@@ -35,4 +35,26 @@ impl IsInitialized for Realm {
 
 pub fn deserialize_realm(realm_info: &AccountInfo) -> Result<Realm, ProgramError> {
     deserialize_account::<Realm>(realm_info, &id())
+}
+
+pub fn get_governing_token_holding_address_seeds<'a>(
+    realm: &'a Pubkey,
+    governing_token_mint: &'a Pubkey,
+) -> Vec<&'a [u8]> {
+    vec![
+        PROGRAM_AUTHORITY_SEED,
+        realm.as_ref(),
+        governing_token_mint.as_ref(),
+    ]
+}
+
+pub fn get_governing_token_holding_address(
+    realm: &Pubkey,
+    governing_token_mint: &Pubkey,
+) -> Pubkey {
+    Pubkey::find_program_address(
+        &get_governing_token_holding_address_seeds(realm, governing_token_mint)[..],
+        &id(),
+    )
+    .0
 }
