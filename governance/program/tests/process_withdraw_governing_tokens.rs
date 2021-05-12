@@ -1,10 +1,17 @@
 #![cfg(feature = "test-bpf")]
 
+use solana_program::{instruction::AccountMeta, pubkey::Pubkey};
 use solana_program_test::*;
 
 mod program_test;
 
 use program_test::*;
+use solana_sdk::signature::Signer;
+
+use spl_governance::{
+    error::GovernanceError, instruction::withdraw_governing_tokens,
+    state::voter_record::get_vote_record_address,
+};
 
 #[tokio::test]
 async fn test_withdraw_governance_tokens() {
@@ -82,4 +89,83 @@ async fn test_withdraw_council_tokens() {
         voter_record_cookie.token_source_amount,
         source_account.amount
     );
+}
+
+#[tokio::test]
+async fn test_withdraw_governance_tokens_for_owner_must_sign_error() {
+    // Arrange
+    let mut governance_test = GovernanceProgramTest::start_new().await;
+    let realm_cookie = governance_test.with_realm().await;
+
+    let voter_record_cookie = governance_test
+        .with_initial_governance_token_deposit(&realm_cookie)
+        .await;
+
+    let hacker_token_destination = Pubkey::new_unique();
+
+    let mut instruction = withdraw_governing_tokens(
+        &realm_cookie.address,
+        &realm_cookie.governance_mint,
+        &realm_cookie.governance_token_holding_account,
+        &hacker_token_destination,
+        &voter_record_cookie.token_owner.pubkey(),
+    )
+    .unwrap();
+
+    instruction.accounts[4] =
+        AccountMeta::new_readonly(voter_record_cookie.token_owner.pubkey(), false);
+
+    // Act
+    let err = governance_test
+        .process_transaction(&[instruction], None)
+        .await
+        .err()
+        .unwrap();
+
+    // Assert
+
+    assert_eq!(err, GovernanceError::GoverningTokenOwnerMustSign.into());
+}
+
+#[tokio::test]
+async fn test_withdraw_governance_tokens_for_voter_record_address_mismatch_error() {
+    // Arrange
+    let mut governance_test = GovernanceProgramTest::start_new().await;
+    let realm_cookie = governance_test.with_realm().await;
+
+    let voter_record_cookie = governance_test
+        .with_initial_governance_token_deposit(&realm_cookie)
+        .await;
+
+    let vote_record_address = get_vote_record_address(
+        &realm_cookie.address,
+        &realm_cookie.governance_mint,
+        &voter_record_cookie.token_owner.pubkey(),
+    );
+
+    let hacker_record_cookie = governance_test
+        .with_initial_governance_token_deposit(&realm_cookie)
+        .await;
+
+    let mut instruction = withdraw_governing_tokens(
+        &realm_cookie.address,
+        &realm_cookie.governance_mint,
+        &realm_cookie.governance_token_holding_account,
+        &hacker_record_cookie.token_source,
+        &hacker_record_cookie.token_owner.pubkey(),
+    )
+    .unwrap();
+
+    instruction.accounts[5] = AccountMeta::new(vote_record_address, false);
+
+    // Act
+    let err = governance_test
+        .process_transaction(&[instruction], Some(&[&hacker_record_cookie.token_owner]))
+        .await
+        .err()
+        .unwrap();
+
+    // Assert
+
+    assert_eq!(err, GovernanceError::InvalidVoterAccountAddress.into());
 }

@@ -71,7 +71,7 @@ impl GovernanceProgramTest {
         }
     }
 
-    async fn process_transaction(
+    pub async fn process_transaction(
         &mut self,
         instructions: &[Instruction],
         signers: Option<&[&Keypair]>,
@@ -500,6 +500,7 @@ impl GovernanceProgramTest {
             voter_record_cookie,
             &realm_cookie.governance_mint,
             &realm_cookie.governance_token_holding_account,
+            &voter_record_cookie.token_owner,
         )
         .await
     }
@@ -515,6 +516,7 @@ impl GovernanceProgramTest {
             voter_record_cookie,
             &realm_cookie.council_mint.unwrap(),
             &realm_cookie.council_token_holding_account.unwrap(),
+            &voter_record_cookie.token_owner,
         )
         .await
     }
@@ -526,19 +528,20 @@ impl GovernanceProgramTest {
         voter_record_cookie: &VoterRecordCookie,
         governing_token_mint: &Pubkey,
         governing_token_holding: &Pubkey,
+        governing_token_owner: &Keypair,
     ) -> Result<(), ProgramError> {
         let deposit_governing_tokens_instruction = withdraw_governing_tokens(
             &realm_cookie.address,
             governing_token_mint,
             governing_token_holding,
             &voter_record_cookie.token_source,
-            &voter_record_cookie.token_owner.pubkey(),
+            &governing_token_owner.pubkey(),
         )
         .unwrap();
 
         self.process_transaction(
             &[deposit_governing_tokens_instruction],
-            Some(&[&voter_record_cookie.token_owner]),
+            Some(&[&governing_token_owner]),
         )
         .await
     }

@@ -31,6 +31,10 @@ pub fn process_withdraw_governing_tokens(
     let voter_record_info = next_account_info(account_info_iter)?; // 5
     let spl_token_info = next_account_info(account_info_iter)?; // 6
 
+    if !governing_token_owner_info.is_signer {
+        return Err(GovernanceError::GoverningTokenOwnerMustSign.into());
+    }
+
     let realm_data = deserialize_realm(realm_info)?;
 
     let voter_record_address_seeds = get_vote_record_address_seeds(
@@ -44,12 +48,6 @@ pub fn process_withdraw_governing_tokens(
 
     if voter_record_data.active_votes_count > 0 {
         return Err(GovernanceError::CannotWithdrawGoverningTokensWhenActiveVotesExist.into());
-    }
-
-    if !(governing_token_owner_info.key == &voter_record_data.token_owner
-        && governing_token_owner_info.is_signer)
-    {
-        return Err(GovernanceError::GoverningTokenOwnerMustSign.into());
     }
 
     transfer_spl_tokens_signed(
