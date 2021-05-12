@@ -36,7 +36,7 @@ async fn test_deposited_initial_governance_tokens() {
     );
 
     assert_eq!(
-        voter_record_cookie.vote_authority.pubkey(),
+        voter_record_cookie.token_owner.pubkey(),
         voter_record.vote_authority
     );
 
@@ -92,7 +92,7 @@ async fn test_deposited_initial_council_tokens() {
     );
 
     assert_eq!(
-        voter_record_cookie.vote_authority.pubkey(),
+        voter_record_cookie.token_owner.pubkey(),
         voter_record.vote_authority
     );
 

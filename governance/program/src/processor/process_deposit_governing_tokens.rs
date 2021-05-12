@@ -24,7 +24,6 @@ use crate::{
 pub fn process_deposit_governing_tokens(
     program_id: &Pubkey,
     accounts: &[AccountInfo],
-    vote_authority: Option<Pubkey>,
 ) -> ProgramResult {
     let account_info_iter = &mut accounts.iter();
 
@@ -71,7 +70,7 @@ pub fn process_deposit_governing_tokens(
             token_owner: *governing_token_owner_info.key,
             token_deposit_amount: amount,
             token_type: governing_token_type,
-            vote_authority: vote_authority.unwrap_or(*governing_token_owner_info.key),
+            vote_authority: *governing_token_owner_info.key,
             active_votes_count: 0,
             total_votes_count: 0,
         };

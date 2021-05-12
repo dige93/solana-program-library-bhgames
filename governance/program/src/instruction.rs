@@ -319,10 +319,7 @@ pub enum GovernanceInstruction {
         name: String,
     },
 
-    DepositGoverningTokens {
-        #[allow(dead_code)]
-        vote_authority: Option<Pubkey>,
-    },
+    DepositGoverningTokens {},
 
     WithdrawGoverningTokens {},
 }
@@ -400,7 +397,6 @@ pub fn deposit_governing_tokens(
     governing_token_source: &Pubkey,
     governing_token_owner: &Pubkey,
     payer: &Pubkey,
-    vote_authority: &Option<Pubkey>,
 ) -> Result<Instruction, ProgramError> {
     let vote_record_address =
         get_vote_record_address(realm, governing_token_mint, governing_token_owner);
@@ -416,9 +412,7 @@ pub fn deposit_governing_tokens(
         AccountMeta::new_readonly(spl_token::id(), false),
     ];
 
-    let instruction = GovernanceInstruction::DepositGoverningTokens {
-        vote_authority: *vote_authority,
-    };
+    let instruction = GovernanceInstruction::DepositGoverningTokens {};
 
     Ok(Instruction {
         program_id: id(),
