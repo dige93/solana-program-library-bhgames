@@ -11,7 +11,7 @@ use crate::{
     error::GovernanceError,
     state::{
         enums::{GovernanceAccountType, GoverningTokenType},
-        governance_realm::deserialize_realm,
+        realm::deserialize_realm,
         voter_record::{deserialize_voter_record, get_vote_record_address_seeds, VoterRecord},
     },
     tools::{

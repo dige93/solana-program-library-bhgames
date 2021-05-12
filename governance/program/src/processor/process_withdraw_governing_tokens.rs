@@ -10,10 +10,10 @@ use solana_program::{
 use crate::{
     error::GovernanceError,
     state::{
-        governance_realm::deserialize_realm,
+        realm::deserialize_realm,
         voter_record::{deserialize_voter_record, get_vote_record_address_seeds},
     },
-    tools::{get_governance_realm_address_seeds, token::transfer_spl_tokens_signed},
+    tools::{get_realm_address_seeds, token::transfer_spl_tokens_signed},
 };
 
 /// process_withdraw_governing_tokens
@@ -56,7 +56,7 @@ pub fn process_withdraw_governing_tokens(
         &governing_token_holding_info,
         &governing_token_destination_info,
         &realm_info,
-        get_governance_realm_address_seeds(&realm_data.name),
+        get_realm_address_seeds(&realm_data.name),
         program_id,
         voter_record_data.token_deposit_amount,
         spl_token_info,

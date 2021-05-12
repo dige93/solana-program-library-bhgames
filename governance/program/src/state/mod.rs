@@ -22,6 +22,6 @@ pub mod governance_vote_record;
 /// Upgradable loader state
 pub mod upgradable_loader_state;
 
-pub mod governance_realm;
+pub mod realm;
 
 pub mod voter_record;

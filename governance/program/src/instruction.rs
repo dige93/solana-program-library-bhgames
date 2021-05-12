@@ -1,6 +1,6 @@
 use crate::{
     state::{enums::Vote, voter_record::get_vote_record_address},
-    tools::get_governance_realm_address,
+    tools::get_realm_address,
 };
 use borsh::{BorshDeserialize, BorshSchema, BorshSerialize};
 
@@ -313,7 +313,7 @@ pub enum GovernanceInstruction {
     /// 7. `[]` Sysvar Rent.
     /// 8. `[]` Council Token mint - optional.
     /// 9. `[writable, signer]` Council Token Holding account - optional.
-    CreateGovernanceRealm {
+    CreateRealm {
         /// UTF-8 encoded Governance Realm name
         #[allow(dead_code)]
         name: String,
@@ -324,8 +324,8 @@ pub enum GovernanceInstruction {
     WithdrawGoverningTokens {},
 }
 
-/// Creates CreateGovernanceRealm instruction
-pub fn create_governance_realm(
+/// Creates CreateRealm instruction
+pub fn create_realm(
     name: String,
     governance_token_mint: &Pubkey,
     governance_token_holding: &Pubkey,
@@ -333,10 +333,10 @@ pub fn create_governance_realm(
     council_token_mint: Option<Pubkey>,
     council_token_holding: Option<Pubkey>,
 ) -> Result<Instruction, ProgramError> {
-    let governance_realm_address = get_governance_realm_address(&name);
+    let realm_address = get_realm_address(&name);
 
     let mut accounts = vec![
-        AccountMeta::new(governance_realm_address, false),
+        AccountMeta::new(realm_address, false),
         AccountMeta::new_readonly(*governance_token_mint, false),
         AccountMeta::new(*governance_token_holding, true),
         AccountMeta::new_readonly(*payer, true),
@@ -350,7 +350,7 @@ pub fn create_governance_realm(
         accounts.push(AccountMeta::new(council_token_holding.unwrap(), true));
     }
 
-    let instruction = GovernanceInstruction::CreateGovernanceRealm { name };
+    let instruction = GovernanceInstruction::CreateRealm { name };
 
     Ok(Instruction {
         program_id: id(),

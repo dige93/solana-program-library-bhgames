@@ -33,6 +33,6 @@ impl IsInitialized for Realm {
     }
 }
 
-pub fn deserialize_realm(governance_realm_info: &AccountInfo) -> Result<Realm, ProgramError> {
-    deserialize_account::<Realm>(governance_realm_info, &id())
+pub fn deserialize_realm(realm_info: &AccountInfo) -> Result<Realm, ProgramError> {
+    deserialize_account::<Realm>(realm_info, &id())
 }

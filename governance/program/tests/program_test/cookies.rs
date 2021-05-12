@@ -26,7 +26,7 @@ pub struct ProposalCookie {
 }
 
 #[derive(Debug)]
-pub struct GovernanceRealmCookie {
+pub struct RealmCookie {
     pub address: Pubkey,
 
     /// UTF-8 encoded name of the proposal
