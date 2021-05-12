@@ -10,7 +10,7 @@ use solana_sdk::signature::Signer;
 
 use spl_governance::{
     error::GovernanceError, instruction::withdraw_governing_tokens,
-    state::voter_record::get_vote_record_address,
+    state::voter_record::get_voter_record_address,
 };
 
 #[tokio::test]
@@ -137,7 +137,7 @@ async fn test_withdraw_governance_tokens_for_voter_record_address_mismatch_error
         .with_initial_governance_token_deposit(&realm_cookie)
         .await;
 
-    let vote_record_address = get_vote_record_address(
+    let vote_record_address = get_voter_record_address(
         &realm_cookie.address,
         &realm_cookie.governance_mint,
         &voter_record_cookie.token_owner.pubkey(),

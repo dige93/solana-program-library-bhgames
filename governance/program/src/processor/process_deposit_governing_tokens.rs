@@ -12,7 +12,7 @@ use crate::{
     state::{
         enums::{GovernanceAccountType, GoverningTokenType},
         realm::deserialize_realm,
-        voter_record::{deserialize_voter_record, get_vote_record_address_seeds, VoterRecord},
+        voter_record::{deserialize_voter_record, get_voter_record_address_seeds, VoterRecord},
     },
     tools::{
         account::create_and_serialize_account_signed,
@@ -57,7 +57,7 @@ pub fn process_deposit_governing_tokens(
         spl_token_info,
     )?;
 
-    let voter_record_address_seeds = get_vote_record_address_seeds(
+    let voter_record_address_seeds = get_voter_record_address_seeds(
         realm_info.key,
         &governing_token_mint,
         governing_token_owner_info.key,

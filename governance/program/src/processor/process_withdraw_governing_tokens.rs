@@ -11,7 +11,7 @@ use crate::{
     error::GovernanceError,
     state::{
         realm::deserialize_realm,
-        voter_record::{deserialize_voter_record, get_vote_record_address_seeds},
+        voter_record::{deserialize_voter_record, get_voter_record_address_seeds},
     },
     tools::{get_realm_address_seeds, token::transfer_spl_tokens_signed},
 };
@@ -37,7 +37,7 @@ pub fn process_withdraw_governing_tokens(
 
     let realm_data = deserialize_realm(realm_info)?;
 
-    let voter_record_address_seeds = get_vote_record_address_seeds(
+    let voter_record_address_seeds = get_voter_record_address_seeds(
         realm_info.key,
         governing_token_mint_info.key,
         governing_token_owner_info.key,

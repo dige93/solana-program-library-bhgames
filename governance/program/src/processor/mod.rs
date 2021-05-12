@@ -11,6 +11,7 @@ pub mod process_execute;
 pub mod process_init_proposal;
 pub mod process_remove_signer;
 pub mod process_remove_transaction;
+pub mod process_set_vote_authority;
 pub mod process_sign;
 pub mod process_update_transaction_slot;
 pub mod process_vote;
@@ -32,6 +33,7 @@ use process_execute::process_execute;
 use process_init_proposal::process_init_proposal;
 use process_remove_signer::process_remove_signer;
 use process_remove_transaction::process_remove_transaction;
+use process_set_vote_authority::process_set_vote_authority;
 use process_sign::process_sign;
 use process_update_transaction_slot::process_update_transaction_slot;
 use process_vote::process_vote;
@@ -157,6 +159,21 @@ pub fn process_instruction(
         GovernanceInstruction::WithdrawGoverningTokens {} => {
             msg!("Instruction:WithdrawGoverningTokens");
             process_withdraw_governing_tokens(program_id, accounts)
+        }
+
+        GovernanceInstruction::SetVoteAuthority {
+            realm,
+            governing_token_mint,
+            vote_authority,
+        } => {
+            msg!("Instruction:SetVoteAuthority");
+            process_set_vote_authority(
+                program_id,
+                accounts,
+                &realm,
+                &governing_token_mint,
+                &vote_authority,
+            )
         }
     }
 }

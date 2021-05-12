@@ -41,7 +41,7 @@ pub struct VoterRecord {
     /// The number of active votes cast by voter
     pub active_votes_count: u8,
 
-    /// The total number ov votes cast by the voter
+    /// The total number of votes cast by the voter
     pub total_votes_count: u8,
 }
 
@@ -51,19 +51,19 @@ impl IsInitialized for VoterRecord {
     }
 }
 
-pub fn get_vote_record_address(
+pub fn get_voter_record_address(
     realm: &Pubkey,
     governing_token_mint: &Pubkey,
     governing_token_owner: &Pubkey,
 ) -> Pubkey {
     Pubkey::find_program_address(
-        &get_vote_record_address_seeds(realm, governing_token_mint, governing_token_owner)[..],
+        &get_voter_record_address_seeds(realm, governing_token_mint, governing_token_owner)[..],
         &id(),
     )
     .0
 }
 
-pub fn get_vote_record_address_seeds<'a>(
+pub fn get_voter_record_address_seeds<'a>(
     realm: &'a Pubkey,
     governing_token_mint: &'a Pubkey,
     governing_token_owner: &'a Pubkey,

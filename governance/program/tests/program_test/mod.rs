@@ -19,14 +19,14 @@ use spl_governance::{
     id,
     instruction::{
         create_program_governance, create_proposal, create_realm, deposit_governing_tokens,
-        withdraw_governing_tokens,
+        set_vote_authority, withdraw_governing_tokens,
     },
     processor::process_instruction,
     state::{
         program_governance::ProgramGovernance,
         proposal::Proposal,
         realm::Realm,
-        voter_record::{get_vote_record_address, VoterRecord},
+        voter_record::{get_voter_record_address, VoterRecord},
     },
     tools::get_realm_address,
     PROGRAM_AUTHORITY_SEED,
@@ -439,7 +439,7 @@ impl GovernanceProgramTest {
         .unwrap();
 
         let voter_record_address =
-            get_vote_record_address(realm_address, &governing_mint, &token_owner.pubkey());
+            get_voter_record_address(realm_address, &governing_mint, &token_owner.pubkey());
 
         VoterRecordCookie {
             address: voter_record_address,
@@ -481,6 +481,57 @@ impl GovernanceProgramTest {
 
         self.process_transaction(
             &[deposit_governing_tokens_instruction],
+            Some(&[&voter_record_cookie.token_owner]),
+        )
+        .await
+        .unwrap();
+    }
+
+    #[allow(dead_code)]
+    pub async fn with_governance_vote_authority(
+        &mut self,
+        realm_cookie: &RealmCookie,
+        voter_record_cookie: &VoterRecordCookie,
+    ) {
+        self.with_governing_token_vote_authority(
+            &realm_cookie.address,
+            &realm_cookie.governance_mint,
+            &voter_record_cookie,
+        )
+        .await;
+    }
+
+    #[allow(dead_code)]
+    pub async fn with_council_vote_authority(
+        &mut self,
+        realm_cookie: &RealmCookie,
+        voter_record_cookie: &VoterRecordCookie,
+    ) {
+        self.with_governing_token_vote_authority(
+            &realm_cookie.address,
+            &realm_cookie.council_mint.unwrap(),
+            &voter_record_cookie,
+        )
+        .await;
+    }
+
+    #[allow(dead_code)]
+    pub async fn with_governing_token_vote_authority(
+        &mut self,
+        realm: &Pubkey,
+        governing_token_mint: &Pubkey,
+        voter_record_cookie: &VoterRecordCookie,
+    ) {
+        let set_vote_authority_instruction = set_vote_authority(
+            realm,
+            governing_token_mint,
+            &voter_record_cookie.vote_authority.pubkey(),
+            &voter_record_cookie.token_owner.pubkey(),
+        )
+        .unwrap();
+
+        self.process_transaction(
+            &[set_vote_authority_instruction],
             Some(&[&voter_record_cookie.token_owner]),
         )
         .await

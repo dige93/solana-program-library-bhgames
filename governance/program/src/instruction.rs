@@ -1,5 +1,5 @@
 use crate::{
-    state::{enums::Vote, voter_record::get_vote_record_address},
+    state::{enums::Vote, voter_record::get_voter_record_address},
     tools::get_realm_address,
 };
 use borsh::{BorshDeserialize, BorshSchema, BorshSerialize};
@@ -321,7 +321,53 @@ pub enum GovernanceInstruction {
 
     DepositGoverningTokens {},
 
+    /// Sets vote authority for the given Realm and Governing Token Mint (Governance or Council)
+    /// The vote authority would have voting rights and could vote on behalf of the Governing Token Owner
+    ///
+    /// 0. `[signer]` Governing Token Owner
+    /// 1. `[writable]` Voter Record
+    SetVoteAuthority {
+        #[allow(dead_code)]
+        /// Governance Realm the new vote authority is set for
+        realm: Pubkey,
+
+        #[allow(dead_code)]
+        /// Governing Token Mint the vote authority is granted over
+        governing_token_mint: Pubkey,
+
+        #[allow(dead_code)]
+        /// New vote authority
+        vote_authority: Pubkey,
+    },
+
     WithdrawGoverningTokens {},
+}
+
+pub fn set_vote_authority(
+    realm: &Pubkey,
+    governing_token_mint: &Pubkey,
+    vote_authority: &Pubkey,
+    governing_token_owner: &Pubkey,
+) -> Result<Instruction, ProgramError> {
+    let vote_record_address =
+        get_voter_record_address(realm, governing_token_mint, governing_token_owner);
+
+    let accounts = vec![
+        AccountMeta::new_readonly(*governing_token_owner, true),
+        AccountMeta::new(vote_record_address, false),
+    ];
+
+    let instruction = GovernanceInstruction::SetVoteAuthority {
+        realm: *realm,
+        governing_token_mint: *governing_token_mint,
+        vote_authority: *vote_authority,
+    };
+
+    Ok(Instruction {
+        program_id: id(),
+        accounts,
+        data: instruction.try_to_vec().unwrap(),
+    })
 }
 
 /// Creates CreateRealm instruction
@@ -368,7 +414,7 @@ pub fn withdraw_governing_tokens(
     governing_token_owner: &Pubkey,
 ) -> Result<Instruction, ProgramError> {
     let vote_record_address =
-        get_vote_record_address(realm, governing_token_mint, governing_token_owner);
+        get_voter_record_address(realm, governing_token_mint, governing_token_owner);
 
     let accounts = vec![
         AccountMeta::new_readonly(*realm, false),
@@ -399,7 +445,7 @@ pub fn deposit_governing_tokens(
     payer: &Pubkey,
 ) -> Result<Instruction, ProgramError> {
     let vote_record_address =
-        get_vote_record_address(realm, governing_token_mint, governing_token_owner);
+        get_voter_record_address(realm, governing_token_mint, governing_token_owner);
 
     let accounts = vec![
         AccountMeta::new_readonly(*realm, false),
