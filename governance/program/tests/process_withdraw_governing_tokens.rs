@@ -13,7 +13,7 @@ async fn test_withdraw_governance_tokens() {
     let mut governance_test = GovernanceProgramTest::start_new().await;
     let governance_realm_cookie = governance_test.with_governance_realm().await;
     let voter_record_cookie = governance_test
-        .with_initial_governance_token_deposit(&governance_realm_cookie, Some(50))
+        .with_initial_governance_token_deposit(&governance_realm_cookie)
         .await;
 
     let deposit_amount = 10;
@@ -58,7 +58,7 @@ async fn test_withdraw_all_governance_tokens() {
     let governance_realm_cookie = governance_test.with_governance_realm().await;
 
     let voter_record_cookie = governance_test
-        .with_initial_governance_token_deposit(&governance_realm_cookie, Some(50))
+        .with_initial_governance_token_deposit(&governance_realm_cookie)
         .await;
 
     // Act
@@ -97,7 +97,7 @@ async fn test_withdraw_all_council_tokens() {
     let governance_realm_cookie = governance_test.with_governance_realm().await;
 
     let voter_record_cookie = governance_test
-        .with_initial_council_token_deposit(&governance_realm_cookie, Some(50))
+        .with_initial_council_token_deposit(&governance_realm_cookie)
         .await;
 
     // Act
@@ -139,7 +139,7 @@ async fn test_withdraw_council_tokens() {
     let mut governance_test = GovernanceProgramTest::start_new().await;
     let governance_realm_cookie = governance_test.with_governance_realm().await;
     let voter_record_cookie = governance_test
-        .with_initial_council_token_deposit(&governance_realm_cookie, Some(50))
+        .with_initial_council_token_deposit(&governance_realm_cookie)
         .await;
 
     let deposit_amount = 10;
@@ -187,7 +187,7 @@ async fn test_withdraw_more_governance_tokens_then_deposited_error() {
     let mut governance_test = GovernanceProgramTest::start_new().await;
     let governance_realm_cookie = governance_test.with_governance_realm().await;
     let voter_record_cookie = governance_test
-        .with_initial_governance_token_deposit(&governance_realm_cookie, Some(50))
+        .with_initial_governance_token_deposit(&governance_realm_cookie)
         .await;
 
     // Act
@@ -210,7 +210,7 @@ async fn test_withdraw_more_council_tokens_then_deposited_error() {
     let mut governance_test = GovernanceProgramTest::start_new().await;
     let governance_realm_cookie = governance_test.with_governance_realm().await;
     let voter_record_cookie = governance_test
-        .with_initial_council_token_deposit(&governance_realm_cookie, Some(50))
+        .with_initial_council_token_deposit(&governance_realm_cookie)
         .await;
 
     // Act

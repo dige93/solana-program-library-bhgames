@@ -20,6 +20,9 @@ pub struct VoterRecord {
     /// Governance account type
     pub account_type: GovernanceAccountType,
 
+    /// The Realm the Voter Record belongs to
+    pub realm: Pubkey,
+
     /// The owner (either single or multisig) of the deposited governing SPL Tokens
     /// This is who can authorize a withdrawal
     pub token_owner: Pubkey,

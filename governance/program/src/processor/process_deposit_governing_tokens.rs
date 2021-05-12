@@ -24,17 +24,16 @@ use crate::{
 pub fn process_deposit_governing_tokens(
     program_id: &Pubkey,
     accounts: &[AccountInfo],
-    amount: Option<u64>,
 ) -> ProgramResult {
     let account_info_iter = &mut accounts.iter();
 
-    let realm_info = next_account_info(account_info_iter)?; // 1
-    let governing_token_mint_info = next_account_info(account_info_iter)?; // 2
-    let governing_token_holding_info = next_account_info(account_info_iter)?; // 3
-    let governing_token_source_info = next_account_info(account_info_iter)?; // 4
-    let governing_token_owner_info = next_account_info(account_info_iter)?; // 5
-    let voter_record_info = next_account_info(account_info_iter)?; // 6
-    let vote_authority_info = next_account_info(account_info_iter)?; // 7
+    let realm_info = next_account_info(account_info_iter)?; // 0
+    let governing_token_mint_info = next_account_info(account_info_iter)?; // 1
+    let governing_token_holding_info = next_account_info(account_info_iter)?; // 2
+    let governing_token_source_info = next_account_info(account_info_iter)?; // 3
+    let governing_token_owner_info = next_account_info(account_info_iter)?; // 4
+    let voter_record_info = next_account_info(account_info_iter)?; // 5
+    let vote_authority_info = next_account_info(account_info_iter)?; // 6
     let payer_info = next_account_info(account_info_iter)?; // 7
     let system_info = next_account_info(account_info_iter)?; // 8
     let spl_token_info = next_account_info(account_info_iter)?; // 9
@@ -47,8 +46,7 @@ pub fn process_deposit_governing_tokens(
         return Err(GovernanceError::InvalidGoverningTokenMint.into());
     }
 
-    let amount = amount
-        .unwrap_or_else(|| get_amount_from_token_account(governing_token_source_info).unwrap());
+    let amount = get_amount_from_token_account(governing_token_source_info)?;
 
     transfer_spl_tokens(
         &governing_token_source_info,
@@ -67,6 +65,7 @@ pub fn process_deposit_governing_tokens(
     if voter_record_info.data_len() == 0 {
         let voter_record_data = VoterRecord {
             account_type: GovernanceAccountType::VoterRecord,
+            realm: *realm_info.key,
             token_owner: *governing_token_owner_info.key,
             token_deposit_amount: amount,
             vote_authority: *vote_authority_info.key,

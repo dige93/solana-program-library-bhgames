@@ -319,10 +319,7 @@ pub enum GovernanceInstruction {
         name: String,
     },
 
-    DepositGoverningTokens {
-        #[allow(dead_code)]
-        amount: Option<u64>,
-    },
+    DepositGoverningTokens {},
 
     WithdrawGoverningTokens {
         #[allow(dead_code)]
@@ -397,7 +394,6 @@ pub fn withdraw_governing_tokens(
 
 /// Creates DepositGoverningTokens instruction
 pub fn deposit_governing_tokens(
-    amount: Option<u64>,
     realm: &Pubkey,
     governing_token_mint: &Pubkey,
     governing_token_holding: &Pubkey,
@@ -421,7 +417,7 @@ pub fn deposit_governing_tokens(
         AccountMeta::new_readonly(spl_token::id(), false),
     ];
 
-    let instruction = GovernanceInstruction::DepositGoverningTokens { amount };
+    let instruction = GovernanceInstruction::DepositGoverningTokens {};
 
     Ok(Instruction {
         program_id: id(),
