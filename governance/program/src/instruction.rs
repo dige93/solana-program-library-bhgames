@@ -415,16 +415,18 @@ pub fn create_realm(
 pub fn withdraw_governing_tokens(
     realm: &Pubkey,
     governing_token_mint: &Pubkey,
-    governing_token_holding: &Pubkey,
     governing_token_destination: &Pubkey,
     governing_token_owner: &Pubkey,
 ) -> Result<Instruction, ProgramError> {
     let vote_record_address =
         get_voter_record_address(realm, governing_token_mint, governing_token_owner);
 
+    let governing_token_holding_address =
+        get_governing_token_holding_address(realm, governing_token_mint);
+
     let accounts = vec![
         AccountMeta::new_readonly(*realm, false),
-        AccountMeta::new(*governing_token_holding, false),
+        AccountMeta::new(governing_token_holding_address, false),
         AccountMeta::new(*governing_token_destination, false),
         AccountMeta::new_readonly(*governing_token_owner, true),
         AccountMeta::new(vote_record_address, false),
@@ -444,7 +446,6 @@ pub fn withdraw_governing_tokens(
 pub fn deposit_governing_tokens(
     realm: &Pubkey,
     governing_token_mint: &Pubkey,
-    governing_token_holding: &Pubkey,
     governing_token_source: &Pubkey,
     governing_token_owner: &Pubkey,
     payer: &Pubkey,
@@ -452,9 +453,12 @@ pub fn deposit_governing_tokens(
     let vote_record_address =
         get_voter_record_address(realm, governing_token_mint, governing_token_owner);
 
+    let governing_token_holding_address =
+        get_governing_token_holding_address(realm, governing_token_mint);
+
     let accounts = vec![
         AccountMeta::new_readonly(*realm, false),
-        AccountMeta::new(*governing_token_holding, false),
+        AccountMeta::new(governing_token_holding_address, false),
         AccountMeta::new(*governing_token_source, false),
         AccountMeta::new_readonly(*governing_token_owner, true),
         AccountMeta::new(vote_record_address, false),

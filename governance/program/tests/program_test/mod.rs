@@ -345,7 +345,6 @@ impl GovernanceProgramTest {
             &realm_cookie.address,
             &realm_cookie.governance_mint,
             &realm_cookie.governance_mint_authority,
-            &realm_cookie.governance_token_holding_account,
         )
         .await
     }
@@ -361,7 +360,6 @@ impl GovernanceProgramTest {
             &realm_cookie.address,
             &realm_cookie.governance_mint,
             &realm_cookie.governance_mint_authority,
-            &realm_cookie.governance_token_holding_account,
             voter_record_cookie,
             amount,
         )
@@ -379,7 +377,6 @@ impl GovernanceProgramTest {
             &realm_cookie.address,
             &realm_cookie.council_mint.unwrap(),
             &realm_cookie.council_mint_authority.as_ref().unwrap(),
-            &realm_cookie.council_token_holding_account.unwrap(),
             voter_record_cookie,
             amount,
         )
@@ -395,7 +392,6 @@ impl GovernanceProgramTest {
             &realm_cookie.address,
             &realm_cookie.council_mint.unwrap(),
             &realm_cookie.council_mint_authority.as_ref().unwrap(),
-            &realm_cookie.council_token_holding_account.as_ref().unwrap(),
         )
         .await
     }
@@ -406,7 +402,6 @@ impl GovernanceProgramTest {
         realm_address: &Pubkey,
         governing_mint: &Pubkey,
         governing_mint_authority: &Keypair,
-        governing_token_holding: &Pubkey,
     ) -> VoterRecordCookie {
         let token_owner = Keypair::new();
         let token_source = Keypair::new();
@@ -426,7 +421,6 @@ impl GovernanceProgramTest {
         let deposit_governing_tokens_instruction = deposit_governing_tokens(
             realm_address,
             governing_mint,
-            governing_token_holding,
             &token_source.pubkey(),
             &token_owner.pubkey(),
             &self.payer.pubkey(),
@@ -459,7 +453,6 @@ impl GovernanceProgramTest {
         realm: &Pubkey,
         governing_token_mint: &Pubkey,
         governing_token_mint_authority: &Keypair,
-        governing_token_holding: &Pubkey,
         voter_record_cookie: &VoterRecordCookie,
         amount: u64,
     ) {
@@ -474,7 +467,6 @@ impl GovernanceProgramTest {
         let deposit_governing_tokens_instruction = deposit_governing_tokens(
             realm,
             governing_token_mint,
-            governing_token_holding,
             &voter_record_cookie.token_source,
             &voter_record_cookie.token_owner.pubkey(),
             &self.payer.pubkey(),
@@ -550,7 +542,6 @@ impl GovernanceProgramTest {
             realm_cookie,
             voter_record_cookie,
             &realm_cookie.governance_mint,
-            &realm_cookie.governance_token_holding_account,
             &voter_record_cookie.token_owner,
         )
         .await
@@ -566,7 +557,6 @@ impl GovernanceProgramTest {
             realm_cookie,
             voter_record_cookie,
             &realm_cookie.council_mint.unwrap(),
-            &realm_cookie.council_token_holding_account.unwrap(),
             &voter_record_cookie.token_owner,
         )
         .await
@@ -578,13 +568,12 @@ impl GovernanceProgramTest {
         realm_cookie: &RealmCookie,
         voter_record_cookie: &VoterRecordCookie,
         governing_token_mint: &Pubkey,
-        governing_token_holding: &Pubkey,
+
         governing_token_owner: &Keypair,
     ) -> Result<(), ProgramError> {
         let deposit_governing_tokens_instruction = withdraw_governing_tokens(
             &realm_cookie.address,
             governing_token_mint,
-            governing_token_holding,
             &voter_record_cookie.token_source,
             &governing_token_owner.pubkey(),
         )
