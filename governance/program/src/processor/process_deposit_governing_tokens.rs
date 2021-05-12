@@ -10,7 +10,7 @@ use solana_program::{
 use crate::{
     error::GovernanceError,
     state::{
-        enums::GovernanceAccountType,
+        enums::{GovernanceAccountType, GoverningTokenType},
         governance_realm::deserialize_realm,
         voter_record::{deserialize_voter_record, get_vote_record_address_seeds, VoterRecord},
     },
@@ -40,11 +40,13 @@ pub fn process_deposit_governing_tokens(
 
     let realm_data = deserialize_realm(realm_info)?;
 
-    if realm_data.governance_mint != *governing_token_mint_info.key
-        && realm_data.council_mint != Some(*governing_token_mint_info.key)
-    {
+    let governing_token_type = if *governing_token_mint_info.key == realm_data.governance_mint {
+        GoverningTokenType::Governance
+    } else if Some(*governing_token_mint_info.key) == realm_data.council_mint {
+        GoverningTokenType::Council
+    } else {
         return Err(GovernanceError::InvalidGoverningTokenMint.into());
-    }
+    };
 
     let amount = get_amount_from_token_account(governing_token_source_info)?;
 
@@ -68,6 +70,7 @@ pub fn process_deposit_governing_tokens(
             realm: *realm_info.key,
             token_owner: *governing_token_owner_info.key,
             token_deposit_amount: amount,
+            token_type: governing_token_type,
             vote_authority: *vote_authority_info.key,
             active_votes_count: 0,
         };

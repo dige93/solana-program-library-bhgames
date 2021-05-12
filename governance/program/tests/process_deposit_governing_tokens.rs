@@ -6,6 +6,7 @@ mod program_test;
 
 use program_test::*;
 use solana_sdk::signature::Signer;
+use spl_governance::state::enums::GoverningTokenType;
 
 #[tokio::test]
 async fn test_deposited_initial_governance_tokens() {
@@ -42,6 +43,8 @@ async fn test_deposited_initial_governance_tokens() {
     assert_eq!(governance_realm_cookie.address, voter_record.realm);
 
     assert_eq!(0, voter_record.active_votes_count);
+
+    assert_eq!(GoverningTokenType::Governance, voter_record.token_type);
 
     let source_account = governance_test
         .get_token_account(&voter_record_cookie.token_source)
@@ -95,6 +98,8 @@ async fn test_deposited_initial_council_tokens() {
     );
 
     assert_eq!(0, voter_record.active_votes_count);
+
+    assert_eq!(GoverningTokenType::Council, voter_record.token_type);
 
     let source_account = governance_test
         .get_token_account(&voter_record_cookie.token_source)

@@ -4,7 +4,7 @@ use crate::{
     error::GovernanceError, id, tools::account::deserialize_account, PROGRAM_AUTHORITY_SEED,
 };
 
-use super::enums::GovernanceAccountType;
+use super::enums::{GovernanceAccountType, GoverningTokenType};
 
 use borsh::{BorshDeserialize, BorshSchema, BorshSerialize};
 
@@ -20,8 +20,11 @@ pub struct VoterRecord {
     /// Governance account type
     pub account_type: GovernanceAccountType,
 
-    /// The Realm the Voter Record belongs to
+    /// The Realm the VoterRecord belongs to
     pub realm: Pubkey,
+
+    /// The type of the Governing Token the VoteRecord is for
+    pub token_type: GoverningTokenType,
 
     /// The owner (either single or multisig) of the deposited governing SPL Tokens
     /// This is who can authorize a withdrawal

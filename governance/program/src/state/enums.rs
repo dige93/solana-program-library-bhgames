@@ -75,3 +75,12 @@ pub enum Vote {
     /// No vote
     No(u64),
 }
+
+/// Governing Token type
+#[derive(Clone, Debug, PartialEq, BorshDeserialize, BorshSerialize, BorshSchema)]
+pub enum GoverningTokenType {
+    /// Governance token
+    Governance,
+    /// Council token
+    Council,
+}
