@@ -71,7 +71,7 @@ impl Pack for CustomSingleSignerTransaction {
 
         let account_type = match account_type {
             0 => GovernanceAccountType::Uninitialized,
-            5 => GovernanceAccountType::CustomSingleSignerTransaction,
+            5 => GovernanceAccountType::SingleSignerTransaction,
             _ => return Err(ProgramError::InvalidAccountData),
         };
 
@@ -102,7 +102,7 @@ impl Pack for CustomSingleSignerTransaction {
 
         *account_type_value = match self.account_type {
             GovernanceAccountType::Uninitialized => 0_u8,
-            GovernanceAccountType::CustomSingleSignerTransaction => 5_u8,
+            GovernanceAccountType::SingleSignerTransaction => 5_u8,
             _ => panic!("Account type was invalid"),
         }
         .to_le_bytes();

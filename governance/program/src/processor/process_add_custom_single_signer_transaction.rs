@@ -76,7 +76,7 @@ pub fn process_add_custom_single_signer_transaction(
         return Err(GovernanceError::MustBeAboveMinimumWaitingPeriod.into());
     };
 
-    proposal_txn.account_type = GovernanceAccountType::CustomSingleSignerTransaction;
+    proposal_txn.account_type = GovernanceAccountType::SingleSignerTransaction;
     proposal_txn.delay_slots = delay_slots;
     //proposal_txn.instruction = instruction;
     proposal_txn.instruction_end_index = instruction_end_index;

@@ -7,6 +7,12 @@ pub enum GovernanceAccountType {
     /// 0 - Default uninitialized account state
     Uninitialized,
 
+    ///
+    Realm,
+
+    ///
+    VoterRecord,
+
     /// 1 - Program Governance account
     ProgramGovernance,
 
@@ -20,16 +26,10 @@ pub enum GovernanceAccountType {
     ProposalVoteRecord,
 
     /// 5 Custom Single Signer Transaction account which holds instructions to execute for Proposal
-    CustomSingleSignerTransaction,
+    SingleSignerTransaction,
 
     /// 6
     Proposal,
-
-    ///
-    Realm,
-
-    ///
-    VoterRecord,
 }
 
 impl Default for GovernanceAccountType {
