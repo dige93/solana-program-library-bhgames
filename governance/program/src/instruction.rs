@@ -332,7 +332,7 @@ pub enum GovernanceInstruction {
     CreateEmptyGovernanceVoteRecord,
 
     /// Create Proposal account for Instructions that will be executed at various slots in the future
-    /// The instruction also grants Admin and Signatory token to the provided account
+    /// The instruction also grants Admin and Signatory token to the Proposal owner
     ///
     ///   0. `[writable]` Proposal account
     ///   1. `[writable]` Account Governance account
@@ -343,10 +343,12 @@ pub enum GovernanceInstruction {
     ///   4. `[writable]` Signatory Mint account
     ///   5. `[writable, signer]` Signatory account for the issued signatory token
 
-    ///   6. `[signer]` Proposal Owner. The owner of the Proposal who would receive ownership of the minted Admin and Signatory tokens
-    ///   6. `[signer]` Payer
-    ///   7. `[]` System account
-    ///   8. `[]` Rent sysvar
+    ///   6. `[signer]` Proposal Owner. The owner of the Proposal who would receive minted Admin and Signatory tokens
+    ///   7. `[signer]` Payer
+
+    ///   8. `[]` System account
+    ///   9. `[]` SPL Token   
+    ///   10. `[]` Rent sysvar
     CreateProposal {
         /// UTF-8 encoded name of the proposal
         #[allow(dead_code)]

@@ -33,18 +33,18 @@ pub fn process_create_proposal(
     let proposal_info = next_account_info(account_info_iter)?; // 0
     let account_governance_info = next_account_info(account_info_iter)?; // 1
 
-    let admin_mint_info = next_account_info(account_info_iter)?; // 1
-    let admin_token_info = next_account_info(account_info_iter)?; // 1
+    let admin_mint_info = next_account_info(account_info_iter)?; // 2
+    let admin_token_info = next_account_info(account_info_iter)?; // 3
 
-    let signatory_mint_info = next_account_info(account_info_iter)?; // 1
-    let signatory_token_info = next_account_info(account_info_iter)?; // 1
+    let signatory_mint_info = next_account_info(account_info_iter)?; // 4
+    let signatory_token_info = next_account_info(account_info_iter)?; // 5
 
-    let proposal_owner_info = next_account_info(account_info_iter)?; // 2
+    let proposal_owner_info = next_account_info(account_info_iter)?; // 6
 
-    let payer_info = next_account_info(account_info_iter)?; // 2
-    let system_info = next_account_info(account_info_iter)?; // 3
-    let spl_token_info = next_account_info(account_info_iter)?; // 7
-    let rent_sysvar_info = next_account_info(account_info_iter)?; // 7
+    let payer_info = next_account_info(account_info_iter)?; // 7
+    let system_info = next_account_info(account_info_iter)?; // 8
+    let spl_token_info = next_account_info(account_info_iter)?; // 9
+    let rent_sysvar_info = next_account_info(account_info_iter)?; // 10
 
     if !proposal_info.data_is_empty() {
         return Err(GovernanceError::ProposalAlreadyExists.into());
