@@ -2,9 +2,9 @@
 //use crate::utils::assert_program_upgrade_authority;
 
 use crate::{
-    state::program_governance::ProgramGovernance,
+    state::account_governance::AccountGovernance,
     state::{
-        enums::GovernanceAccountType, program_governance::get_program_governance_address_seeds,
+        account_governance::get_program_governance_address_seeds, enums::GovernanceAccountType,
     },
     tools::{
         account::create_and_serialize_account_signed, bpf_loader::assert_program_upgrade_authority,
@@ -16,7 +16,7 @@ use solana_program::{
     pubkey::Pubkey,
 };
 
-/// Init Governance
+/// Create Program Governance
 #[allow(clippy::too_many_arguments)]
 pub fn process_create_program_governance(
     program_id: &Pubkey,
@@ -66,22 +66,22 @@ pub fn process_create_program_governance(
     // ];
     // invoke(&set_upgrade_authority_ix, accounts)?;
 
-    let program_governance_data = ProgramGovernance {
-        account_type: GovernanceAccountType::ProgramGovernance,
+    let program_governance_data = AccountGovernance {
+        account_type: GovernanceAccountType::AccountGovernance,
         realm: *realm,
         vote_threshold,
         token_threshold_to_create_proposal,
         min_instruction_hold_up_time,
-        governed_program: *governed_program,
+        governed_account: *governed_program,
         max_voting_time,
         proposal_count: 0,
     };
 
-    create_and_serialize_account_signed::<ProgramGovernance>(
+    create_and_serialize_account_signed::<AccountGovernance>(
         payer_info,
         &program_governance_info,
         &program_governance_data,
-        get_program_governance_address_seeds(governed_program),
+        get_program_governance_address_seeds(realm, governed_program),
         program_id,
         system_info,
     )?;

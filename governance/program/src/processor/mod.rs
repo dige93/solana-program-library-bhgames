@@ -1,7 +1,9 @@
 pub mod process_add_custom_single_signer_transaction;
 pub mod process_add_signer;
+pub mod process_create_account_governance;
 pub mod process_create_empty_governance_voting_record;
 pub mod process_create_program_governance;
+
 pub mod process_create_proposal;
 pub mod process_create_realm;
 pub mod process_delete_proposal;
@@ -22,6 +24,7 @@ use crate::instruction::GovernanceInstruction;
 use borsh::BorshDeserialize;
 use process_add_custom_single_signer_transaction::process_add_custom_single_signer_transaction;
 use process_add_signer::process_add_signer;
+use process_create_account_governance::process_create_account_governance;
 use process_create_empty_governance_voting_record::process_create_empty_governance_voting_record;
 use process_create_program_governance::process_create_program_governance;
 use process_create_proposal::process_create_proposal;
@@ -116,6 +119,26 @@ pub fn process_instruction(
                 accounts,
                 &realm,
                 &governed_program,
+                vote_threshold,
+                min_instruction_hold_up_time,
+                max_voting_time,
+                token_threshold_to_create_proposal,
+            )
+        }
+        GovernanceInstruction::CreateAccountGovernance {
+            realm,
+            governed_account,
+            vote_threshold,
+            min_instruction_hold_up_time,
+            max_voting_time,
+            token_threshold_to_create_proposal,
+        } => {
+            msg!("Instruction: {:?}", instruction);
+            process_create_account_governance(
+                program_id,
+                accounts,
+                &realm,
+                &governed_account,
                 vote_threshold,
                 min_instruction_hold_up_time,
                 max_voting_time,

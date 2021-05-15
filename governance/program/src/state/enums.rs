@@ -13,8 +13,8 @@ pub enum GovernanceAccountType {
     ///
     VoterRecord,
 
-    /// 1 - Program Governance account
-    ProgramGovernance,
+    /// 1 - Account Governance account
+    AccountGovernance,
 
     /// 2 - Proposal account for Governance account. A single Governance account can have multiple Proposal accounts
     ProposalOld,

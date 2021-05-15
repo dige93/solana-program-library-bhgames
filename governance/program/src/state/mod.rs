@@ -5,7 +5,7 @@ pub mod enums;
 pub mod custom_single_signer_transaction;
 
 /// Governance
-pub mod program_governance;
+pub mod account_governance;
 
 /// Proposal
 pub mod proposal_old;

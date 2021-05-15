@@ -1,7 +1,7 @@
 //! Program state processor
 use crate::{
     error::GovernanceError,
-    state::program_governance::ProgramGovernance,
+    state::account_governance::AccountGovernance,
     state::{
         custom_single_signer_transaction::{CustomSingleSignerTransaction, MAX_ACCOUNTS_ALLOWED},
         enums::ProposalStateStatus,
@@ -37,7 +37,7 @@ pub fn process_execute(program_id: &Pubkey, accounts: &[AccountInfo]) -> Program
 
     let mut proposal_state: ProposalState = assert_initialized(proposal_state_account_info)?;
     let proposal: ProposalOld = assert_initialized(proposal_account_info)?;
-    let governance: ProgramGovernance = assert_initialized_old(governance_account_info)?;
+    let governance: AccountGovernance = assert_initialized_old(governance_account_info)?;
     let clock = &Clock::from_account_info(clock_info)?;
     // For now we assume all transactions are CustomSingleSignerTransactions even though
     // this will not always be the case...we need to solve that inheritance issue later.
@@ -56,7 +56,7 @@ pub fn process_execute(program_id: &Pubkey, accounts: &[AccountInfo]) -> Program
     assert_account_equiv(proposal_state_account_info, &proposal.state)?;
     assert_account_equiv(governance_account_info, &proposal.governance)?;
 
-    let mut seeds = vec![PROGRAM_AUTHORITY_SEED, governance.governed_program.as_ref()];
+    let mut seeds = vec![PROGRAM_AUTHORITY_SEED, governance.governed_account.as_ref()];
 
     let (governance_authority, bump_seed) = Pubkey::find_program_address(&seeds[..], program_id);
 
@@ -70,7 +70,7 @@ pub fn process_execute(program_id: &Pubkey, accounts: &[AccountInfo]) -> Program
             if next_account.data_len() == 1000 {
                 // check it's governance account using sie
                 // You better be initialized, and if you are, you better at least be mine...
-                let _nefarious_governance: ProgramGovernance =
+                let _nefarious_governance: AccountGovernance =
                     assert_initialized_old(&next_account)?;
                 assert_account_equiv(&next_account, &proposal.governance)?;
                 added_authority = true;

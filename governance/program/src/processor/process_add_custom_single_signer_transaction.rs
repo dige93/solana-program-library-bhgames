@@ -2,9 +2,9 @@
 use crate::{
     error::GovernanceError,
     state::{
+        account_governance::AccountGovernance,
         custom_single_signer_transaction::{CustomSingleSignerTransaction, MAX_INSTRUCTION_DATA},
         enums::GovernanceAccountType,
-        program_governance::ProgramGovernance,
         proposal_old::ProposalOld,
         proposal_state::{ProposalState, MAX_TRANSACTIONS},
     },
@@ -42,7 +42,7 @@ pub fn process_add_custom_single_signer_transaction(
 
     let mut proposal_state: ProposalState = assert_initialized(proposal_state_account_info)?;
     let proposal: ProposalOld = assert_initialized(proposal_account_info)?;
-    let governance: ProgramGovernance = assert_initialized_old(governance_account_info)?;
+    let governance: AccountGovernance = assert_initialized_old(governance_account_info)?;
 
     let mut proposal_txn: CustomSingleSignerTransaction =
         assert_uninitialized(proposal_txn_account_info)?;

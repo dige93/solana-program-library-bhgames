@@ -1,6 +1,6 @@
 use crate::state::{
+    account_governance::get_program_governance_address,
     enums::Vote,
-    program_governance::get_program_governance_address,
     realm::{get_governing_token_holding_address, get_realm_address},
     voter_record::get_voter_record_address,
 };
@@ -255,7 +255,7 @@ pub enum GovernanceInstruction {
 
     /// Creates Program Governance account which governs an upgradable program
     ///
-    ///   0. `[writable]` Program Governance account. PDA seeds: ['governance', governed_program]
+    ///   0. `[writable]` Program Governance account. PDA seeds: ['governance', realm, governed_program]
     ///   1. `[writable]` Program Data account of the Program governed by this Governance account
     ///   2. `[signer]` Current Upgrade Authority account of the Program governed by this Governance account
     ///   3. `[signer]` Payer
@@ -269,6 +269,39 @@ pub enum GovernanceInstruction {
         /// Address of the governed program
         #[allow(dead_code)]
         governed_program: Pubkey,
+
+        /// Voting threshold in % required to tip the vote
+        /// It's the percentage of tokens out of the entire pool of governance tokens eligible to vote
+        #[allow(dead_code)]
+        vote_threshold: u8,
+
+        /// Minimum waiting time in slots for an instruction to be executed after proposal is voted on
+        #[allow(dead_code)]
+        min_instruction_hold_up_time: u64,
+
+        /// Time limit in slots for proposal to be open for voting
+        #[allow(dead_code)]
+        max_voting_time: u64,
+
+        /// Minimum % of tokens for a governance token owner to be able to create proposal
+        /// It's the percentage of tokens out of the entire pool of governance tokens eligible to vote
+        #[allow(dead_code)]
+        token_threshold_to_create_proposal: u8,
+    },
+
+    /// Creates Account Governance account which can be used to govern an arbitrary account
+    ///
+    ///   0. `[writable]` Account Governance account. PDA seeds: ['governance', realm, governed_account]
+    ///   1. `[signer]` Payer
+    ///   2. `[]` System account
+    CreateAccountGovernance {
+        /// Realm
+        #[allow(dead_code)]
+        realm: Pubkey,
+
+        /// Address of the governed program
+        #[allow(dead_code)]
+        governed_account: Pubkey,
 
         /// Voting threshold in % required to tip the vote
         /// It's the percentage of tokens out of the entire pool of governance tokens eligible to vote
@@ -491,7 +524,7 @@ pub fn create_program_governance(
     governed_program_upgrade_authority: &Pubkey,
     payer: &Pubkey,
 ) -> Result<Instruction, ProgramError> {
-    let program_governance_address = get_program_governance_address(governed_program);
+    let program_governance_address = get_program_governance_address(realm, governed_program);
 
     let accounts = vec![
         AccountMeta::new(program_governance_address, false),

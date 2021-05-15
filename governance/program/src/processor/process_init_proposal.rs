@@ -6,7 +6,7 @@ use crate::utils::{
 use crate::{
     error::GovernanceError,
     state::{
-        enums::GovernanceAccountType, program_governance::ProgramGovernance,
+        account_governance::AccountGovernance, enums::GovernanceAccountType,
         proposal_old::ProposalOld, proposal_state::ProposalState,
     },
     utils::{
@@ -55,7 +55,7 @@ pub fn process_init_proposal(
 
     let mut new_proposal_state: ProposalState = assert_uninitialized(proposal_state_account_info)?;
     let mut new_proposal: ProposalOld = assert_uninitialized(proposal_account_info)?;
-    let mut governance: ProgramGovernance = assert_initialized_old(governance_account_info)?;
+    let mut governance: AccountGovernance = assert_initialized_old(governance_account_info)?;
 
     new_proposal.account_type = GovernanceAccountType::ProposalOld;
     new_proposal.governance = *governance_account_info.key;

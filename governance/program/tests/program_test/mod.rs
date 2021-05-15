@@ -22,8 +22,8 @@ use spl_governance::{
     },
     processor::process_instruction,
     state::{
+        account_governance::{get_program_governance_address, AccountGovernance},
         enums::{GovernanceAccountType, GoverningTokenType},
-        program_governance::{get_program_governance_address, ProgramGovernance},
         proposal::Proposal,
         realm::{get_governing_token_holding_address, get_realm_address, Realm},
         voter_record::{get_voter_record_address, VoterRecord},
@@ -32,7 +32,7 @@ use spl_governance::{
 
 pub mod cookies;
 use self::cookies::{
-    GovernedProgramCookie, ProgramGovernanceCookie, ProposalCookie, RealmCookie, VoterRecordCookie,
+    AccountGovernanceCookie, GovernedProgramCookie, ProposalCookie, RealmCookie, VoterRecordCookie,
 };
 
 pub mod tools;
@@ -179,9 +179,9 @@ impl GovernanceProgramTest {
         &mut self,
         realm_cookie: &RealmCookie,
         governed_program_cookie: &GovernedProgramCookie,
-    ) -> ProgramGovernanceCookie {
+    ) -> AccountGovernanceCookie {
         let program_governance_address =
-            get_program_governance_address(&governed_program_cookie.address);
+            get_program_governance_address(&realm_cookie.address, &governed_program_cookie.address);
 
         let vote_threshold: u8 = 60;
         let min_instruction_hold_up_time: u64 = 10;
@@ -208,18 +208,18 @@ impl GovernanceProgramTest {
         .await
         .unwrap();
 
-        let account = ProgramGovernance {
-            account_type: GovernanceAccountType::ProgramGovernance,
+        let account = AccountGovernance {
+            account_type: GovernanceAccountType::AccountGovernance,
             realm: realm_cookie.address,
             vote_threshold,
             token_threshold_to_create_proposal,
             min_instruction_hold_up_time,
-            governed_program: governed_program_cookie.address,
+            governed_account: governed_program_cookie.address,
             max_voting_time,
             proposal_count: 0,
         };
 
-        ProgramGovernanceCookie {
+        AccountGovernanceCookie {
             address: program_governance_address,
             account,
         }
@@ -237,7 +237,7 @@ impl GovernanceProgramTest {
     }
 
     #[allow(dead_code)]
-    pub async fn with_proposal(&mut self, governance: &ProgramGovernanceCookie) -> ProposalCookie {
+    pub async fn with_proposal(&mut self, governance: &AccountGovernanceCookie) -> ProposalCookie {
         let description_link = "proposal description".to_string();
         let name = "proposal_name".to_string();
 
@@ -598,8 +598,8 @@ impl GovernanceProgramTest {
     pub async fn get_program_governance_account(
         &mut self,
         program_governance_address: &Pubkey,
-    ) -> ProgramGovernance {
-        self.get_account::<ProgramGovernance>(program_governance_address)
+    ) -> AccountGovernance {
+        self.get_account::<AccountGovernance>(program_governance_address)
             .await
     }
 
