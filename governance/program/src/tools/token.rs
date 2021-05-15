@@ -302,6 +302,50 @@ pub fn mint_spl_tokens_signed<'a>(
     Ok(())
 }
 
+pub fn setup_spl_token_permission_scheme_signed<'a>(
+    payer_info: &AccountInfo<'a>,
+    token_account_info: &AccountInfo<'a>,
+    token_account_owner_info: &AccountInfo<'a>,
+    mint_account_info: &AccountInfo<'a>,
+    mint_authority_info: &AccountInfo<'a>,
+    mint_authority_seeds: &Vec<&[u8]>,
+    program_id: &Pubkey,
+    system_info: &AccountInfo<'a>,
+    spl_token_info: &AccountInfo<'a>,
+    rent_sysvar_info: &AccountInfo<'a>,
+) -> Result<(), ProgramError> {
+    create_spl_token_mint(
+        payer_info,
+        mint_account_info,
+        mint_authority_info.key,
+        system_info,
+        spl_token_info,
+        rent_sysvar_info,
+    )?;
+
+    create_spl_token_account(
+        payer_info,
+        token_account_info,
+        mint_account_info,
+        token_account_owner_info,
+        system_info,
+        spl_token_info,
+        rent_sysvar_info,
+    )?;
+
+    mint_spl_tokens_signed(
+        mint_account_info,
+        token_account_info,
+        mint_authority_info,
+        mint_authority_seeds,
+        program_id,
+        1,
+        spl_token_info,
+    )?;
+
+    Ok(())
+}
+
 /// Computationally cheap method to get amount from a token account. It reads amount without deserializing full account data
 pub fn get_amount_from_token_account(
     token_account_info: &AccountInfo,
