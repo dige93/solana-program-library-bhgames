@@ -133,7 +133,7 @@ pub fn create_spl_token_account_signed<'a>(
 pub fn create_spl_token_mint<'a>(
     payer_info: &AccountInfo<'a>,
     mint_account_info: &AccountInfo<'a>,
-    mint_authority_info: &Pubkey,
+    mint_authority: &Pubkey,
     system_info: &AccountInfo<'a>,
     spl_token_info: &AccountInfo<'a>,
     rent_sysvar_info: &AccountInfo<'a>,
@@ -158,7 +158,7 @@ pub fn create_spl_token_mint<'a>(
     let initialize_mint_instruction = spl_token::instruction::initialize_mint(
         &spl_token::id(),
         &mint_account_info.key,
-        mint_authority_info,
+        mint_authority,
         None,
         0,
     )?;
@@ -219,7 +219,7 @@ pub fn transfer_spl_tokens_signed<'a>(
 
     if authority_address != *authority_info.key {
         msg!(
-                "Transfer SPL Token with Authority Address: {:?} was requested while Address: {:?} was expected",
+                "Transfer SPL Token with Authority PDA: {:?} was requested while PDA: {:?} was expected",
                 authority_info.key,
                 authority_address
             );
@@ -247,6 +247,54 @@ pub fn transfer_spl_tokens_signed<'a>(
             authority_info.clone(),
             source_info.clone(),
             destination_info.clone(),
+        ],
+        &[&signers_seeds[..]],
+    )?;
+
+    Ok(())
+}
+
+pub fn mint_spl_tokens_signed<'a>(
+    token_mint_info: &AccountInfo<'a>,
+    token_account_info: &AccountInfo<'a>,
+    mint_authority_info: &AccountInfo<'a>,
+    mint_authority_seeds: Vec<&[u8]>,
+    mint_owner: &Pubkey,
+    amount: u64,
+    spl_token_info: &AccountInfo<'a>,
+) -> ProgramResult {
+    let (mint_authority_address, bump_seed) =
+        Pubkey::find_program_address(&mint_authority_seeds[..], mint_owner);
+
+    if mint_authority_address != *mint_authority_info.key {
+        msg!(
+            "Mint SPL Token with Mint Authority PDA: {:?} was requested while PDA: {:?} was expected",
+            mint_authority_info.key,
+            mint_authority_address
+        );
+        return Err(ProgramError::InvalidSeeds);
+    }
+
+    let mint_to_instruction = spl_token::instruction::mint_to(
+        &spl_token::id(),
+        token_mint_info.key,
+        token_account_info.key,
+        mint_authority_info.key,
+        &[],
+        amount,
+    )?;
+
+    let mut signers_seeds = mint_authority_seeds.to_vec();
+    let bump = &[bump_seed];
+    signers_seeds.push(bump);
+
+    invoke_signed(
+        &mint_to_instruction,
+        &[
+            spl_token_info.clone(),
+            token_mint_info.clone(),
+            token_account_info.clone(),
+            mint_authority_info.clone(),
         ],
         &[&signers_seeds[..]],
     )?;

@@ -16,7 +16,7 @@ use crate::{
     },
     tools::{
         account::create_and_serialize_account_signed,
-        token::{create_spl_token_account, create_spl_token_mint},
+        token::{create_spl_token_account, create_spl_token_mint, mint_spl_tokens_signed},
     },
 };
 
@@ -50,6 +50,8 @@ pub fn process_create_proposal(
         return Err(GovernanceError::ProposalAlreadyExists.into());
     }
 
+    let proposal_seeds = get_proposal_address_seeds(account_governance_info.key, &name);
+
     create_spl_token_mint(
         payer_info,
         admin_mint_info,
@@ -67,6 +69,16 @@ pub fn process_create_proposal(
         system_info,
         spl_token_info,
         rent_sysvar_info,
+    )?;
+
+    mint_spl_tokens_signed(
+        admin_mint_info,
+        admin_token_info,
+        proposal_info,
+        proposal_seeds,
+        program_id,
+        1,
+        spl_token_info,
     )?;
 
     create_spl_token_mint(
