@@ -319,7 +319,12 @@ impl GovernanceProgramTest {
         let description_link = "Proposal Description".to_string();
 
         let admin_mint_keypair = Keypair::new();
+        let admin_token_keypair = Keypair::new();
+
         let signatory_mint_keypair = Keypair::new();
+        let signatory_token_keypair = Keypair::new();
+
+        let proposal_owner = Keypair::new();
 
         let create_proposal_instruction = create_proposal(
             name.clone(),
@@ -327,14 +332,22 @@ impl GovernanceProgramTest {
             description_link.clone(),
             &account_governance_cookie.address,
             &admin_mint_keypair.pubkey(),
+            &admin_token_keypair.pubkey(),
             &signatory_mint_keypair.pubkey(),
+            &signatory_token_keypair.pubkey(),
+            &proposal_owner.pubkey(),
             &self.payer.pubkey(),
         )
         .unwrap();
 
         self.process_transaction(
             &[create_proposal_instruction],
-            Some(&[&admin_mint_keypair, &signatory_mint_keypair]),
+            Some(&[
+                &admin_mint_keypair,
+                &admin_token_keypair,
+                &signatory_mint_keypair,
+                &signatory_token_keypair,
+            ]),
         )
         .await
         .unwrap();
@@ -353,6 +366,7 @@ impl GovernanceProgramTest {
         ProposalCookie {
             address: proposal_address,
             account,
+            proposal_owner,
         }
     }
 

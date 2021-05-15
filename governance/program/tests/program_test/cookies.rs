@@ -26,6 +26,7 @@ pub struct AccountGovernanceCookie {
 pub struct ProposalCookie {
     pub address: Pubkey,
     pub account: Proposal,
+    pub proposal_owner: Keypair,
 }
 
 #[derive(Debug)]

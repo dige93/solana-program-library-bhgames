@@ -334,16 +334,19 @@ pub enum GovernanceInstruction {
     /// Create Proposal account for Instructions that will be executed at various slots in the future
     /// The instruction also grants Admin and Signatory token to the provided account
     ///
-    ///   0. `[writable, signer]` Proposal account
+    ///   0. `[writable]` Proposal account
     ///   1. `[writable]` Account Governance account
 
-    ///   2. `[writable]` Initialized Signatory Mint account
-    ///   3. `[writable]` Initialized Admin Mint account
-    ///   4. `[writable]` Initialized Admin account for the issued admin token
-    ///   5. `[writable]` Initialized Signatory account for the issued signatory token
+    ///   2. `[writable]` Admin Mint account
+    ///   3. `[writable, signer]` Admin account for the issued admin token
 
-    ///   5. `[signer]` Payer
-    ///   6. `[]` System account
+    ///   4. `[writable]` Signatory Mint account
+    ///   5. `[writable, signer]` Signatory account for the issued signatory token
+
+    ///   6. `[signer]` Proposal Owner. The owner of the Proposal who would receive ownership of the minted Admin and Signatory tokens
+    ///   6. `[signer]` Payer
+    ///   7. `[]` System account
+    ///   8. `[]` Rent sysvar
     CreateProposal {
         /// UTF-8 encoded name of the proposal
         #[allow(dead_code)]
@@ -609,10 +612,14 @@ pub fn create_proposal(
     name: String,
     governing_token_type: GoverningTokenType,
     description_link: String,
+
     // Accounts
     account_governance: &Pubkey,
     admin_mint: &Pubkey,
+    admin_token: &Pubkey,
     signatory_mint: &Pubkey,
+    signatory_token: &Pubkey,
+    proposal_owner: &Pubkey,
     payer: &Pubkey,
 ) -> Result<Instruction, ProgramError> {
     let proposal_address = get_proposal_address(account_governance, &name);
@@ -621,7 +628,10 @@ pub fn create_proposal(
         AccountMeta::new(proposal_address, false),
         AccountMeta::new(*account_governance, false),
         AccountMeta::new(*admin_mint, true),
+        AccountMeta::new(*admin_token, true),
         AccountMeta::new(*signatory_mint, true),
+        AccountMeta::new(*signatory_token, true),
+        AccountMeta::new_readonly(*proposal_owner, false),
         AccountMeta::new_readonly(*payer, true),
         AccountMeta::new_readonly(system_program::id(), false),
         AccountMeta::new_readonly(spl_token::id(), false),
