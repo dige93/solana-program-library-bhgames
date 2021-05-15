@@ -45,7 +45,7 @@ pub fn process_create_proposal(
     create_spl_token_mint(
         payer_info,
         signatory_mint_info,
-        payer_info.key,
+        proposal_info.key,
         system_info,
         spl_token_info,
         rent_sysvar_info,
@@ -53,7 +53,7 @@ pub fn process_create_proposal(
     create_spl_token_mint(
         payer_info,
         admin_mint_info,
-        payer_info.key,
+        proposal_info.key,
         system_info,
         spl_token_info,
         rent_sysvar_info,
