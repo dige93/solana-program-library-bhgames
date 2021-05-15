@@ -63,7 +63,7 @@ pub fn process_deposit_governing_tokens(
         governing_token_owner_info.key,
     );
 
-    if voter_record_info.data_len() == 0 {
+    if voter_record_info.data_is_empty() {
         let voter_record_data = VoterRecord {
             account_type: GovernanceAccountType::VoterRecord,
             realm: *realm_info.key,

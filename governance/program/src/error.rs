@@ -188,6 +188,10 @@ pub enum GovernanceError {
     /// Token Account Error: Invalid Token account owner
     #[error("Invalid Token account owner")]
     InvalidTokenAccountOwnerError,
+
+    /// Realm with the given name and governing mints already exists
+    #[error("Realm with the given name and governing mints already exists")]
+    RealmAlreadyExists,
 }
 
 impl PrintProgramError for GovernanceError {

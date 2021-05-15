@@ -24,7 +24,7 @@ pub fn create_and_serialize_account<'a, T: BorshSerialize>(
 ) -> Result<(), ProgramError> {
     let serialized_data = account_data.try_to_vec()?;
 
-    let ix = create_account(
+    let create_account_instruction = create_account(
         payer_info.key,
         account_info.key,
         Rent::default().minimum_balance(serialized_data.len()),
@@ -32,7 +32,7 @@ pub fn create_and_serialize_account<'a, T: BorshSerialize>(
         account_owner,
     );
     invoke(
-        &ix,
+        &create_account_instruction,
         &[
             payer_info.clone(),
             account_info.clone(),

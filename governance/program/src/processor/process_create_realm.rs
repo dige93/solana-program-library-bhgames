@@ -7,6 +7,7 @@ use solana_program::{
 };
 
 use crate::{
+    error::GovernanceError,
     state::{
         enums::GovernanceAccountType,
         realm::{get_governing_token_holding_address_seeds, get_realm_address_seeds, Realm},
@@ -30,10 +31,27 @@ pub fn process_create_realm(
     let spl_token_info = next_account_info(account_info_iter)?; // 6
     let rent_sysvar_info = next_account_info(account_info_iter)?; // 7
 
+    if !realm_info.data_is_empty() {
+        return Err(GovernanceError::RealmAlreadyExists.into());
+    }
+
+    create_spl_token_account_signed(
+        payer_info,
+        governance_token_holding_info,
+        get_governing_token_holding_address_seeds(realm_info.key, governance_token_mint_info.key),
+        governance_token_mint_info,
+        realm_info,
+        program_id,
+        system_info,
+        spl_token_info,
+        rent_sysvar_info,
+    )?;
+
     let mut council_token_mint_address = Option::<Pubkey>::None;
 
+    if let Ok(council_token_mint_info) = next_account_info(account_info_iter)
     // 8
-    if let Ok(council_token_mint_info) = next_account_info(account_info_iter) {
+    {
         council_token_mint_address = Some(*council_token_mint_info.key);
 
         let council_token_holding_info = next_account_info(account_info_iter)?; //9
@@ -50,18 +68,6 @@ pub fn process_create_realm(
             rent_sysvar_info,
         )?;
     }
-
-    create_spl_token_account_signed(
-        payer_info,
-        governance_token_holding_info,
-        get_governing_token_holding_address_seeds(realm_info.key, governance_token_mint_info.key),
-        governance_token_mint_info,
-        realm_info,
-        program_id,
-        system_info,
-        spl_token_info,
-        rent_sysvar_info,
-    )?;
 
     let realm_data = Realm {
         account_type: GovernanceAccountType::Realm,
