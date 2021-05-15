@@ -48,7 +48,7 @@ impl PartialEq for CustomSingleSignerTransaction {
 impl Sealed for CustomSingleSignerTransaction {}
 impl IsInitialized for CustomSingleSignerTransaction {
     fn is_initialized(&self) -> bool {
-        self.account_type != GovernanceAccountType::Uninitialized
+        self.account_type == GovernanceAccountType::SingleSignerTransaction
     }
 }
 const CUSTOM_SINGLE_SIGNER_LEN: usize = 1 + 8 + MAX_INSTRUCTION_DATA + 1 + 2 + 300;

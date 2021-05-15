@@ -31,7 +31,7 @@ pub struct GovernanceVoteRecord {
 impl Sealed for GovernanceVoteRecord {}
 impl IsInitialized for GovernanceVoteRecord {
     fn is_initialized(&self) -> bool {
-        self.account_type != GovernanceAccountType::Uninitialized
+        self.account_type == GovernanceAccountType::ProposalVoteRecord
     }
 }
 
