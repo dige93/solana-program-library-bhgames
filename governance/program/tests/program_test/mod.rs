@@ -22,7 +22,7 @@ use spl_governance::{
     },
     processor::process_instruction,
     state::{
-        enums::GovernanceAccountType,
+        enums::{GovernanceAccountType, GoverningTokenType},
         program_governance::{get_program_governance_address, ProgramGovernance},
         proposal::Proposal,
         realm::{get_governing_token_holding_address, get_realm_address, Realm},
@@ -336,6 +336,7 @@ impl GovernanceProgramTest {
     ) -> VoterRecordCookie {
         self.with_initial_governaning_token_deposit(
             &realm_cookie.address,
+            GoverningTokenType::Governance,
             &realm_cookie.account.governance_mint,
             &realm_cookie.governance_mint_authority,
         )
@@ -383,6 +384,7 @@ impl GovernanceProgramTest {
     ) -> VoterRecordCookie {
         self.with_initial_governaning_token_deposit(
             &realm_cookie.address,
+            GoverningTokenType::Council,
             &realm_cookie.account.council_mint.unwrap(),
             &realm_cookie.council_mint_authority.as_ref().unwrap(),
         )
@@ -393,6 +395,7 @@ impl GovernanceProgramTest {
     pub async fn with_initial_governaning_token_deposit(
         &mut self,
         realm_address: &Pubkey,
+        governing_token_type: GoverningTokenType,
         governing_mint: &Pubkey,
         governing_mint_authority: &Keypair,
     ) -> VoterRecordCookie {
@@ -430,9 +433,21 @@ impl GovernanceProgramTest {
         let voter_record_address =
             get_voter_record_address(realm_address, &governing_mint, &token_owner.pubkey());
 
+        let account = VoterRecord {
+            account_type: GovernanceAccountType::VoterRecord,
+            realm: *realm_address,
+            token_type: governing_token_type,
+            token_owner: token_owner.pubkey(),
+            token_deposit_amount: source_amount,
+            vote_authority: token_owner.pubkey(),
+            active_votes_count: 0,
+            total_votes_count: 0,
+        };
+
         VoterRecordCookie {
             address: voter_record_address,
-            token_deposit_amount: source_amount,
+            account,
+
             token_source_amount: source_amount,
             token_source: token_source.pubkey(),
             token_owner,

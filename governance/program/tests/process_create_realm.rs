@@ -7,7 +7,7 @@ mod program_test;
 use program_test::*;
 
 #[tokio::test]
-async fn test_created() {
+async fn test_realm_created() {
     // Arrange
     let mut governance_test = GovernanceProgramTest::start_new().await;
 

@@ -1,6 +1,8 @@
 use solana_program::pubkey::Pubkey;
 use solana_sdk::signature::Keypair;
-use spl_governance::state::{program_governance::ProgramGovernance, realm::Realm};
+use spl_governance::state::{
+    program_governance::ProgramGovernance, realm::Realm, voter_record::VoterRecord,
+};
 
 #[derive(Debug)]
 pub struct GovernedProgramCookie {
@@ -41,7 +43,7 @@ pub struct RealmCookie {
 pub struct VoterRecordCookie {
     pub address: Pubkey,
 
-    pub token_deposit_amount: u64,
+    pub account: VoterRecord,
 
     pub token_source: Pubkey,
 
