@@ -1,51 +1,51 @@
-pub mod process_add_custom_single_signer_transaction;
-pub mod process_add_signer;
 pub mod process_create_account_governance;
-pub mod process_create_empty_governance_voting_record;
 pub mod process_create_program_governance;
+pub mod z_process_add_custom_single_signer_transaction;
+pub mod z_process_add_signer;
+pub mod z_process_create_empty_governance_voting_record;
 
 pub mod process_create_proposal;
 pub mod process_create_realm;
-pub mod process_delete_proposal;
 pub mod process_deposit_governing_tokens;
-pub mod process_deposit_source_tokens;
-pub mod process_execute;
-pub mod process_init_proposal;
-pub mod process_remove_signer;
-pub mod process_remove_transaction;
 pub mod process_set_vote_authority;
-pub mod process_sign;
-pub mod process_update_transaction_slot;
-pub mod process_vote;
 pub mod process_withdraw_governing_tokens;
-pub mod process_withdraw_voting_tokens;
+pub mod z_process_delete_proposal;
+pub mod z_process_deposit_source_tokens;
+pub mod z_process_execute;
+pub mod z_process_init_proposal;
+pub mod z_process_remove_signer;
+pub mod z_process_remove_transaction;
+pub mod z_process_sign;
+pub mod z_process_update_transaction_slot;
+pub mod z_process_vote;
+pub mod z_process_withdraw_voting_tokens;
 
 use crate::instruction::GovernanceInstruction;
 use borsh::BorshDeserialize;
-use process_add_custom_single_signer_transaction::process_add_custom_single_signer_transaction;
-use process_add_signer::process_add_signer;
 use process_create_account_governance::process_create_account_governance;
-use process_create_empty_governance_voting_record::process_create_empty_governance_voting_record;
 use process_create_program_governance::process_create_program_governance;
 use process_create_proposal::process_create_proposal;
 use process_create_realm::process_create_realm;
-use process_delete_proposal::process_cancel_proposal;
 use process_deposit_governing_tokens::process_deposit_governing_tokens;
-use process_deposit_source_tokens::process_deposit_source_tokens;
-use process_execute::process_execute;
-use process_init_proposal::process_init_proposal;
-use process_remove_signer::process_remove_signer;
-use process_remove_transaction::process_remove_transaction;
 use process_set_vote_authority::process_set_vote_authority;
-use process_sign::process_sign;
-use process_update_transaction_slot::process_update_transaction_slot;
-use process_vote::process_vote;
 use process_withdraw_governing_tokens::process_withdraw_governing_tokens;
-use process_withdraw_voting_tokens::process_withdraw_voting_tokens;
 use solana_program::{
     account_info::AccountInfo, entrypoint::ProgramResult, msg, program_error::ProgramError,
     pubkey::Pubkey,
 };
+use z_process_add_custom_single_signer_transaction::process_add_custom_single_signer_transaction;
+use z_process_add_signer::process_add_signer;
+use z_process_create_empty_governance_voting_record::process_create_empty_governance_voting_record;
+use z_process_delete_proposal::process_cancel_proposal;
+use z_process_deposit_source_tokens::process_deposit_source_tokens;
+use z_process_execute::process_execute;
+use z_process_init_proposal::process_init_proposal;
+use z_process_remove_signer::process_remove_signer;
+use z_process_remove_transaction::process_remove_transaction;
+use z_process_sign::process_sign;
+use z_process_update_transaction_slot::process_update_transaction_slot;
+use z_process_vote::process_vote;
+use z_process_withdraw_voting_tokens::process_withdraw_voting_tokens;
 
 /// Processes an instruction
 pub fn process_instruction(

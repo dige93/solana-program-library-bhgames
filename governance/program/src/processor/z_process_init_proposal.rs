@@ -7,7 +7,7 @@ use crate::{
     error::GovernanceError,
     state::{
         account_governance::AccountGovernance, enums::GovernanceAccountType,
-        proposal_old::ProposalOld, proposal_state::ProposalState,
+        z_proposal::ProposalOld, z_proposal_state::ProposalState,
     },
     utils::{
         assert_account_mint, assert_mint_decimals, assert_mint_initialized, assert_rent_exempt,

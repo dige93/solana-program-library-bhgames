@@ -3,10 +3,10 @@ use crate::{
     error::GovernanceError,
     state::account_governance::AccountGovernance,
     state::{
-        custom_single_signer_transaction::{CustomSingleSignerTransaction, MAX_ACCOUNTS_ALLOWED},
         enums::ProposalStateStatus,
-        proposal_old::ProposalOld,
-        proposal_state::ProposalState,
+        z_custom_single_signer_transaction::{CustomSingleSignerTransaction, MAX_ACCOUNTS_ALLOWED},
+        z_proposal::ProposalOld,
+        z_proposal_state::ProposalState,
     },
     utils::{
         assert_account_equiv, assert_executing, assert_initialized, assert_initialized_old,

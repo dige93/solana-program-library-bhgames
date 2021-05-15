@@ -3,7 +3,7 @@
 use crate::{
     error::GovernanceError,
     state::governance_vote_record::GovernanceVoteRecord,
-    state::{enums::GovernanceAccountType, proposal_old::ProposalOld},
+    state::{enums::GovernanceAccountType, z_proposal::ProposalOld},
     utils::{
         assert_account_equiv, assert_initialized, assert_token_program_is_correct,
         spl_token_mint_to, spl_token_transfer, TokenMintToParams, TokenTransferParams,

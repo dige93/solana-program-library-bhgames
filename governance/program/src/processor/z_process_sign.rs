@@ -1,7 +1,7 @@
 //! Program state processor
 use crate::{
     error::GovernanceError,
-    state::{enums::ProposalStateStatus, proposal_old::ProposalOld, proposal_state::ProposalState},
+    state::{enums::ProposalStateStatus, z_proposal::ProposalOld, z_proposal_state::ProposalState},
     utils::{
         assert_account_equiv, assert_draft, assert_initialized, assert_token_program_is_correct,
         spl_token_burn, TokenBurnParams,

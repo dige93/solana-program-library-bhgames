@@ -1,7 +1,7 @@
 //! Program state processor
 
 use crate::{
-    state::{enums::ProposalStateStatus, proposal_old::ProposalOld, proposal_state::ProposalState},
+    state::{enums::ProposalStateStatus, z_proposal::ProposalOld, z_proposal_state::ProposalState},
     utils::{
         assert_account_equiv, assert_initialized, assert_is_permissioned,
         assert_not_in_voting_or_executing, assert_token_program_is_correct,

@@ -1,6 +1,6 @@
 use crate::{
     error::GovernanceError,
-    state::{enums::ProposalStateStatus, proposal_old::ProposalOld, proposal_state::ProposalState},
+    state::{enums::ProposalStateStatus, z_proposal::ProposalOld, z_proposal_state::ProposalState},
     PROGRAM_AUTHORITY_SEED,
 };
 use arrayref::{array_ref, array_refs, mut_array_refs};

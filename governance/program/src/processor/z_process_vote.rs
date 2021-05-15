@@ -3,8 +3,8 @@ use crate::{
     error::GovernanceError,
     state::{
         account_governance::AccountGovernance, enums::ProposalStateStatus,
-        governance_vote_record::GovernanceVoteRecord, proposal_old::ProposalOld,
-        proposal_state::ProposalState,
+        governance_vote_record::GovernanceVoteRecord, z_proposal::ProposalOld,
+        z_proposal_state::ProposalState,
     },
     utils::{
         assert_account_equiv, assert_initialized, assert_voting, get_mint_supply, spl_token_burn,

@@ -1,11 +1,12 @@
 //! Program state processor
 use crate::{
     error::GovernanceError,
-    state::proposal_old::ProposalOld,
-    state::proposal_state::ProposalState,
+    state::z_proposal::ProposalOld,
+    state::z_proposal_state::ProposalState,
     utils::{
         assert_account_equiv, assert_draft, assert_initialized, assert_is_permissioned,
-        assert_token_program_is_correct, spl_token_burn, TokenBurnParams,
+        assert_proper_signatory_mint, assert_token_program_is_correct, spl_token_mint_to,
+        TokenMintToParams,
     },
     PROGRAM_AUTHORITY_SEED,
 };
@@ -16,10 +17,10 @@ use solana_program::{
     pubkey::Pubkey,
 };
 
-/// Removes a signer
-pub fn process_remove_signer(program_id: &Pubkey, accounts: &[AccountInfo]) -> ProgramResult {
+/// Adds a signer
+pub fn process_add_signer(program_id: &Pubkey, accounts: &[AccountInfo]) -> ProgramResult {
     let account_info_iter = &mut accounts.iter();
-    let remove_signatory_account_info = next_account_info(account_info_iter)?;
+    let new_signatory_account_info = next_account_info(account_info_iter)?;
     let signatory_mint_info = next_account_info(account_info_iter)?;
     let admin_account_info = next_account_info(account_info_iter)?;
     let admin_validation_account_info = next_account_info(account_info_iter)?;
@@ -31,11 +32,10 @@ pub fn process_remove_signer(program_id: &Pubkey, accounts: &[AccountInfo]) -> P
 
     let mut proposal_state: ProposalState = assert_initialized(proposal_state_account_info)?;
     let proposal: ProposalOld = assert_initialized(proposal_account_info)?;
-
     assert_account_equiv(proposal_state_account_info, &proposal.state)?;
-    assert_account_equiv(signatory_mint_info, &proposal.signatory_mint)?;
     assert_account_equiv(admin_validation_account_info, &proposal.admin_validation)?;
     assert_token_program_is_correct(token_program_account_info)?;
+    assert_proper_signatory_mint(&proposal, signatory_mint_info)?;
     assert_draft(&proposal_state)?;
     assert_is_permissioned(
         program_id,
@@ -53,20 +53,25 @@ pub fn process_remove_signer(program_id: &Pubkey, accounts: &[AccountInfo]) -> P
     if governance_program_authority_info.key != &authority_key {
         return Err(GovernanceError::InvalidGovernanceAuthority.into());
     }
+
     let bump = &[bump_seed];
     seeds.push(bump);
     let authority_signer_seeds = &seeds[..];
 
-    // Remove the token
-    spl_token_burn(TokenBurnParams {
+    spl_token_mint_to(TokenMintToParams {
         mint: signatory_mint_info.clone(),
+        destination: new_signatory_account_info.clone(),
         amount: 1,
-        authority: transfer_authority_info.clone(),
+        authority: governance_program_authority_info.clone(),
         authority_signer_seeds,
         token_program: token_program_account_info.clone(),
-        source: remove_signatory_account_info.clone(),
     })?;
-    proposal_state.total_signing_tokens_minted -= 1;
+
+    proposal_state.total_signing_tokens_minted =
+        match proposal_state.total_signing_tokens_minted.checked_add(1) {
+            Some(val) => val,
+            None => return Err(GovernanceError::NumericalOverflow.into()),
+        };
 
     ProposalState::pack(
         proposal_state,
