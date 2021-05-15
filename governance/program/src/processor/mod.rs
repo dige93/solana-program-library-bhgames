@@ -56,6 +56,8 @@ pub fn process_instruction(
     let instruction = GovernanceInstruction::try_from_slice(input)
         .map_err(|_| ProgramError::InvalidInstructionData)?;
 
+    msg!("Instruction: {:?}", instruction);
+
     match instruction {
         GovernanceInstruction::InitProposal {
             name,
@@ -112,19 +114,16 @@ pub fn process_instruction(
             min_instruction_hold_up_time,
             max_voting_time,
             token_threshold_to_create_proposal,
-        } => {
-            msg!("Instruction: Initialize Governance");
-            process_create_program_governance(
-                program_id,
-                accounts,
-                &realm,
-                &governed_program,
-                vote_threshold,
-                min_instruction_hold_up_time,
-                max_voting_time,
-                token_threshold_to_create_proposal,
-            )
-        }
+        } => process_create_program_governance(
+            program_id,
+            accounts,
+            &realm,
+            &governed_program,
+            vote_threshold,
+            min_instruction_hold_up_time,
+            max_voting_time,
+            token_threshold_to_create_proposal,
+        ),
         GovernanceInstruction::CreateAccountGovernance {
             realm,
             governed_account,
@@ -132,19 +131,16 @@ pub fn process_instruction(
             min_instruction_hold_up_time,
             max_voting_time,
             token_threshold_to_create_proposal,
-        } => {
-            msg!("Instruction: {:?}", instruction);
-            process_create_account_governance(
-                program_id,
-                accounts,
-                &realm,
-                &governed_account,
-                vote_threshold,
-                min_instruction_hold_up_time,
-                max_voting_time,
-                token_threshold_to_create_proposal,
-            )
-        }
+        } => process_create_account_governance(
+            program_id,
+            accounts,
+            &realm,
+            &governed_account,
+            vote_threshold,
+            min_instruction_hold_up_time,
+            max_voting_time,
+            token_threshold_to_create_proposal,
+        ),
         GovernanceInstruction::Execute => {
             msg!("Instruction: Execute");
             process_execute(program_id, accounts)
@@ -170,23 +166,17 @@ pub fn process_instruction(
         GovernanceInstruction::CreateProposal {
             description_link,
             name,
-        } => {
-            msg!("Instruction:CreateProposal");
-            process_create_proposal(program_id, accounts, description_link, name)
-        }
+        } => process_create_proposal(program_id, accounts, description_link, name),
 
         GovernanceInstruction::CreateRealm { name } => {
-            msg!("Instruction:CreateGovernanceRealm");
             process_create_realm(program_id, accounts, name)
         }
 
         GovernanceInstruction::DepositGoverningTokens {} => {
-            msg!("Instruction:DepositGoverningTokens");
             process_deposit_governing_tokens(program_id, accounts)
         }
 
         GovernanceInstruction::WithdrawGoverningTokens {} => {
-            msg!("Instruction:WithdrawGoverningTokens");
             process_withdraw_governing_tokens(program_id, accounts)
         }
 
@@ -194,15 +184,12 @@ pub fn process_instruction(
             realm,
             governing_token_mint,
             vote_authority,
-        } => {
-            msg!("Instruction:SetVoteAuthority");
-            process_set_vote_authority(
-                program_id,
-                accounts,
-                &realm,
-                &governing_token_mint,
-                &vote_authority,
-            )
-        }
+        } => process_set_vote_authority(
+            program_id,
+            accounts,
+            &realm,
+            &governing_token_mint,
+            &vote_authority,
+        ),
     }
 }
