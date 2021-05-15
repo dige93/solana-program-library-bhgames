@@ -1,14 +1,16 @@
 //! Program state processor
 //use crate::utils::assert_program_upgrade_authority;
-use crate::utils::create_account_raw_signed;
+
 use crate::{
-    error::GovernanceError, state::enums::GovernanceAccountType,
-    state::program_governance::ProgramGovernance, PROGRAM_AUTHORITY_SEED,
+    state::program_governance::ProgramGovernance,
+    state::{
+        enums::GovernanceAccountType, program_governance::get_program_governance_address_seeds,
+    },
+    tools::account::create_and_serialize_account_signed,
 };
 use solana_program::{
     account_info::{next_account_info, AccountInfo},
     entrypoint::ProgramResult,
-    program_pack::Pack,
     pubkey::Pubkey,
 };
 
@@ -24,7 +26,7 @@ pub fn process_create_program_governance(
 ) -> ProgramResult {
     let account_info_iter = &mut accounts.iter();
 
-    let governance_info = next_account_info(account_info_iter)?; // 1
+    let program_governance_info = next_account_info(account_info_iter)?; // 1
     let governed_program_info = next_account_info(account_info_iter)?; //2
     let _governed_program_data_info = next_account_info(account_info_iter)?; // 3
     let _governed_program_upgrade_authority_info = next_account_info(account_info_iter)?; // 4
@@ -38,11 +40,11 @@ pub fn process_create_program_governance(
         .map(|acc| Some(*acc.key))
         .unwrap_or(None);
 
-    let mut seeds = vec![PROGRAM_AUTHORITY_SEED, governed_program_info.key.as_ref()];
-    let (governance_key, bump_seed) = Pubkey::find_program_address(&seeds[..], program_id);
-    if governance_info.key != &governance_key {
-        return Err(GovernanceError::InvalidGovernanceKey.into());
-    }
+    // let mut seeds = vec![PROGRAM_AUTHORITY_SEED, governed_program_info.key.as_ref()];
+    // let (governance_key, bump_seed) = Pubkey::find_program_address(&seeds[..], program_id);
+    // if program_governance_info.key != &governance_key {
+    //     return Err(GovernanceError::InvalidGovernanceKey.into());
+    // }
 
     // Assert current program upgrade authority signed the transaction as a temp. workaround until we can set_upgrade_authority via CPI.
     // Even though it doesn't transfer authority to the governance at the creation time it prevents from creating governance for programs owned by somebody else
@@ -72,22 +74,7 @@ pub fn process_create_program_governance(
     // ];
     // invoke(&set_upgrade_authority_ix, accounts)?;
 
-    let bump = &[bump_seed];
-    seeds.push(bump);
-
-    create_account_raw_signed::<ProgramGovernance>(
-        &[
-            payer_info.clone(),
-            governance_info.clone(),
-            system_info.clone(),
-        ],
-        &governance_key,
-        payer_info.key,
-        program_id,
-        &seeds[..],
-    )?;
-
-    let governance = ProgramGovernance {
+    let program_governance_data = ProgramGovernance {
         account_type: GovernanceAccountType::ProgramGovernance,
 
         min_instruction_hold_up_time: minimum_slot_waiting_period,
@@ -102,7 +89,14 @@ pub fn process_create_program_governance(
         proposal_count: 0,
     };
 
-    ProgramGovernance::pack(governance, &mut governance_info.data.borrow_mut())?;
+    create_and_serialize_account_signed::<ProgramGovernance>(
+        payer_info,
+        &program_governance_info,
+        &program_governance_data,
+        get_program_governance_address_seeds(governed_program_info.key),
+        program_id,
+        system_info,
+    )?;
 
     Ok(())
 }

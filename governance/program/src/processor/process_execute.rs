@@ -5,11 +5,13 @@ use crate::{
     state::{
         custom_single_signer_transaction::{CustomSingleSignerTransaction, MAX_ACCOUNTS_ALLOWED},
         enums::ProposalStateStatus,
-        program_governance::GOVERNANCE_LEN,
         proposal_old::ProposalOld,
         proposal_state::ProposalState,
     },
-    utils::{assert_account_equiv, assert_executing, assert_initialized, execute, ExecuteParams},
+    utils::{
+        assert_account_equiv, assert_executing, assert_initialized, assert_initialized_old,
+        execute, ExecuteParams,
+    },
     PROGRAM_AUTHORITY_SEED,
 };
 use solana_program::{
@@ -35,7 +37,7 @@ pub fn process_execute(program_id: &Pubkey, accounts: &[AccountInfo]) -> Program
 
     let mut proposal_state: ProposalState = assert_initialized(proposal_state_account_info)?;
     let proposal: ProposalOld = assert_initialized(proposal_account_info)?;
-    let governance: ProgramGovernance = assert_initialized(governance_account_info)?;
+    let governance: ProgramGovernance = assert_initialized_old(governance_account_info)?;
     let clock = &Clock::from_account_info(clock_info)?;
     // For now we assume all transactions are CustomSingleSignerTransactions even though
     // this will not always be the case...we need to solve that inheritance issue later.
@@ -65,9 +67,11 @@ pub fn process_execute(program_id: &Pubkey, accounts: &[AccountInfo]) -> Program
     loop {
         if let Ok(next_account) = next_account_info(account_info_iter) {
             // TODO: Review this check. Can't we just check for the governance key and allow other governance accounts?
-            if next_account.data_len() == GOVERNANCE_LEN {
+            if next_account.data_len() == 1000 {
+                // check it's governance account using sie
                 // You better be initialized, and if you are, you better at least be mine...
-                let _nefarious_governance: ProgramGovernance = assert_initialized(&next_account)?;
+                let _nefarious_governance: ProgramGovernance =
+                    assert_initialized_old(&next_account)?;
                 assert_account_equiv(&next_account, &proposal.governance)?;
                 added_authority = true;
                 if next_account.key != &governance_authority {

@@ -6,6 +6,7 @@ use crate::{
 };
 use arrayref::{array_ref, array_refs, mut_array_refs};
 
+use borsh::BorshDeserialize;
 use solana_program::{
     account_info::AccountInfo,
     bpf_loader_upgradeable,
@@ -311,6 +312,19 @@ pub fn assert_initialized<T: Pack + IsInitialized>(
     account_info: &AccountInfo,
 ) -> Result<T, ProgramError> {
     let account: T = T::unpack_unchecked(&account_info.data.borrow())?;
+    if !account.is_initialized() {
+        Err(GovernanceError::Uninitialized.into())
+    } else {
+        Ok(account)
+    }
+}
+
+/// assert initialized account
+pub fn assert_initialized_old<T: IsInitialized + BorshDeserialize>(
+    account_info: &AccountInfo,
+) -> Result<T, ProgramError> {
+    let account: T = T::try_from_slice(&account_info.data.borrow())?;
+
     if !account.is_initialized() {
         Err(GovernanceError::Uninitialized.into())
     } else {

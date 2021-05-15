@@ -9,8 +9,8 @@ use crate::{
         proposal_state::{ProposalState, MAX_TRANSACTIONS},
     },
     utils::{
-        assert_account_equiv, assert_draft, assert_initialized, assert_is_permissioned,
-        assert_token_program_is_correct, assert_uninitialized,
+        assert_account_equiv, assert_draft, assert_initialized, assert_initialized_old,
+        assert_is_permissioned, assert_token_program_is_correct, assert_uninitialized,
     },
 };
 use solana_program::{
@@ -42,7 +42,7 @@ pub fn process_add_custom_single_signer_transaction(
 
     let mut proposal_state: ProposalState = assert_initialized(proposal_state_account_info)?;
     let proposal: ProposalOld = assert_initialized(proposal_account_info)?;
-    let governance: ProgramGovernance = assert_initialized(governance_account_info)?;
+    let governance: ProgramGovernance = assert_initialized_old(governance_account_info)?;
 
     let mut proposal_txn: CustomSingleSignerTransaction =
         assert_uninitialized(proposal_txn_account_info)?;

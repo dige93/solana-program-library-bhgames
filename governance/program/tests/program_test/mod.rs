@@ -224,28 +224,13 @@ impl GovernanceProgramTest {
         }
     }
 
-    #[allow(dead_code)]
-    pub async fn get_program_governance_account(
-        &mut self,
-        governance_address: &Pubkey,
-    ) -> ProgramGovernance {
-        let governance_account_raw = self
-            .banks_client
-            .get_account(*governance_address)
-            .await
-            .unwrap()
-            .unwrap();
-
-        ProgramGovernance::unpack(&governance_account_raw.data).unwrap()
-    }
-
     pub async fn get_account<T: BorshDeserialize>(&mut self, address: &Pubkey) -> T {
         let raw_account = self
             .banks_client
             .get_account(*address)
             .await
             .unwrap()
-            .expect("TEST: Account not found");
+            .expect("GET TEST ACCOUNT: Account not found");
 
         T::try_from_slice(&raw_account.data).unwrap()
     }
@@ -584,6 +569,15 @@ impl GovernanceProgramTest {
             Some(&[&governing_token_owner]),
         )
         .await
+    }
+
+    #[allow(dead_code)]
+    pub async fn get_program_governance_account(
+        &mut self,
+        program_governance_address: &Pubkey,
+    ) -> ProgramGovernance {
+        self.get_account::<ProgramGovernance>(program_governance_address)
+            .await
     }
 
     #[allow(dead_code)]

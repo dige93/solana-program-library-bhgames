@@ -1,6 +1,8 @@
 //! Program state processor
 
-use crate::utils::{assert_account_owner, assert_mint_authority, assert_mint_owner_program};
+use crate::utils::{
+    assert_account_owner, assert_initialized_old, assert_mint_authority, assert_mint_owner_program,
+};
 use crate::{
     error::GovernanceError,
     state::{
@@ -8,9 +10,9 @@ use crate::{
         proposal_old::ProposalOld, proposal_state::ProposalState,
     },
     utils::{
-        assert_account_mint, assert_initialized, assert_mint_decimals, assert_mint_initialized,
-        assert_rent_exempt, assert_uninitialized, get_mint_decimals, get_mint_from_token_account,
-        spl_token_mint_to, TokenMintToParams,
+        assert_account_mint, assert_mint_decimals, assert_mint_initialized, assert_rent_exempt,
+        assert_uninitialized, get_mint_decimals, get_mint_from_token_account, spl_token_mint_to,
+        TokenMintToParams,
     },
     PROGRAM_AUTHORITY_SEED,
 };
@@ -53,7 +55,7 @@ pub fn process_init_proposal(
 
     let mut new_proposal_state: ProposalState = assert_uninitialized(proposal_state_account_info)?;
     let mut new_proposal: ProposalOld = assert_uninitialized(proposal_account_info)?;
-    let mut governance: ProgramGovernance = assert_initialized(governance_account_info)?;
+    let mut governance: ProgramGovernance = assert_initialized_old(governance_account_info)?;
 
     new_proposal.account_type = GovernanceAccountType::ProposalOld;
     new_proposal.governance = *governance_account_info.key;
@@ -179,7 +181,7 @@ pub fn process_init_proposal(
         new_proposal_state,
         &mut proposal_state_account_info.data.borrow_mut(),
     )?;
-    ProgramGovernance::pack(governance, &mut governance_account_info.data.borrow_mut())?;
+    //ProgramGovernance::pack(governance, &mut governance_account_info.data.borrow_mut())?;
 
     let mut seeds = vec![PROGRAM_AUTHORITY_SEED, proposal_account_info.key.as_ref()];
 

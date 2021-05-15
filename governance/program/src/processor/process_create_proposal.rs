@@ -11,7 +11,7 @@ use crate::{
         enums::GovernanceAccountType, program_governance::ProgramGovernance, proposal::Proposal,
     },
     tools::account::create_and_serialize_account,
-    utils::deserialize_account,
+    utils::assert_initialized_old,
 };
 
 /// process_create_proposal
@@ -28,7 +28,7 @@ pub fn process_create_proposal(
     let payer_info = next_account_info(account_info_iter)?; // 3
     let system_info = next_account_info(account_info_iter)?; // 4
 
-    let mut _governance: ProgramGovernance = deserialize_account(governance_info, program_id)?;
+    let mut _governance: ProgramGovernance = assert_initialized_old(governance_info)?;
 
     let proposal_data = Proposal {
         account_type: GovernanceAccountType::Proposal,
