@@ -17,12 +17,14 @@ use solana_sdk::{
 };
 use spl_governance::{
     instruction::{
-        create_program_governance, create_proposal, create_realm, deposit_governing_tokens,
-        set_vote_authority, withdraw_governing_tokens,
+        create_account_governance, create_program_governance, create_proposal, create_realm,
+        deposit_governing_tokens, set_vote_authority, withdraw_governing_tokens,
     },
     processor::process_instruction,
     state::{
-        account_governance::{get_program_governance_address, AccountGovernance},
+        account_governance::{
+            get_account_governance_address, get_program_governance_address, AccountGovernance,
+        },
         enums::{GovernanceAccountType, GoverningTokenType},
         proposal::Proposal,
         realm::{get_governing_token_holding_address, get_realm_address, Realm},
@@ -32,7 +34,8 @@ use spl_governance::{
 
 pub mod cookies;
 use self::cookies::{
-    AccountGovernanceCookie, GovernedProgramCookie, ProposalCookie, RealmCookie, VoterRecordCookie,
+    AccountGovernanceCookie, GovernedAccountCookie, GovernedProgramCookie, ProposalCookie,
+    RealmCookie, VoterRecordCookie,
 };
 
 pub mod tools;
@@ -166,11 +169,55 @@ impl GovernanceProgramTest {
     }
 
     #[allow(dead_code)]
-    pub async fn with_dummy_governed_program(&mut self) -> GovernedProgramCookie {
-        GovernedProgramCookie {
+    pub async fn with_governed_account(&mut self) -> GovernedAccountCookie {
+        GovernedAccountCookie {
             address: Pubkey::new_unique(),
-            upgrade_authority: Keypair::new(),
-            data_address: Pubkey::new_unique(),
+        }
+    }
+
+    #[allow(dead_code)]
+    pub async fn with_account_governance(
+        &mut self,
+        realm_cookie: &RealmCookie,
+        governed_account_cookie: &GovernedAccountCookie,
+    ) -> AccountGovernanceCookie {
+        let vote_threshold: u8 = 60;
+        let min_instruction_hold_up_time: u64 = 10;
+        let max_voting_time: u64 = 100;
+        let token_threshold_to_create_proposal: u8 = 5;
+
+        let create_account_governance_instruction = create_account_governance(
+            &realm_cookie.address,
+            &governed_account_cookie.address,
+            vote_threshold,
+            min_instruction_hold_up_time,
+            max_voting_time,
+            token_threshold_to_create_proposal,
+            &self.payer.pubkey(),
+        )
+        .unwrap();
+
+        let account = AccountGovernance {
+            account_type: GovernanceAccountType::AccountGovernance,
+            realm: realm_cookie.address,
+            vote_threshold,
+            token_threshold_to_create_proposal,
+            min_instruction_hold_up_time,
+            governed_account: governed_account_cookie.address,
+            max_voting_time,
+            proposal_count: 0,
+        };
+
+        self.process_transaction(&[create_account_governance_instruction], None)
+            .await
+            .unwrap();
+
+        let account_governance_address =
+            get_account_governance_address(&realm_cookie.address, &governed_account_cookie.address);
+
+        AccountGovernanceCookie {
+            address: account_governance_address,
+            account,
         }
     }
 
@@ -180,15 +227,12 @@ impl GovernanceProgramTest {
         realm_cookie: &RealmCookie,
         governed_program_cookie: &GovernedProgramCookie,
     ) -> AccountGovernanceCookie {
-        let program_governance_address =
-            get_program_governance_address(&realm_cookie.address, &governed_program_cookie.address);
-
         let vote_threshold: u8 = 60;
         let min_instruction_hold_up_time: u64 = 10;
         let max_voting_time: u64 = 100;
         let token_threshold_to_create_proposal: u8 = 5;
 
-        let create_governance_instruction = create_program_governance(
+        let create_program_governance_instruction = create_program_governance(
             &realm_cookie.address,
             &governed_program_cookie.address,
             vote_threshold,
@@ -202,7 +246,7 @@ impl GovernanceProgramTest {
         .unwrap();
 
         self.process_transaction(
-            &[create_governance_instruction],
+            &[create_program_governance_instruction],
             Some(&[&governed_program_cookie.upgrade_authority]),
         )
         .await
@@ -218,6 +262,9 @@ impl GovernanceProgramTest {
             max_voting_time,
             proposal_count: 0,
         };
+
+        let program_governance_address =
+            get_program_governance_address(&realm_cookie.address, &governed_program_cookie.address);
 
         AccountGovernanceCookie {
             address: program_governance_address,

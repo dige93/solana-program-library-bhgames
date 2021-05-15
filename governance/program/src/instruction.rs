@@ -1,5 +1,5 @@
 use crate::state::{
-    account_governance::get_program_governance_address,
+    account_governance::{get_account_governance_address, get_program_governance_address},
     enums::Vote,
     realm::{get_governing_token_holding_address, get_realm_address},
     voter_record::get_voter_record_address,
@@ -519,7 +519,7 @@ pub fn create_program_governance(
     min_instruction_hold_up_time: u64,
     max_voting_time: u64,
     token_threshold_to_create_proposal: u8,
-
+    // Accounts
     governed_program_data: &Pubkey,
     governed_program_upgrade_authority: &Pubkey,
     payer: &Pubkey,
@@ -538,6 +538,41 @@ pub fn create_program_governance(
     let instruction = GovernanceInstruction::CreateProgramGovernance {
         realm: *realm,
         governed_program: *governed_program,
+        vote_threshold,
+        min_instruction_hold_up_time,
+        max_voting_time,
+        token_threshold_to_create_proposal,
+    };
+
+    Ok(Instruction {
+        program_id: id(),
+        accounts,
+        data: instruction.try_to_vec().unwrap(),
+    })
+}
+
+/// Creates CreateAccountGovernance instruction
+pub fn create_account_governance(
+    realm: &Pubkey,
+    governed_account: &Pubkey,
+    vote_threshold: u8,
+    min_instruction_hold_up_time: u64,
+    max_voting_time: u64,
+    token_threshold_to_create_proposal: u8,
+    // Accounts
+    payer: &Pubkey,
+) -> Result<Instruction, ProgramError> {
+    let account_governance_address = get_account_governance_address(realm, governed_account);
+
+    let accounts = vec![
+        AccountMeta::new(account_governance_address, false),
+        AccountMeta::new_readonly(*payer, true),
+        AccountMeta::new_readonly(system_program::id(), false),
+    ];
+
+    let instruction = GovernanceInstruction::CreateAccountGovernance {
+        realm: *realm,
+        governed_account: *governed_account,
         vote_threshold,
         min_instruction_hold_up_time,
         max_voting_time,

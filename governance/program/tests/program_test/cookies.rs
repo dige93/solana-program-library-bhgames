@@ -12,6 +12,11 @@ pub struct GovernedProgramCookie {
 }
 
 #[derive(Debug)]
+pub struct GovernedAccountCookie {
+    pub address: Pubkey,
+}
+
+#[derive(Debug)]
 pub struct AccountGovernanceCookie {
     pub address: Pubkey,
     pub account: AccountGovernance,
