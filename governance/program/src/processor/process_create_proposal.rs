@@ -13,7 +13,7 @@ use crate::{
         enums::{GovernanceAccountType, GoverningTokenType, ProposalState},
         proposal::Proposal,
     },
-    tools::account::create_and_serialize_account,
+    tools::{account::create_and_serialize_account, token::create_spl_token_mint},
 };
 
 /// process_create_proposal
@@ -28,11 +28,31 @@ pub fn process_create_proposal(
 
     let proposal_info = next_account_info(account_info_iter)?; // 0
     let account_governance_info = next_account_info(account_info_iter)?; // 1
+
+    let signatory_mint_info = next_account_info(account_info_iter)?; // 1
+    let admin_mint_info = next_account_info(account_info_iter)?; // 1
+
     let payer_info = next_account_info(account_info_iter)?; // 2
     let system_info = next_account_info(account_info_iter)?; // 3
+    let spl_token_info = next_account_info(account_info_iter)?; // 7
+    let rent_sysvar_info = next_account_info(account_info_iter)?; // 7
 
-    let mut account_governance_data: AccountGovernance =
-        deserialize_account_governance(account_governance_info)?;
+    create_spl_token_mint(
+        payer_info,
+        signatory_mint_info,
+        payer_info.key,
+        system_info,
+        spl_token_info,
+        rent_sysvar_info,
+    )?;
+    create_spl_token_mint(
+        payer_info,
+        admin_mint_info,
+        payer_info.key,
+        system_info,
+        spl_token_info,
+        rent_sysvar_info,
+    )?;
 
     let proposal_data = Proposal {
         account_type: GovernanceAccountType::Proposal,
@@ -50,6 +70,9 @@ pub fn process_create_proposal(
         program_id,
         system_info,
     )?;
+
+    let mut account_governance_data: AccountGovernance =
+        deserialize_account_governance(account_governance_info)?;
 
     account_governance_data.proposal_count = account_governance_data
         .proposal_count

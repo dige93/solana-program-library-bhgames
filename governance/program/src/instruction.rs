@@ -327,20 +327,22 @@ pub enum GovernanceInstruction {
     ///   1. `[]` Proposal key
     ///   2. `[]` Your voting account
     ///   3. `[]` Payer
-    ///   5. `[]` System account.
+    ///   5. `[]` System account
     CreateEmptyGovernanceVoteRecord,
 
     /// Create Proposal account for Instructions that will be executed at various slots in the future
     /// The instruction also grants Admin and Signatory token to the provided account
     ///
-    ///   0. `[writable]` Uninitialized Proposal account
-    ///   1. `[writable]` Initialized Governance account
+    ///   0. `[writable, signer]` Proposal account
+    ///   1. `[writable]` Account Governance account
+
     ///   2. `[writable]` Initialized Signatory Mint account
     ///   3. `[writable]` Initialized Admin Mint account
     ///   4. `[writable]` Initialized Admin account for the issued admin token
     ///   5. `[writable]` Initialized Signatory account for the issued signatory token
-    ///   6. '[]` Token program account
-    ///   7. `[]` Rent sysvar
+
+    ///   5. `[signer]` Payer
+    ///   6. `[]` System account
     CreateProposal {
         /// UTF-8 encoded name of the proposal
         #[allow(dead_code)]
@@ -607,15 +609,21 @@ pub fn create_proposal(
     governing_token_type: GoverningTokenType,
     description_link: String,
     // Accounts
-    proposal_address: &Pubkey,
-    governance_address: &Pubkey,
+    proposal: &Pubkey,
+    account_governance: &Pubkey,
+    admin_mint: &Pubkey,
+    signatory_mint: &Pubkey,
     payer: &Pubkey,
 ) -> Result<Instruction, ProgramError> {
     let accounts = vec![
-        AccountMeta::new(*proposal_address, true),
-        AccountMeta::new(*governance_address, false),
+        AccountMeta::new(*proposal, true),
+        AccountMeta::new(*account_governance, false),
+        AccountMeta::new(*admin_mint, true),
+        AccountMeta::new(*signatory_mint, true),
         AccountMeta::new_readonly(*payer, true),
         AccountMeta::new_readonly(system_program::id(), false),
+        AccountMeta::new_readonly(spl_token::id(), false),
+        AccountMeta::new_readonly(sysvar::rent::id(), false),
     ];
 
     let instruction = GovernanceInstruction::CreateProposal {

@@ -311,6 +311,8 @@ impl GovernanceProgramTest {
         let name = "Proposal Name".to_string();
 
         let proposal_keypair = Keypair::new();
+        let admin_mint_keypair = Keypair::new();
+        let signatory_mint_keypair = Keypair::new();
 
         let create_proposal_instruction = create_proposal(
             name.clone(),
@@ -318,13 +320,22 @@ impl GovernanceProgramTest {
             description_link.clone(),
             &proposal_keypair.pubkey(),
             &account_governance_cookie.address,
+            &admin_mint_keypair.pubkey(),
+            &signatory_mint_keypair.pubkey(),
             &self.payer.pubkey(),
         )
         .unwrap();
 
-        self.process_transaction(&[create_proposal_instruction], Some(&[&proposal_keypair]))
-            .await
-            .unwrap();
+        self.process_transaction(
+            &[create_proposal_instruction],
+            Some(&[
+                &proposal_keypair,
+                &admin_mint_keypair,
+                &signatory_mint_keypair,
+            ]),
+        )
+        .await
+        .unwrap();
 
         let account = Proposal {
             account_type: GovernanceAccountType::Proposal,

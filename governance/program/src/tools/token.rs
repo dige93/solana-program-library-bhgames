@@ -130,6 +130,51 @@ pub fn create_spl_token_account_signed<'a>(
     Ok(())
 }
 
+pub fn create_spl_token_mint<'a>(
+    payer_info: &AccountInfo<'a>,
+    mint_account_info: &AccountInfo<'a>,
+    mint_authority_info: &Pubkey,
+    system_info: &AccountInfo<'a>,
+    spl_token_info: &AccountInfo<'a>,
+    rent_sysvar_info: &AccountInfo<'a>,
+) -> Result<(), ProgramError> {
+    let create_account_instruction = system_instruction::create_account(
+        payer_info.key,
+        mint_account_info.key,
+        1.max(Rent::default().minimum_balance(spl_token::state::Mint::LEN)),
+        spl_token::state::Mint::LEN as u64,
+        &spl_token::id(),
+    );
+
+    invoke(
+        &create_account_instruction,
+        &[
+            payer_info.clone(),
+            mint_account_info.clone(),
+            system_info.clone(),
+        ],
+    )?;
+
+    let initialize_mint_instruction = spl_token::instruction::initialize_mint(
+        &spl_token::id(),
+        &mint_account_info.key,
+        mint_authority_info,
+        None,
+        0,
+    )?;
+
+    invoke(
+        &initialize_mint_instruction,
+        &[
+            mint_account_info.clone(),
+            spl_token_info.clone(),
+            rent_sysvar_info.clone(),
+        ],
+    )?;
+
+    Ok(())
+}
+
 pub fn transfer_spl_tokens<'a>(
     source_info: &AccountInfo<'a>,
     destination_info: &AccountInfo<'a>,
