@@ -2,9 +2,9 @@
 use crate::{
     error::GovernanceError,
     state::{
-        account_governance::AccountGovernance, enums::ProposalStateStatus,
+        account_governance::AccountGovernance, enums::ProposalState,
         governance_vote_record::GovernanceVoteRecord, z_proposal::ProposalOld,
-        z_proposal_state::ProposalState,
+        z_proposal_state::ProposalStateOld,
     },
     utils::{
         assert_account_equiv, assert_initialized, assert_voting, get_mint_supply, spl_token_burn,
@@ -43,7 +43,7 @@ pub fn process_vote(program_id: &Pubkey, accounts: &[AccountInfo], vote: Vote) -
     let clock_info = next_account_info(account_info_iter)?; //14
 
     let clock = Clock::from_account_info(clock_info)?;
-    let mut proposal_state: ProposalState = assert_initialized(proposal_state_account_info)?;
+    let mut proposal_state: ProposalStateOld = assert_initialized(proposal_state_account_info)?;
     let proposal: ProposalOld = assert_initialized(proposal_account_info)?;
     let governance: AccountGovernance = assert_initialized_old(governance_account_info)?;
 
@@ -134,13 +134,13 @@ pub fn process_vote(program_id: &Pubkey, accounts: &[AccountInfo], vote: Vote) -
 
     if tipped || too_long {
         if tipped {
-            proposal_state.status = ProposalStateStatus::Executing;
+            proposal_state.status = ProposalState::Executing;
         } else {
-            proposal_state.status = ProposalStateStatus::Defeated;
+            proposal_state.status = ProposalState::Defeated;
         }
         proposal_state.voting_ended_at = clock.slot;
 
-        ProposalState::pack(
+        ProposalStateOld::pack(
             proposal_state,
             &mut proposal_state_account_info.data.borrow_mut(),
         )?;

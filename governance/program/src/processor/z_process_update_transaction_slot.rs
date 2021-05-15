@@ -1,7 +1,7 @@
 //! Program state processor
 use crate::{
     state::z_proposal::ProposalOld,
-    state::z_proposal_state::ProposalState,
+    state::z_proposal_state::ProposalStateOld,
     utils::{
         assert_account_equiv, assert_draft, assert_initialized, assert_is_permissioned,
         assert_token_program_is_correct, assert_txn_in_state,
@@ -30,7 +30,7 @@ pub fn process_update_transaction_slot(
     let proposal_authority_account_info = next_account_info(account_info_iter)?;
     let token_program_account_info = next_account_info(account_info_iter)?;
 
-    let proposal_state: ProposalState = assert_initialized(proposal_state_account_info)?;
+    let proposal_state: ProposalStateOld = assert_initialized(proposal_state_account_info)?;
     let proposal: ProposalOld = assert_initialized(proposal_account_info)?;
     assert_token_program_is_correct(token_program_account_info)?;
     assert_account_equiv(proposal_state_account_info, &proposal.state)?;

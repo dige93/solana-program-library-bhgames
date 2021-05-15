@@ -7,7 +7,7 @@ mod program_test;
 use program_test::*;
 
 #[tokio::test]
-async fn test_proposal_created() {
+async fn test_community_proposal_created() {
     // Arrange
     let mut governance_test = GovernanceProgramTest::start_new().await;
 
@@ -20,7 +20,7 @@ async fn test_proposal_created() {
 
     // Act
     let proposal_cookie = governance_test
-        .with_proposal(&account_governance_cookie)
+        .with_community_proposal(&account_governance_cookie)
         .await;
 
     // Assert
@@ -29,4 +29,10 @@ async fn test_proposal_created() {
         .await;
 
     assert_eq!(proposal_cookie.account, proposal_account);
+
+    let account_governance_account = governance_test
+        .get_program_governance_account(&account_governance_cookie.address)
+        .await;
+
+    assert_eq!(1, account_governance_account.proposal_count);
 }

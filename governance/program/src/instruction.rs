@@ -1,6 +1,6 @@
 use crate::state::{
     account_governance::{get_account_governance_address, get_program_governance_address},
-    enums::Vote,
+    enums::{GoverningTokenType, Vote},
     realm::{get_governing_token_holding_address, get_realm_address},
     voter_record::get_voter_record_address,
 };
@@ -330,14 +330,29 @@ pub enum GovernanceInstruction {
     ///   5. `[]` System account.
     CreateEmptyGovernanceVoteRecord,
 
-    /// Creates Proposal Account
+    /// Create Proposal account for Instructions that will be executed at various slots in the future
+    /// The instruction also grants Admin and Signatory token to the provided account
+    ///
+    ///   0. `[writable]` Uninitialized Proposal account
+    ///   1. `[writable]` Initialized Governance account
+    ///   2. `[writable]` Initialized Signatory Mint account
+    ///   3. `[writable]` Initialized Admin Mint account
+    ///   4. `[writable]` Initialized Admin account for the issued admin token
+    ///   5. `[writable]` Initialized Signatory account for the issued signatory token
+    ///   6. '[]` Token program account
+    ///   7. `[]` Rent sysvar
     CreateProposal {
-        /// UTF-8 encoded gist explaining proposal
-        #[allow(dead_code)]
-        description_link: String,
         /// UTF-8 encoded name of the proposal
         #[allow(dead_code)]
         name: String,
+
+        /// The Governing token (Community or Council) which will be used for voting on the Proposal
+        #[allow(dead_code)]
+        governing_token_type: GoverningTokenType,
+
+        /// Link to gist explaining proposal
+        #[allow(dead_code)]
+        description_link: String,
     },
 
     /// Creates Governance Realm which aggregates governances for given Governance Mint and optional Council Mint.
@@ -588,9 +603,10 @@ pub fn create_account_governance(
 
 /// Creates CreateProposal instruction
 pub fn create_proposal(
-    description_link: String,
     name: String,
-
+    governing_token_type: GoverningTokenType,
+    description_link: String,
+    // Accounts
     proposal_address: &Pubkey,
     governance_address: &Pubkey,
     payer: &Pubkey,
@@ -598,13 +614,14 @@ pub fn create_proposal(
     let accounts = vec![
         AccountMeta::new(*proposal_address, true),
         AccountMeta::new(*governance_address, false),
-        AccountMeta::new(*payer, true),
+        AccountMeta::new_readonly(*payer, true),
         AccountMeta::new_readonly(system_program::id(), false),
     ];
 
     let instruction = GovernanceInstruction::CreateProposal {
-        description_link,
         name,
+        governing_token_type,
+        description_link,
     };
 
     Ok(Instruction {

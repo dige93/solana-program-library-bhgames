@@ -7,7 +7,7 @@ use crate::{
     error::GovernanceError,
     state::{
         account_governance::AccountGovernance, enums::GovernanceAccountType,
-        z_proposal::ProposalOld, z_proposal_state::ProposalState,
+        z_proposal::ProposalOld, z_proposal_state::ProposalStateOld,
     },
     utils::{
         assert_account_mint, assert_mint_decimals, assert_mint_initialized, assert_rent_exempt,
@@ -53,7 +53,8 @@ pub fn process_init_proposal(
     let rent_info = next_account_info(account_info_iter)?; //19
     let rent = &Rent::from_account_info(rent_info)?;
 
-    let mut new_proposal_state: ProposalState = assert_uninitialized(proposal_state_account_info)?;
+    let mut new_proposal_state: ProposalStateOld =
+        assert_uninitialized(proposal_state_account_info)?;
     let mut new_proposal: ProposalOld = assert_uninitialized(proposal_account_info)?;
     let mut governance: AccountGovernance = assert_initialized_old(governance_account_info)?;
 
@@ -177,7 +178,7 @@ pub fn process_init_proposal(
     // }
 
     ProposalOld::pack(new_proposal, &mut proposal_account_info.data.borrow_mut())?;
-    ProposalState::pack(
+    ProposalStateOld::pack(
         new_proposal_state,
         &mut proposal_state_account_info.data.borrow_mut(),
     )?;

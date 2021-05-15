@@ -164,9 +164,16 @@ pub fn process_instruction(
         }
 
         GovernanceInstruction::CreateProposal {
-            description_link,
             name,
-        } => process_create_proposal(program_id, accounts, description_link, name),
+            governing_token_type,
+            description_link,
+        } => process_create_proposal(
+            program_id,
+            accounts,
+            name,
+            governing_token_type,
+            description_link,
+        ),
 
         GovernanceInstruction::CreateRealm { name } => {
             process_create_realm(program_id, accounts, name)

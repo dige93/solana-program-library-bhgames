@@ -3,10 +3,10 @@ use crate::{
     error::GovernanceError,
     state::account_governance::AccountGovernance,
     state::{
-        enums::ProposalStateStatus,
+        enums::ProposalState,
         z_custom_single_signer_transaction::{CustomSingleSignerTransaction, MAX_ACCOUNTS_ALLOWED},
         z_proposal::ProposalOld,
-        z_proposal_state::ProposalState,
+        z_proposal_state::ProposalStateOld,
     },
     utils::{
         assert_account_equiv, assert_executing, assert_initialized, assert_initialized_old,
@@ -35,7 +35,7 @@ pub fn process_execute(program_id: &Pubkey, accounts: &[AccountInfo]) -> Program
     let governance_account_info = next_account_info(account_info_iter)?;
     let clock_info = next_account_info(account_info_iter)?;
 
-    let mut proposal_state: ProposalState = assert_initialized(proposal_state_account_info)?;
+    let mut proposal_state: ProposalStateOld = assert_initialized(proposal_state_account_info)?;
     let proposal: ProposalOld = assert_initialized(proposal_account_info)?;
     let governance: AccountGovernance = assert_initialized_old(governance_account_info)?;
     let clock = &Clock::from_account_info(clock_info)?;
@@ -144,10 +144,10 @@ pub fn process_execute(program_id: &Pubkey, accounts: &[AccountInfo]) -> Program
     };
 
     if proposal_state.number_of_executed_transactions == proposal_state.number_of_transactions {
-        proposal_state.status = ProposalStateStatus::Completed
+        proposal_state.status = ProposalState::Completed
     }
 
-    ProposalState::pack(
+    ProposalStateOld::pack(
         proposal_state,
         &mut proposal_state_account_info.data.borrow_mut(),
     )?;

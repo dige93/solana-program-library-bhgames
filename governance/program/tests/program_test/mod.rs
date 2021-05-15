@@ -25,7 +25,7 @@ use spl_governance::{
         account_governance::{
             get_account_governance_address, get_program_governance_address, AccountGovernance,
         },
-        enums::{GovernanceAccountType, GoverningTokenType},
+        enums::{GovernanceAccountType, GoverningTokenType, ProposalState},
         proposal::Proposal,
         realm::{get_governing_token_holding_address, get_realm_address, Realm},
         voter_record::{get_voter_record_address, VoterRecord},
@@ -284,26 +284,36 @@ impl GovernanceProgramTest {
     }
 
     #[allow(dead_code)]
+    pub async fn with_community_proposal(
+        &mut self,
+        account_governance_cookie: &AccountGovernanceCookie,
+    ) -> ProposalCookie {
+        self.with_proposal(account_governance_cookie, GoverningTokenType::Governance)
+            .await
+    }
+
+    #[allow(dead_code)]
     pub async fn with_proposal(
         &mut self,
-        account_governance: &AccountGovernanceCookie,
+        account_governance_cookie: &AccountGovernanceCookie,
+        governing_token_type: GoverningTokenType,
     ) -> ProposalCookie {
-        let description_link = "proposal description".to_string();
-        let name = "proposal_name".to_string();
+        let description_link = "Proposal Description".to_string();
+        let name = "Proposal Name".to_string();
 
-        //let proposal_count = 0;
-        let proposal_key = Keypair::new();
+        let proposal_keypair = Keypair::new();
 
         let create_proposal_instruction = create_proposal(
-            description_link.clone(),
             name.clone(),
-            &proposal_key.pubkey(),
-            &account_governance.address,
+            governing_token_type.clone(),
+            description_link.clone(),
+            &proposal_keypair.pubkey(),
+            &account_governance_cookie.address,
             &self.payer.pubkey(),
         )
         .unwrap();
 
-        self.process_transaction(&[create_proposal_instruction], Some(&[&proposal_key]))
+        self.process_transaction(&[create_proposal_instruction], Some(&[&proposal_keypair]))
             .await
             .unwrap();
 
@@ -311,10 +321,13 @@ impl GovernanceProgramTest {
             account_type: GovernanceAccountType::Proposal,
             description_link,
             name,
+            account_governance: account_governance_cookie.address,
+            governing_token_type,
+            state: ProposalState::Draft,
         };
 
         ProposalCookie {
-            address: proposal_key.pubkey(),
+            address: proposal_keypair.pubkey(),
             account,
         }
     }

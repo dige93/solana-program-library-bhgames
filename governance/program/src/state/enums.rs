@@ -39,30 +39,37 @@ impl Default for GovernanceAccountType {
 }
 
 /// What state a Proposal is in
-#[derive(Clone, Debug, PartialEq)]
-pub enum ProposalStateStatus {
-    /// Draft
+#[repr(C)]
+#[derive(Clone, Debug, PartialEq, BorshDeserialize, BorshSerialize, BorshSchema)]
+pub enum ProposalState {
+    /// Draft - Proposal enters Draft state when it's created
     Draft,
+
+    /// Signing - The Proposal is being signed by Signatories. Proposal enters the state when first Signatory Sings and leaves it when last Signatory signs
+    Signing,
 
     /// Taking votes
     Voting,
 
-    /// Votes complete, in execution phase
+    /// Voting ended with success
+    Succeeded,
+
+    /// Voting completed and now instructions are being execute. Proposal enter this state when first instruction is executed and leaves when the last instruction is executed
     Executing,
 
-    /// Completed, can be rebooted
+    /// Completed
     Completed,
 
-    /// Canceled
-    Canceled,
+    /// Cancelled
+    Cancelled,
 
     /// Defeated
     Defeated,
 }
 
-impl Default for ProposalStateStatus {
+impl Default for ProposalState {
     fn default() -> Self {
-        ProposalStateStatus::Draft
+        ProposalState::Draft
     }
 }
 

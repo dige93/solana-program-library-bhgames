@@ -6,7 +6,7 @@ use crate::{
         enums::GovernanceAccountType,
         z_custom_single_signer_transaction::{CustomSingleSignerTransaction, MAX_INSTRUCTION_DATA},
         z_proposal::ProposalOld,
-        z_proposal_state::{ProposalState, MAX_TRANSACTIONS},
+        z_proposal_state::{ProposalStateOld, MAX_TRANSACTIONS},
     },
     utils::{
         assert_account_equiv, assert_draft, assert_initialized, assert_initialized_old,
@@ -40,7 +40,7 @@ pub fn process_add_custom_single_signer_transaction(
     let governance_mint_authority_info = next_account_info(account_info_iter)?;
     let token_program_account_info = next_account_info(account_info_iter)?;
 
-    let mut proposal_state: ProposalState = assert_initialized(proposal_state_account_info)?;
+    let mut proposal_state: ProposalStateOld = assert_initialized(proposal_state_account_info)?;
     let proposal: ProposalOld = assert_initialized(proposal_account_info)?;
     let governance: AccountGovernance = assert_initialized_old(governance_account_info)?;
 
@@ -87,7 +87,7 @@ pub fn process_add_custom_single_signer_transaction(
             None => return Err(GovernanceError::NumericalOverflow.into()),
         };
 
-    ProposalState::pack(
+    ProposalStateOld::pack(
         proposal_state,
         &mut proposal_state_account_info.data.borrow_mut(),
     )?;

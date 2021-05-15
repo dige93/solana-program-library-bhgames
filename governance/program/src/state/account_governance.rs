@@ -1,6 +1,8 @@
-use crate::{id, state::enums::GovernanceAccountType};
+use crate::{id, state::enums::GovernanceAccountType, tools::account::deserialize_account};
 
 use solana_program::{
+    account_info::AccountInfo,
+    program_error::ProgramError,
     program_pack::{IsInitialized, Sealed},
     pubkey::Pubkey,
 };
@@ -44,6 +46,12 @@ impl IsInitialized for AccountGovernance {
     fn is_initialized(&self) -> bool {
         self.account_type == GovernanceAccountType::AccountGovernance
     }
+}
+
+pub fn deserialize_account_governance(
+    account_governance_info: &AccountInfo,
+) -> Result<AccountGovernance, ProgramError> {
+    deserialize_account::<AccountGovernance>(account_governance_info, &id())
 }
 
 pub fn get_program_governance_address_seeds<'a>(

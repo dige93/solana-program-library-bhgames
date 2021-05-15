@@ -1,7 +1,7 @@
 //! Program state processor
 use crate::{
     error::GovernanceError,
-    state::{enums::ProposalStateStatus, z_proposal::ProposalOld, z_proposal_state::ProposalState},
+    state::{enums::ProposalState, z_proposal::ProposalOld, z_proposal_state::ProposalStateOld},
     utils::{
         assert_account_equiv, assert_draft, assert_initialized, assert_token_program_is_correct,
         spl_token_burn, TokenBurnParams,
@@ -31,7 +31,7 @@ pub fn process_sign(program_id: &Pubkey, accounts: &[AccountInfo]) -> ProgramRes
     let clock_info = next_account_info(account_info_iter)?;
 
     let clock = Clock::from_account_info(clock_info)?;
-    let mut proposal_state: ProposalState = assert_initialized(proposal_state_account_info)?;
+    let mut proposal_state: ProposalStateOld = assert_initialized(proposal_state_account_info)?;
     let proposal: ProposalOld = assert_initialized(proposal_account_info)?;
     let sig_mint: Mint = assert_initialized(signatory_mint_info)?;
     assert_token_program_is_correct(token_program_account_info)?;
@@ -67,10 +67,10 @@ pub fn process_sign(program_id: &Pubkey, accounts: &[AccountInfo]) -> ProgramRes
     };
 
     if diminished_supply == 0 {
-        proposal_state.status = ProposalStateStatus::Voting;
+        proposal_state.status = ProposalState::Voting;
         proposal_state.voting_began_at = clock.slot;
 
-        ProposalState::pack(
+        ProposalStateOld::pack(
             proposal_state,
             &mut proposal_state_account_info.data.borrow_mut(),
         )?;

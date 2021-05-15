@@ -2,7 +2,7 @@
 use crate::{
     error::GovernanceError,
     state::z_proposal::ProposalOld,
-    state::z_proposal_state::ProposalState,
+    state::z_proposal_state::ProposalStateOld,
     utils::{
         assert_account_equiv, assert_draft, assert_initialized, assert_is_permissioned,
         assert_proper_signatory_mint, assert_token_program_is_correct, spl_token_mint_to,
@@ -30,7 +30,7 @@ pub fn process_add_signer(program_id: &Pubkey, accounts: &[AccountInfo]) -> Prog
     let governance_program_authority_info = next_account_info(account_info_iter)?;
     let token_program_account_info = next_account_info(account_info_iter)?;
 
-    let mut proposal_state: ProposalState = assert_initialized(proposal_state_account_info)?;
+    let mut proposal_state: ProposalStateOld = assert_initialized(proposal_state_account_info)?;
     let proposal: ProposalOld = assert_initialized(proposal_account_info)?;
     assert_account_equiv(proposal_state_account_info, &proposal.state)?;
     assert_account_equiv(admin_validation_account_info, &proposal.admin_validation)?;
@@ -73,7 +73,7 @@ pub fn process_add_signer(program_id: &Pubkey, accounts: &[AccountInfo]) -> Prog
             None => return Err(GovernanceError::NumericalOverflow.into()),
         };
 
-    ProposalState::pack(
+    ProposalStateOld::pack(
         proposal_state,
         &mut proposal_state_account_info.data.borrow_mut(),
     )?;

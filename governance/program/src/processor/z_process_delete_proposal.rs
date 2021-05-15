@@ -1,7 +1,7 @@
 //! Program state processor
 
 use crate::{
-    state::{enums::ProposalStateStatus, z_proposal::ProposalOld, z_proposal_state::ProposalState},
+    state::{enums::ProposalState, z_proposal::ProposalOld, z_proposal_state::ProposalStateOld},
     utils::{
         assert_account_equiv, assert_initialized, assert_is_permissioned,
         assert_not_in_voting_or_executing, assert_token_program_is_correct,
@@ -25,7 +25,7 @@ pub fn process_cancel_proposal(program_id: &Pubkey, accounts: &[AccountInfo]) ->
     let proposal_authority_info = next_account_info(account_info_iter)?;
     let token_program_info = next_account_info(account_info_iter)?;
 
-    let mut proposal_state: ProposalState = assert_initialized(proposal_state_account_info)?;
+    let mut proposal_state: ProposalStateOld = assert_initialized(proposal_state_account_info)?;
     let proposal: ProposalOld = assert_initialized(proposal_account_info)?;
 
     assert_account_equiv(admin_validation_account_info, &proposal.admin_validation)?;
@@ -41,8 +41,8 @@ pub fn process_cancel_proposal(program_id: &Pubkey, accounts: &[AccountInfo]) ->
         transfer_authority_info,
         proposal_authority_info,
     )?;
-    proposal_state.status = ProposalStateStatus::Canceled;
-    ProposalState::pack(
+    proposal_state.status = ProposalState::Cancelled;
+    ProposalStateOld::pack(
         proposal_state,
         &mut proposal_state_account_info.data.borrow_mut(),
     )?;

@@ -1,4 +1,6 @@
-use crate::state::enums::{GovernanceAccountType, ProposalStateStatus};
+use core::panic;
+
+use crate::state::enums::{GovernanceAccountType, ProposalState};
 use arrayref::{array_mut_ref, array_ref, array_refs, mut_array_refs};
 
 use solana_program::{
@@ -16,7 +18,7 @@ pub const NAME_SIZE: usize = 32;
 
 /// Proposal state
 #[derive(Clone)]
-pub struct ProposalState {
+pub struct ProposalStateOld {
     /// Governance account type
     pub account_type: GovernanceAccountType,
 
@@ -24,7 +26,7 @@ pub struct ProposalState {
     pub proposal: Pubkey,
 
     /// Current status of the proposal
-    pub status: ProposalStateStatus,
+    pub status: ProposalState,
 
     /// Total signatory tokens minted, for use comparing to supply remaining during draft period
     pub total_signing_tokens_minted: u64,
@@ -60,8 +62,8 @@ pub struct ProposalState {
     pub transactions: [Pubkey; MAX_TRANSACTIONS],
 }
 
-impl Sealed for ProposalState {}
-impl IsInitialized for ProposalState {
+impl Sealed for ProposalStateOld {}
+impl IsInitialized for ProposalStateOld {
     fn is_initialized(&self) -> bool {
         self.account_type != GovernanceAccountType::Uninitialized
     }
@@ -81,7 +83,7 @@ const PROPOSAL_STATE_LEN: usize = 32
     + 1
     + (32 * MAX_TRANSACTIONS)
     + 300;
-impl Pack for ProposalState {
+impl Pack for ProposalStateOld {
     const LEN: usize = 32
         + 1
         + 1
@@ -147,12 +149,12 @@ impl Pack for ProposalState {
             account_type,
             proposal: Pubkey::new_from_array(*proposal),
             status: match proposal_state_status {
-                0 => ProposalStateStatus::Draft,
-                1 => ProposalStateStatus::Voting,
-                2 => ProposalStateStatus::Executing,
-                3 => ProposalStateStatus::Completed,
-                4 => ProposalStateStatus::Canceled,
-                _ => ProposalStateStatus::Draft,
+                0 => ProposalState::Draft,
+                1 => ProposalState::Voting,
+                2 => ProposalState::Executing,
+                3 => ProposalState::Completed,
+                4 => ProposalState::Cancelled,
+                _ => ProposalState::Draft,
             },
             total_signing_tokens_minted,
             transactions: [
@@ -211,12 +213,13 @@ impl Pack for ProposalState {
         proposal.copy_from_slice(self.proposal.as_ref());
 
         *proposal_state_status = match self.status {
-            ProposalStateStatus::Draft => 0_u8,
-            ProposalStateStatus::Voting => 1_u8,
-            ProposalStateStatus::Executing => 2_u8,
-            ProposalStateStatus::Completed => 3_u8,
-            ProposalStateStatus::Canceled => 4_u8,
-            ProposalStateStatus::Defeated => 5_u8,
+            ProposalState::Draft => 0_u8,
+            ProposalState::Voting => 1_u8,
+            ProposalState::Executing => 2_u8,
+            ProposalState::Completed => 3_u8,
+            ProposalState::Cancelled => 4_u8,
+            ProposalState::Defeated => 5_u8,
+            _ => panic!("boom"),
         }
         .to_le_bytes();
         *total_signing_tokens_minted = self.total_signing_tokens_minted.to_le_bytes();

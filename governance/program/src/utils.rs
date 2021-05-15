@@ -1,6 +1,6 @@
 use crate::{
     error::GovernanceError,
-    state::{enums::ProposalStateStatus, z_proposal::ProposalOld, z_proposal_state::ProposalState},
+    state::{enums::ProposalState, z_proposal::ProposalOld, z_proposal_state::ProposalStateOld},
     PROGRAM_AUTHORITY_SEED,
 };
 use arrayref::{array_ref, array_refs, mut_array_refs};
@@ -87,9 +87,9 @@ pub fn assert_is_permissioned<'a>(
 }
 
 /// Asserts a Proposal is in a state that can be edited - if its voting or executing, cant touch it.
-pub fn assert_not_in_voting_or_executing(proposal_state: &ProposalState) -> ProgramResult {
-    if proposal_state.status == ProposalStateStatus::Voting
-        || proposal_state.status == ProposalStateStatus::Executing
+pub fn assert_not_in_voting_or_executing(proposal_state: &ProposalStateOld) -> ProgramResult {
+    if proposal_state.status == ProposalState::Voting
+        || proposal_state.status == ProposalState::Executing
     {
         return Err(GovernanceError::InvalidProposalStateError.into());
     }
@@ -97,24 +97,24 @@ pub fn assert_not_in_voting_or_executing(proposal_state: &ProposalState) -> Prog
 }
 
 /// Asserts a Proposal is in executing state.
-pub fn assert_executing(proposal_state: &ProposalState) -> ProgramResult {
-    if proposal_state.status != ProposalStateStatus::Executing {
+pub fn assert_executing(proposal_state: &ProposalStateOld) -> ProgramResult {
+    if proposal_state.status != ProposalState::Executing {
         return Err(GovernanceError::InvalidProposalStateError.into());
     }
     Ok(())
 }
 
 /// Asserts a Proposal is in voting state.
-pub fn assert_voting(proposal_state: &ProposalState) -> ProgramResult {
-    if proposal_state.status != ProposalStateStatus::Voting {
+pub fn assert_voting(proposal_state: &ProposalStateOld) -> ProgramResult {
+    if proposal_state.status != ProposalState::Voting {
         return Err(GovernanceError::InvalidProposalStateError.into());
     }
     Ok(())
 }
 
 /// Asserts a Proposal is in draft state.
-pub fn assert_draft(proposal_state: &ProposalState) -> ProgramResult {
-    if proposal_state.status != ProposalStateStatus::Draft {
+pub fn assert_draft(proposal_state: &ProposalStateOld) -> ProgramResult {
+    if proposal_state.status != ProposalState::Draft {
         return Err(GovernanceError::InvalidProposalStateError.into());
     }
     Ok(())
@@ -142,7 +142,7 @@ pub fn assert_token_program_is_correct(token_program_info: &AccountInfo) -> Prog
 
 /// asserts  txn is in Proposal
 pub fn assert_txn_in_state(
-    proposal_state: &ProposalState,
+    proposal_state: &ProposalStateOld,
     proposal_txn_account_info: &AccountInfo,
 ) -> ProgramResult {
     let mut found: bool = false;

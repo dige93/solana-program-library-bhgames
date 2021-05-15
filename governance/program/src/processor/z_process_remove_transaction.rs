@@ -2,7 +2,7 @@
 use crate::{
     error::GovernanceError,
     state::z_proposal::ProposalOld,
-    state::z_proposal_state::ProposalState,
+    state::z_proposal_state::ProposalStateOld,
     utils::{
         assert_account_equiv, assert_draft, assert_initialized, assert_is_permissioned,
         assert_token_program_is_correct,
@@ -27,7 +27,7 @@ pub fn process_remove_transaction(program_id: &Pubkey, accounts: &[AccountInfo])
     let proposal_authority_account_info = next_account_info(account_info_iter)?;
     let token_program_account_info = next_account_info(account_info_iter)?;
 
-    let mut proposal_state: ProposalState = assert_initialized(proposal_state_account_info)?;
+    let mut proposal_state: ProposalStateOld = assert_initialized(proposal_state_account_info)?;
     let proposal: ProposalOld = assert_initialized(proposal_account_info)?;
     assert_token_program_is_correct(token_program_account_info)?;
     assert_account_equiv(proposal_state_account_info, &proposal.state)?;
@@ -66,7 +66,7 @@ pub fn process_remove_transaction(program_id: &Pubkey, accounts: &[AccountInfo])
             None => return Err(GovernanceError::NumericalOverflow.into()),
         };
 
-    ProposalState::pack(
+    ProposalStateOld::pack(
         proposal_state,
         &mut proposal_state_account_info.data.borrow_mut(),
     )?;
