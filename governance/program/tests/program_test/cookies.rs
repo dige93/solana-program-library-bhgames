@@ -1,6 +1,6 @@
 use solana_program::pubkey::Pubkey;
 use solana_sdk::signature::Keypair;
-use spl_governance::state::program_governance::ProgramGovernance;
+use spl_governance::state::{program_governance::ProgramGovernance, realm::Realm};
 
 #[derive(Debug)]
 pub struct GovernedProgramCookie {
@@ -12,7 +12,6 @@ pub struct GovernedProgramCookie {
 #[derive(Debug)]
 pub struct ProgramGovernanceCookie {
     pub address: Pubkey,
-
     pub account: ProgramGovernance,
 }
 #[derive(Debug)]
@@ -27,16 +26,11 @@ pub struct ProposalCookie {
 pub struct RealmCookie {
     pub address: Pubkey,
 
-    /// UTF-8 encoded name of the proposal
-    pub name: String,
-
-    pub governance_mint: Pubkey,
+    pub account: Realm,
 
     pub governance_mint_authority: Keypair,
 
     pub governance_token_holding_account: Pubkey,
-
-    pub council_mint: Option<Pubkey>,
 
     pub council_mint_authority: Option<Keypair>,
 

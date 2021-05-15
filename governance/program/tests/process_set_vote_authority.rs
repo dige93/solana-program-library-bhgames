@@ -72,7 +72,7 @@ async fn test_set_governance_vote_authority_for_owner_must_sign_error() {
 
     let mut instruction = set_vote_authority(
         &realm_cookie.address,
-        &realm_cookie.governance_mint,
+        &realm_cookie.account.governance_mint,
         &hacker_vote_authority,
         &voter_record_cookie.token_owner.pubkey(),
     )

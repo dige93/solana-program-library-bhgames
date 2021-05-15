@@ -310,13 +310,20 @@ impl GovernanceProgramTest {
             .await
             .unwrap();
 
+        let account = Realm {
+            account_type: GovernanceAccountType::Realm,
+            governance_mint: governance_token_mint_keypair.pubkey(),
+            council_mint: Some(council_token_mint_keypair.pubkey()),
+            name: name,
+        };
+
         RealmCookie {
             address: realm_address,
-            name,
-            governance_mint: governance_token_mint_keypair.pubkey(),
+            account,
+
             governance_mint_authority: governance_token_mint_authority,
             governance_token_holding_account: governance_token_holding_address,
-            council_mint: Some(council_token_mint_keypair.pubkey()),
+
             council_token_holding_account: Some(council_token_holding_address),
             council_mint_authority: Some(council_token_mint_authority),
         }
@@ -329,7 +336,7 @@ impl GovernanceProgramTest {
     ) -> VoterRecordCookie {
         self.with_initial_governaning_token_deposit(
             &realm_cookie.address,
-            &realm_cookie.governance_mint,
+            &realm_cookie.account.governance_mint,
             &realm_cookie.governance_mint_authority,
         )
         .await
@@ -344,7 +351,7 @@ impl GovernanceProgramTest {
     ) {
         self.with_governing_token_deposit(
             &realm_cookie.address,
-            &realm_cookie.governance_mint,
+            &realm_cookie.account.governance_mint,
             &realm_cookie.governance_mint_authority,
             voter_record_cookie,
             amount,
@@ -361,7 +368,7 @@ impl GovernanceProgramTest {
     ) {
         self.with_governing_token_deposit(
             &realm_cookie.address,
-            &realm_cookie.council_mint.unwrap(),
+            &realm_cookie.account.council_mint.unwrap(),
             &realm_cookie.council_mint_authority.as_ref().unwrap(),
             voter_record_cookie,
             amount,
@@ -376,7 +383,7 @@ impl GovernanceProgramTest {
     ) -> VoterRecordCookie {
         self.with_initial_governaning_token_deposit(
             &realm_cookie.address,
-            &realm_cookie.council_mint.unwrap(),
+            &realm_cookie.account.council_mint.unwrap(),
             &realm_cookie.council_mint_authority.as_ref().unwrap(),
         )
         .await
@@ -475,7 +482,7 @@ impl GovernanceProgramTest {
     ) {
         self.with_governing_token_vote_authority(
             &realm_cookie.address,
-            &realm_cookie.governance_mint,
+            &realm_cookie.account.governance_mint,
             &voter_record_cookie,
         )
         .await;
@@ -489,7 +496,7 @@ impl GovernanceProgramTest {
     ) {
         self.with_governing_token_vote_authority(
             &realm_cookie.address,
-            &realm_cookie.council_mint.unwrap(),
+            &realm_cookie.account.council_mint.unwrap(),
             &voter_record_cookie,
         )
         .await;
@@ -527,7 +534,7 @@ impl GovernanceProgramTest {
         self.withdraw_governing_tokens(
             realm_cookie,
             voter_record_cookie,
-            &realm_cookie.governance_mint,
+            &realm_cookie.account.governance_mint,
             &voter_record_cookie.token_owner,
         )
         .await
@@ -542,7 +549,7 @@ impl GovernanceProgramTest {
         self.withdraw_governing_tokens(
             realm_cookie,
             voter_record_cookie,
-            &realm_cookie.council_mint.unwrap(),
+            &realm_cookie.account.council_mint.unwrap(),
             &voter_record_cookie.token_owner,
         )
         .await
