@@ -54,7 +54,7 @@ pub fn process_withdraw_governing_tokens(
         &governing_token_holding_info,
         &governing_token_destination_info,
         &realm_info,
-        get_realm_address_seeds(&realm_data.name),
+        &get_realm_address_seeds(&realm_data.name),
         program_id,
         voter_record_data.token_deposit_amount,
         spl_token_info,

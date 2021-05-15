@@ -75,7 +75,7 @@ pub fn process_create_proposal(
         admin_mint_info,
         admin_token_info,
         proposal_info,
-        proposal_seeds,
+        &proposal_seeds,
         program_id,
         1,
         spl_token_info,
@@ -100,6 +100,16 @@ pub fn process_create_proposal(
         rent_sysvar_info,
     )?;
 
+    mint_spl_tokens_signed(
+        signatory_mint_info,
+        signatory_token_info,
+        proposal_info,
+        &proposal_seeds,
+        program_id,
+        1,
+        spl_token_info,
+    )?;
+
     let proposal_data = Proposal {
         account_type: GovernanceAccountType::Proposal,
         name: name.clone(),
@@ -113,7 +123,7 @@ pub fn process_create_proposal(
         payer_info,
         proposal_info,
         &proposal_data,
-        get_proposal_address_seeds(account_governance_info.key, &name),
+        proposal_seeds,
         program_id,
         system_info,
     )?;

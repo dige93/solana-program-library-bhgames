@@ -38,7 +38,7 @@ pub fn process_create_realm(
     create_spl_token_account_signed(
         payer_info,
         governance_token_holding_info,
-        get_governing_token_holding_address_seeds(realm_info.key, governance_token_mint_info.key),
+        &get_governing_token_holding_address_seeds(realm_info.key, governance_token_mint_info.key),
         governance_token_mint_info,
         realm_info,
         program_id,
@@ -59,7 +59,7 @@ pub fn process_create_realm(
         create_spl_token_account_signed(
             payer_info,
             council_token_holding_info,
-            get_governing_token_holding_address_seeds(realm_info.key, council_token_mint_info.key),
+            &get_governing_token_holding_address_seeds(realm_info.key, council_token_mint_info.key),
             council_token_mint_info,
             realm_info,
             program_id,

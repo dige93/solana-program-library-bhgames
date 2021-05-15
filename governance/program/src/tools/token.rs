@@ -66,7 +66,7 @@ pub fn create_spl_token_account<'a>(
 pub fn create_spl_token_account_signed<'a>(
     payer_info: &AccountInfo<'a>,
     token_account_info: &AccountInfo<'a>,
-    token_account_address_seeds: Vec<&[u8]>,
+    token_account_address_seeds: &Vec<&[u8]>,
     token_mint_info: &AccountInfo<'a>,
     token_account_owner_info: &AccountInfo<'a>,
     program_id: &Pubkey,
@@ -209,13 +209,13 @@ pub fn transfer_spl_tokens_signed<'a>(
     source_info: &AccountInfo<'a>,
     destination_info: &AccountInfo<'a>,
     authority_info: &AccountInfo<'a>,
-    authority_seeds: Vec<&[u8]>,
-    source_owner: &Pubkey,
+    authority_seeds: &Vec<&[u8]>,
+    program_id: &Pubkey,
     amount: u64,
     spl_token_info: &AccountInfo<'a>,
 ) -> ProgramResult {
     let (authority_address, bump_seed) =
-        Pubkey::find_program_address(&authority_seeds[..], source_owner);
+        Pubkey::find_program_address(&authority_seeds[..], program_id);
 
     if authority_address != *authority_info.key {
         msg!(
@@ -258,13 +258,13 @@ pub fn mint_spl_tokens_signed<'a>(
     token_mint_info: &AccountInfo<'a>,
     token_account_info: &AccountInfo<'a>,
     mint_authority_info: &AccountInfo<'a>,
-    mint_authority_seeds: Vec<&[u8]>,
-    mint_owner: &Pubkey,
+    mint_authority_seeds: &Vec<&[u8]>,
+    program_id: &Pubkey,
     amount: u64,
     spl_token_info: &AccountInfo<'a>,
 ) -> ProgramResult {
     let (mint_authority_address, bump_seed) =
-        Pubkey::find_program_address(&mint_authority_seeds[..], mint_owner);
+        Pubkey::find_program_address(&mint_authority_seeds[..], program_id);
 
     if mint_authority_address != *mint_authority_info.key {
         msg!(
