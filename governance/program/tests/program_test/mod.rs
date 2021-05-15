@@ -16,19 +16,17 @@ use solana_sdk::{
     transaction::Transaction,
 };
 use spl_governance::{
-    id,
     instruction::{
         create_program_governance, create_proposal, create_realm, deposit_governing_tokens,
         set_vote_authority, withdraw_governing_tokens,
     },
     processor::process_instruction,
     state::{
-        program_governance::ProgramGovernance,
+        program_governance::{get_program_governance_address, ProgramGovernance},
         proposal::Proposal,
         realm::{get_governing_token_holding_address, get_realm_address, Realm},
         voter_record::{get_voter_record_address, VoterRecord},
     },
-    PROGRAM_AUTHORITY_SEED,
 };
 
 pub mod cookies;
@@ -181,16 +179,8 @@ impl GovernanceProgramTest {
         realm_cookie: &RealmCookie,
         governed_program_cookie: &GovernedProgramCookie,
     ) -> ProgramGovernanceCookie {
-        let (program_governance_address, _) = Pubkey::find_program_address(
-            &[
-                PROGRAM_AUTHORITY_SEED,
-                governed_program_cookie.address.as_ref(),
-            ],
-            &id(),
-        );
-
-        let governance_mint = Pubkey::new_unique();
-        let council_mint = Option::None::<Pubkey>;
+        let program_governance_address =
+            get_program_governance_address(&governed_program_cookie.address);
 
         let vote_threshold: u8 = 60;
         let min_instruction_hold_up_time: u64 = 10;
@@ -198,16 +188,15 @@ impl GovernanceProgramTest {
         let token_threshold_to_create_proposal: u8 = 5;
 
         let create_governance_instruction = create_program_governance(
-            &program_governance_address,
-            &governed_program_cookie.address,
-            &governed_program_cookie.data_address,
-            &governed_program_cookie.upgrade_authority.pubkey(),
-            &self.payer.pubkey(),
             &realm_cookie.address,
+            &governed_program_cookie.address,
             vote_threshold,
             min_instruction_hold_up_time,
             max_voting_time,
             token_threshold_to_create_proposal,
+            &governed_program_cookie.data_address,
+            &governed_program_cookie.upgrade_authority.pubkey(),
+            &self.payer.pubkey(),
         )
         .unwrap();
 
@@ -220,11 +209,12 @@ impl GovernanceProgramTest {
 
         ProgramGovernanceCookie {
             address: program_governance_address,
-            governance_mint,
-            council_mint,
+            realm: realm_cookie.address,
+
             vote_threshold,
             min_instruction_hold_up_time,
             max_voting_time,
+            token_threshold_to_create_proposal,
         }
     }
 

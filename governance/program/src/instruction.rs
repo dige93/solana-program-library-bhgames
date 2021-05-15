@@ -1,5 +1,6 @@
 use crate::state::{
     enums::Vote,
+    program_governance::get_program_governance_address,
     realm::{get_governing_token_holding_address, get_realm_address},
     voter_record::get_voter_record_address,
 };
@@ -479,20 +480,21 @@ pub fn deposit_governing_tokens(
 
 /// Creates CreateProgramGovernance instruction
 pub fn create_program_governance(
-    program_governance: &Pubkey,
-    governed_program: &Pubkey,
-    governed_program_data: &Pubkey,
-    governed_program_upgrade_authority: &Pubkey,
-    payer: &Pubkey,
-
     realm: &Pubkey,
+    governed_program: &Pubkey,
     vote_threshold: u8,
     min_instruction_hold_up_time: u64,
     max_voting_time: u64,
     token_threshold_to_create_proposal: u8,
+
+    governed_program_data: &Pubkey,
+    governed_program_upgrade_authority: &Pubkey,
+    payer: &Pubkey,
 ) -> Result<Instruction, ProgramError> {
+    let program_governance_address = get_program_governance_address(governed_program);
+
     let accounts = vec![
-        AccountMeta::new(*program_governance, false),
+        AccountMeta::new(program_governance_address, false),
         AccountMeta::new(*governed_program_data, false),
         AccountMeta::new_readonly(*governed_program_upgrade_authority, true),
         AccountMeta::new_readonly(*payer, true),

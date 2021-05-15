@@ -11,11 +11,12 @@ pub struct GovernedProgramCookie {
 #[derive(Debug)]
 pub struct ProgramGovernanceCookie {
     pub address: Pubkey,
-    pub governance_mint: Pubkey,
-    pub council_mint: Option<Pubkey>,
+    pub realm: Pubkey,
+
     pub vote_threshold: u8,
     pub min_instruction_hold_up_time: u64,
     pub max_voting_time: u64,
+    pub token_threshold_to_create_proposal: u8,
 }
 #[derive(Debug)]
 pub struct ProposalCookie {

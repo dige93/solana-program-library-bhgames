@@ -32,12 +32,12 @@ pub fn process_create_program_governance(
 
     let program_governance_info = next_account_info(account_info_iter)?; // 0
 
-    let governed_program_data_info = next_account_info(account_info_iter)?; // 2
-    let governed_program_upgrade_authority_info = next_account_info(account_info_iter)?; // 3
+    let governed_program_data_info = next_account_info(account_info_iter)?; // 1
+    let governed_program_upgrade_authority_info = next_account_info(account_info_iter)?; // 2
 
-    let payer_info = next_account_info(account_info_iter)?; // 5
-    let system_info = next_account_info(account_info_iter)?; // 6
-    let _bpf_upgrade_loader_account_info = next_account_info(account_info_iter)?; // 7
+    let payer_info = next_account_info(account_info_iter)?; // 3
+    let system_info = next_account_info(account_info_iter)?; // 4
+    let _bpf_upgrade_loader_account_info = next_account_info(account_info_iter)?; // 5
 
     // Assert current program upgrade authority signed the transaction as a temp. workaround until we can set_upgrade_authority via CPI.
     // Even though it doesn't transfer authority to the governance at the creation time it prevents from creating governance for programs owned by somebody else
@@ -69,15 +69,12 @@ pub fn process_create_program_governance(
     let program_governance_data = ProgramGovernance {
         account_type: GovernanceAccountType::ProgramGovernance,
         realm: *realm,
-
+        vote_threshold,
+        token_threshold_to_create_proposal,
         min_instruction_hold_up_time,
-        max_voting_time,
         governed_program: *governed_program,
-
-        vote_threshold: vote_threshold,
-
+        max_voting_time,
         proposal_count: 0,
-        token_threshold_to_create_proposal: token_threshold_to_create_proposal,
     };
 
     create_and_serialize_account_signed::<ProgramGovernance>(

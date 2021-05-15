@@ -1,4 +1,4 @@
-use crate::{state::enums::GovernanceAccountType, PROGRAM_AUTHORITY_SEED};
+use crate::{id, state::enums::GovernanceAccountType, PROGRAM_AUTHORITY_SEED};
 
 use solana_program::{
     program_pack::{IsInitialized, Sealed},
@@ -48,4 +48,12 @@ impl IsInitialized for ProgramGovernance {
 
 pub fn get_program_governance_address_seeds(governed_program: &Pubkey) -> Vec<&[u8]> {
     vec![PROGRAM_AUTHORITY_SEED, &governed_program.as_ref()]
+}
+
+pub fn get_program_governance_address(governed_program: &Pubkey) -> Pubkey {
+    Pubkey::find_program_address(
+        &get_program_governance_address_seeds(governed_program)[..],
+        &id(),
+    )
+    .0
 }
