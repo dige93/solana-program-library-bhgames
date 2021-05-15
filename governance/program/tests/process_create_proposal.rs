@@ -12,23 +12,21 @@ async fn test_proposal_created() {
     let mut governance_test = GovernanceProgramTest::start_new().await;
 
     let realm_cookie = governance_test.with_realm().await;
-    let governed_program_cookie = governance_test.with_governed_program().await;
+    let governed_account_cookie = governance_test.with_governed_account().await;
 
-    let governance_cookie = governance_test
-        .with_program_governance(&realm_cookie, &governed_program_cookie)
+    let account_governance_cookie = governance_test
+        .with_account_governance(&realm_cookie, &governed_account_cookie)
         .await;
 
     // Act
-    let proposal_cookie = governance_test.with_proposal(&governance_cookie).await;
+    let proposal_cookie = governance_test
+        .with_proposal(&account_governance_cookie)
+        .await;
 
     // Assert
     let proposal_account = governance_test
         .get_proposal_account(&proposal_cookie.address)
         .await;
 
-    assert_eq!(proposal_cookie.name, proposal_account.name);
-    assert_eq!(
-        proposal_cookie.description_link,
-        proposal_account.description_link
-    );
+    assert_eq!(proposal_cookie.account, proposal_account);
 }

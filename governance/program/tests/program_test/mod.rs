@@ -284,7 +284,10 @@ impl GovernanceProgramTest {
     }
 
     #[allow(dead_code)]
-    pub async fn with_proposal(&mut self, governance: &AccountGovernanceCookie) -> ProposalCookie {
+    pub async fn with_proposal(
+        &mut self,
+        account_governance: &AccountGovernanceCookie,
+    ) -> ProposalCookie {
         let description_link = "proposal description".to_string();
         let name = "proposal_name".to_string();
 
@@ -295,7 +298,7 @@ impl GovernanceProgramTest {
             description_link.clone(),
             name.clone(),
             &proposal_key.pubkey(),
-            &governance.address,
+            &account_governance.address,
             &self.payer.pubkey(),
         )
         .unwrap();
@@ -304,10 +307,15 @@ impl GovernanceProgramTest {
             .await
             .unwrap();
 
+        let account = Proposal {
+            account_type: GovernanceAccountType::Proposal,
+            description_link,
+            name,
+        };
+
         ProposalCookie {
             address: proposal_key.pubkey(),
-            description_link: description_link,
-            name: name,
+            account,
         }
     }
 
