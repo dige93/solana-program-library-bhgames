@@ -27,6 +27,9 @@ pub struct ProposalCookie {
     pub address: Pubkey,
     pub account: Proposal,
     pub proposal_owner: Keypair,
+
+    pub admin_token_account: Pubkey,
+    pub signatory_token_account: Pubkey,
 }
 
 #[derive(Debug)]

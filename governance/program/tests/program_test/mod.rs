@@ -367,6 +367,8 @@ impl GovernanceProgramTest {
             address: proposal_address,
             account,
             proposal_owner,
+            admin_token_account: admin_token_keypair.pubkey(),
+            signatory_token_account: signatory_token_keypair.pubkey(),
         }
     }
 

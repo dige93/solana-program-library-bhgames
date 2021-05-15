@@ -5,6 +5,7 @@ use solana_program_test::*;
 mod program_test;
 
 use program_test::*;
+use solana_sdk::signature::Signer;
 
 #[tokio::test]
 async fn test_community_proposal_created() {
@@ -29,6 +30,22 @@ async fn test_community_proposal_created() {
         .await;
 
     assert_eq!(proposal_cookie.account, proposal_account);
+
+    let admin_account = governance_test
+        .get_token_account(&proposal_cookie.admin_token_account)
+        .await;
+
+    assert_eq!(proposal_cookie.proposal_owner.pubkey(), admin_account.owner);
+
+    let signatory_account = governance_test
+        .get_token_account(&proposal_cookie.signatory_token_account)
+        .await;
+
+    assert_eq!(1, signatory_account.amount);
+    assert_eq!(
+        proposal_cookie.proposal_owner.pubkey(),
+        signatory_account.owner
+    );
 
     let account_governance_account = governance_test
         .get_program_governance_account(&account_governance_cookie.address)
