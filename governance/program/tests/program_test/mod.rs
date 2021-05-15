@@ -26,7 +26,7 @@ use spl_governance::{
             get_account_governance_address, get_program_governance_address, AccountGovernance,
         },
         enums::{GovernanceAccountType, GoverningTokenType, ProposalState},
-        proposal::Proposal,
+        proposal::{get_proposal_address, Proposal},
         realm::{get_governing_token_holding_address, get_realm_address, Realm},
         voter_record::{get_voter_record_address, VoterRecord},
     },
@@ -310,7 +310,6 @@ impl GovernanceProgramTest {
         let description_link = "Proposal Description".to_string();
         let name = "Proposal Name".to_string();
 
-        let proposal_keypair = Keypair::new();
         let admin_mint_keypair = Keypair::new();
         let signatory_mint_keypair = Keypair::new();
 
@@ -318,7 +317,6 @@ impl GovernanceProgramTest {
             name.clone(),
             governing_token_type.clone(),
             description_link.clone(),
-            &proposal_keypair.pubkey(),
             &account_governance_cookie.address,
             &admin_mint_keypair.pubkey(),
             &signatory_mint_keypair.pubkey(),
@@ -328,11 +326,7 @@ impl GovernanceProgramTest {
 
         self.process_transaction(
             &[create_proposal_instruction],
-            Some(&[
-                &proposal_keypair,
-                &admin_mint_keypair,
-                &signatory_mint_keypair,
-            ]),
+            Some(&[&admin_mint_keypair, &signatory_mint_keypair]),
         )
         .await
         .unwrap();
@@ -340,14 +334,16 @@ impl GovernanceProgramTest {
         let account = Proposal {
             account_type: GovernanceAccountType::Proposal,
             description_link,
-            name,
+            name: name.clone(),
             account_governance: account_governance_cookie.address,
             governing_token_type,
             state: ProposalState::Draft,
         };
 
+        let proposal_address = get_proposal_address(&account_governance_cookie.address, &name);
+
         ProposalCookie {
-            address: proposal_keypair.pubkey(),
+            address: proposal_address,
             account,
         }
     }

@@ -1,6 +1,7 @@
 use crate::state::{
     account_governance::{get_account_governance_address, get_program_governance_address},
     enums::{GoverningTokenType, Vote},
+    proposal::get_proposal_address,
     realm::{get_governing_token_holding_address, get_realm_address},
     voter_record::get_voter_record_address,
 };
@@ -609,14 +610,15 @@ pub fn create_proposal(
     governing_token_type: GoverningTokenType,
     description_link: String,
     // Accounts
-    proposal: &Pubkey,
     account_governance: &Pubkey,
     admin_mint: &Pubkey,
     signatory_mint: &Pubkey,
     payer: &Pubkey,
 ) -> Result<Instruction, ProgramError> {
+    let proposal_address = get_proposal_address(account_governance, &name);
+
     let accounts = vec![
-        AccountMeta::new(*proposal, true),
+        AccountMeta::new(proposal_address, false),
         AccountMeta::new(*account_governance, false),
         AccountMeta::new(*admin_mint, true),
         AccountMeta::new(*signatory_mint, true),

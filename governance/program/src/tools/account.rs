@@ -64,7 +64,7 @@ pub fn create_and_serialize_account_signed<'a, T: BorshSerialize>(
 
     if account_address != *account_info.key {
         msg!(
-            "Create account with Program Derived Address: {:?} was requested while Address: {:?} was expected",
+            "Create account with PDA: {:?} was requested while PDA: {:?} was expected",
             account_info.key,
             account_address
         );

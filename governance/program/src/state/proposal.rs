@@ -1,3 +1,5 @@
+use crate::{id, PROGRAM_AUTHORITY_SEED};
+
 use super::enums::{GovernanceAccountType, GoverningTokenType, ProposalState};
 
 use borsh::{BorshDeserialize, BorshSchema, BorshSerialize};
@@ -32,4 +34,23 @@ impl IsInitialized for Proposal {
     fn is_initialized(&self) -> bool {
         self.account_type == GovernanceAccountType::Proposal
     }
+}
+
+pub fn get_proposal_address_seeds<'a>(
+    account_governance: &'a Pubkey,
+    name: &'a String,
+) -> Vec<&'a [u8]> {
+    vec![
+        PROGRAM_AUTHORITY_SEED,
+        account_governance.as_ref(),
+        &name.as_bytes(),
+    ]
+}
+
+pub fn get_proposal_address<'a>(account_governance: &'a Pubkey, name: &'a String) -> Pubkey {
+    Pubkey::find_program_address(
+        &get_proposal_address_seeds(&account_governance, &name)[..],
+        &id(),
+    )
+    .0
 }

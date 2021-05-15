@@ -11,9 +11,9 @@ use crate::{
     state::{
         account_governance::{deserialize_account_governance, AccountGovernance},
         enums::{GovernanceAccountType, GoverningTokenType, ProposalState},
-        proposal::Proposal,
+        proposal::{get_proposal_address_seeds, Proposal},
     },
-    tools::{account::create_and_serialize_account, token::create_spl_token_mint},
+    tools::{account::create_and_serialize_account_signed, token::create_spl_token_mint},
 };
 
 /// process_create_proposal
@@ -56,17 +56,18 @@ pub fn process_create_proposal(
 
     let proposal_data = Proposal {
         account_type: GovernanceAccountType::Proposal,
-        name,
+        name: name.clone(),
         description_link,
         account_governance: *account_governance_info.key,
         governing_token_type,
         state: ProposalState::Draft,
     };
 
-    create_and_serialize_account::<Proposal>(
+    create_and_serialize_account_signed::<Proposal>(
         payer_info,
         proposal_info,
         &proposal_data,
+        get_proposal_address_seeds(account_governance_info.key, &name),
         program_id,
         system_info,
     )?;
