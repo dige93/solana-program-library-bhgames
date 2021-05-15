@@ -288,7 +288,16 @@ impl GovernanceProgramTest {
         &mut self,
         account_governance_cookie: &AccountGovernanceCookie,
     ) -> ProposalCookie {
-        self.with_proposal(account_governance_cookie, GoverningTokenType::Governance)
+        self.with_proposal(account_governance_cookie, GoverningTokenType::Community)
+            .await
+    }
+
+    #[allow(dead_code)]
+    pub async fn with_council_proposal(
+        &mut self,
+        account_governance_cookie: &AccountGovernanceCookie,
+    ) -> ProposalCookie {
+        self.with_proposal(account_governance_cookie, GoverningTokenType::Council)
             .await
     }
 
@@ -404,7 +413,7 @@ impl GovernanceProgramTest {
     ) -> VoterRecordCookie {
         self.with_initial_governaning_token_deposit(
             &realm_cookie.address,
-            GoverningTokenType::Governance,
+            GoverningTokenType::Community,
             &realm_cookie.account.governance_mint,
             &realm_cookie.governance_mint_authority,
         )

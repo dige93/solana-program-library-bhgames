@@ -84,10 +84,11 @@ pub enum Vote {
 }
 
 /// Governing Token type
+#[repr(C)]
 #[derive(Clone, Debug, PartialEq, BorshDeserialize, BorshSerialize, BorshSchema)]
 pub enum GoverningTokenType {
-    /// Governance token
-    Governance,
+    /// Community token
+    Community,
     /// Council token
     Council,
 }

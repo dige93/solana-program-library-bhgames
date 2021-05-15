@@ -36,3 +36,47 @@ async fn test_community_proposal_created() {
 
     assert_eq!(1, account_governance_account.proposal_count);
 }
+
+#[tokio::test]
+async fn test_multiple_proposals_created() {
+    // Arrange
+    let mut governance_test = GovernanceProgramTest::start_new().await;
+
+    let realm_cookie = governance_test.with_realm().await;
+    let governed_account_cookie = governance_test.with_governed_account().await;
+
+    let account_governance_cookie = governance_test
+        .with_account_governance(&realm_cookie, &governed_account_cookie)
+        .await;
+
+    // Act
+    let community_proposal_cookie = governance_test
+        .with_community_proposal(&account_governance_cookie)
+        .await;
+
+    let council_proposal_cookie = governance_test
+        .with_community_proposal(&account_governance_cookie)
+        .await;
+
+    // Assert
+    let community_proposal_account = governance_test
+        .get_proposal_account(&community_proposal_cookie.address)
+        .await;
+
+    assert_eq!(
+        community_proposal_cookie.account,
+        community_proposal_account
+    );
+
+    let council_proposal_account = governance_test
+        .get_proposal_account(&community_proposal_cookie.address)
+        .await;
+
+    assert_eq!(council_proposal_cookie.account, council_proposal_account);
+
+    let account_governance_account = governance_test
+        .get_program_governance_account(&account_governance_cookie.address)
+        .await;
+
+    assert_eq!(2, account_governance_account.proposal_count);
+}
