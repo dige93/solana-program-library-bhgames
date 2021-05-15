@@ -8,6 +8,7 @@ use solana_program::{
 };
 
 use crate::{
+    error::GovernanceError,
     state::{
         account_governance::{deserialize_account_governance, AccountGovernance},
         enums::{GovernanceAccountType, GoverningTokenType, ProposalState},
@@ -36,6 +37,10 @@ pub fn process_create_proposal(
     let system_info = next_account_info(account_info_iter)?; // 3
     let spl_token_info = next_account_info(account_info_iter)?; // 7
     let rent_sysvar_info = next_account_info(account_info_iter)?; // 7
+
+    if !proposal_info.data_is_empty() {
+        return Err(GovernanceError::ProposalAlreadyExists.into());
+    }
 
     create_spl_token_mint(
         payer_info,

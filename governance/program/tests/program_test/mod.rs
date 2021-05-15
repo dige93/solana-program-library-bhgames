@@ -288,8 +288,12 @@ impl GovernanceProgramTest {
         &mut self,
         account_governance_cookie: &AccountGovernanceCookie,
     ) -> ProposalCookie {
-        self.with_proposal(account_governance_cookie, GoverningTokenType::Community)
-            .await
+        self.with_proposal(
+            &"Community Proposal".to_string(),
+            account_governance_cookie,
+            GoverningTokenType::Community,
+        )
+        .await
     }
 
     #[allow(dead_code)]
@@ -297,18 +301,22 @@ impl GovernanceProgramTest {
         &mut self,
         account_governance_cookie: &AccountGovernanceCookie,
     ) -> ProposalCookie {
-        self.with_proposal(account_governance_cookie, GoverningTokenType::Council)
-            .await
+        self.with_proposal(
+            &"Council Proposal".to_string(),
+            account_governance_cookie,
+            GoverningTokenType::Council,
+        )
+        .await
     }
 
     #[allow(dead_code)]
     pub async fn with_proposal(
         &mut self,
+        name: &String,
         account_governance_cookie: &AccountGovernanceCookie,
         governing_token_type: GoverningTokenType,
     ) -> ProposalCookie {
         let description_link = "Proposal Description".to_string();
-        let name = "Proposal Name".to_string();
 
         let admin_mint_keypair = Keypair::new();
         let signatory_mint_keypair = Keypair::new();

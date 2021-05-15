@@ -55,7 +55,7 @@ async fn test_multiple_proposals_created() {
         .await;
 
     let council_proposal_cookie = governance_test
-        .with_community_proposal(&account_governance_cookie)
+        .with_council_proposal(&account_governance_cookie)
         .await;
 
     // Assert
@@ -69,7 +69,7 @@ async fn test_multiple_proposals_created() {
     );
 
     let council_proposal_account = governance_test
-        .get_proposal_account(&community_proposal_cookie.address)
+        .get_proposal_account(&council_proposal_cookie.address)
         .await;
 
     assert_eq!(council_proposal_cookie.account, council_proposal_account);

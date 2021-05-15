@@ -192,6 +192,10 @@ pub enum GovernanceError {
     /// Realm with the given name and governing mints already exists
     #[error("Realm with the given name and governing mints already exists")]
     RealmAlreadyExists,
+
+    /// Proposal for the Governance with the given name already exists
+    #[error("Proposal for the Governance with the given name already exists")]
+    ProposalAlreadyExists,
 }
 
 impl PrintProgramError for GovernanceError {
