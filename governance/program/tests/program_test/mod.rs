@@ -22,6 +22,7 @@ use spl_governance::{
     },
     processor::process_instruction,
     state::{
+        enums::GovernanceAccountType,
         program_governance::{get_program_governance_address, ProgramGovernance},
         proposal::Proposal,
         realm::{get_governing_token_holding_address, get_realm_address, Realm},
@@ -207,14 +208,20 @@ impl GovernanceProgramTest {
         .await
         .unwrap();
 
+        let account = ProgramGovernance {
+            account_type: GovernanceAccountType::ProgramGovernance,
+            realm: realm_cookie.address,
+            vote_threshold,
+            token_threshold_to_create_proposal,
+            min_instruction_hold_up_time,
+            governed_program: governed_program_cookie.address,
+            max_voting_time,
+            proposal_count: 0,
+        };
+
         ProgramGovernanceCookie {
             address: program_governance_address,
-            realm: realm_cookie.address,
-
-            vote_threshold,
-            min_instruction_hold_up_time,
-            max_voting_time,
-            token_threshold_to_create_proposal,
+            account,
         }
     }
 

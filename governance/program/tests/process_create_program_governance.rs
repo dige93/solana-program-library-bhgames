@@ -25,15 +25,7 @@ async fn test_created() {
         .await;
 
     assert_eq!(
-        program_governance_cookie.vote_threshold,
-        program_governance_account.vote_threshold
-    );
-    assert_eq!(
-        program_governance_cookie.min_instruction_hold_up_time,
-        program_governance_account.min_instruction_hold_up_time
-    );
-    assert_eq!(
-        program_governance_cookie.max_voting_time,
-        program_governance_account.max_voting_time
+        program_governance_cookie.account,
+        program_governance_account
     );
 }

@@ -1,5 +1,6 @@
 use solana_program::pubkey::Pubkey;
 use solana_sdk::signature::Keypair;
+use spl_governance::state::program_governance::ProgramGovernance;
 
 #[derive(Debug)]
 pub struct GovernedProgramCookie {
@@ -11,12 +12,8 @@ pub struct GovernedProgramCookie {
 #[derive(Debug)]
 pub struct ProgramGovernanceCookie {
     pub address: Pubkey,
-    pub realm: Pubkey,
 
-    pub vote_threshold: u8,
-    pub min_instruction_hold_up_time: u64,
-    pub max_voting_time: u64,
-    pub token_threshold_to_create_proposal: u8,
+    pub account: ProgramGovernance,
 }
 #[derive(Debug)]
 pub struct ProposalCookie {

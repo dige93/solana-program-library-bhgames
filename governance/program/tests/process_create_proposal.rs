@@ -11,9 +11,11 @@ async fn test_created() {
     // Arrange
     let mut governance_test = GovernanceProgramTest::start_new().await;
 
+    let realm_cookie = governance_test.with_realm().await;
     let governed_program_cookie = governance_test.with_dummy_governed_program().await;
+
     let governance_cookie = governance_test
-        .with_program_governance(&governed_program_cookie)
+        .with_program_governance(&realm_cookie, &governed_program_cookie)
         .await;
 
     // Act
