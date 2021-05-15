@@ -56,7 +56,7 @@ pub fn process_execute(program_id: &Pubkey, accounts: &[AccountInfo]) -> Program
     assert_account_equiv(proposal_state_account_info, &proposal.state)?;
     assert_account_equiv(governance_account_info, &proposal.governance)?;
 
-    let mut seeds = vec![PROGRAM_AUTHORITY_SEED, governance.program.as_ref()];
+    let mut seeds = vec![PROGRAM_AUTHORITY_SEED, governance.governed_program.as_ref()];
 
     let (governance_authority, bump_seed) = Pubkey::find_program_address(&seeds[..], program_id);
 

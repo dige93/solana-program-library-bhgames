@@ -110,7 +110,7 @@ pub fn process_init_proposal(
     assert_mint_owner_program(no_voting_mint_account_info, token_program_info.key)?;
     assert_mint_owner_program(source_mint_account_info, token_program_info.key)?;
 
-    let source_holding_mint: Pubkey = get_mint_from_token_account(source_holding_account_info)?;
+    let _source_holding_mint: Pubkey = get_mint_from_token_account(source_holding_account_info)?;
 
     assert_account_mint(destination_sig_account_info, signatory_mint_account_info)?;
     assert_account_mint(destination_admin_account_info, admin_mint_account_info)?;
@@ -166,15 +166,15 @@ pub fn process_init_proposal(
         governance_program_authority_info.key,
     )?;
 
-    if source_holding_mint != governance.governance_mint {
-        if let Some(council_mint) = governance.council_mint {
-            if source_holding_mint != council_mint {
-                return Err(GovernanceError::AccountsShouldMatch.into());
-            }
-        } else {
-            return Err(GovernanceError::AccountsShouldMatch.into());
-        }
-    }
+    // if source_holding_mint != governance.governance_mint {
+    //     if let Some(council_mint) = governance.council_mint {
+    //         if source_holding_mint != council_mint {
+    //             return Err(GovernanceError::AccountsShouldMatch.into());
+    //         }
+    //     } else {
+    //         return Err(GovernanceError::AccountsShouldMatch.into());
+    //     }
+    // }
 
     ProposalOld::pack(new_proposal, &mut proposal_account_info.data.borrow_mut())?;
     ProposalState::pack(

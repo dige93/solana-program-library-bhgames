@@ -103,17 +103,23 @@ pub fn process_instruction(
             process_vote(program_id, accounts, vote)
         }
         GovernanceInstruction::CreateProgramGovernance {
+            realm,
+            governed_program,
             vote_threshold,
-            min_instruction_hold_up_time: minimum_slot_waiting_period,
-            max_voting_time: time_limit,
+            min_instruction_hold_up_time,
+            max_voting_time,
+            token_threshold_to_create_proposal,
         } => {
             msg!("Instruction: Initialize Governance");
             process_create_program_governance(
                 program_id,
                 accounts,
+                &realm,
+                &governed_program,
                 vote_threshold,
-                minimum_slot_waiting_period,
-                time_limit,
+                min_instruction_hold_up_time,
+                max_voting_time,
+                token_threshold_to_create_proposal,
             )
         }
         GovernanceInstruction::Execute => {

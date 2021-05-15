@@ -7,7 +7,6 @@ use borsh::{BorshDeserialize, BorshSchema, BorshSerialize};
 
 use solana_program::{
     bpf_loader_upgradeable,
-    epoch_schedule::Slot,
     instruction::{AccountMeta, Instruction},
     program_error::ProgramError,
     pubkey::Pubkey,
@@ -253,20 +252,23 @@ pub enum GovernanceInstruction {
         voting_token_amount: u64,
     },
 
-    /// Creates Program Governance account
+    /// Creates Program Governance account which governs an upgradable program
     ///
-    ///   0. `[writable]` Governance account. The account pubkey needs to be set to program-derived address (PDA) with the following seeds:
-    ///           1) 'governance' const prefix
-    ///           2) Governed Program address
-    ///   1. `[]` Account of the Program governed by this Governance account
-    ///   2. `[writable]` Program Data account of the Program governed by this Governance account
-    ///   3. `[signer]` Current Upgrade Authority account of the Program governed by this Governance account
-    ///   4. `[]` Governance mint that this Governance uses
-    ///   5. `[signer]` Payer
-    ///   6. `[]` System account
-    ///   7. `[]` Bpf_upgrade_loader account
-    ///   8. `[]` Council mint that this Governance uses [Optional]
+    ///   0. `[writable]` Program Governance account. PDA seeds: ['governance', governed_program]
+    ///   1. `[writable]` Program Data account of the Program governed by this Governance account
+    ///   2. `[signer]` Current Upgrade Authority account of the Program governed by this Governance account
+    ///   3. `[signer]` Payer
+    ///   4. `[]` System account
+    ///   5. `[]` Bpf_upgrade_loader account
     CreateProgramGovernance {
+        /// Realm
+        #[allow(dead_code)]
+        realm: Pubkey,
+
+        /// Address of the governed program
+        #[allow(dead_code)]
+        governed_program: Pubkey,
+
         /// Voting threshold in % required to tip the vote
         /// It's the percentage of tokens out of the entire pool of governance tokens eligible to vote
         #[allow(dead_code)]
@@ -274,15 +276,16 @@ pub enum GovernanceInstruction {
 
         /// Minimum waiting time in slots for an instruction to be executed after proposal is voted on
         #[allow(dead_code)]
-        min_instruction_hold_up_time: Slot,
+        min_instruction_hold_up_time: u64,
 
-        /// Time limit in slots for proposal to be open to voting
+        /// Time limit in slots for proposal to be open for voting
         #[allow(dead_code)]
-        max_voting_time: Slot,
-        // Minimum % of tokens for a governance token owner to be able to create proposal
-        // It's the percentage of tokens out of the entire pool of governance tokens eligible to vote
-        // TODO: Add field
-        //token_threshold_to_create_proposal: u8,
+        max_voting_time: u64,
+
+        /// Minimum % of tokens for a governance token owner to be able to create proposal
+        /// It's the percentage of tokens out of the entire pool of governance tokens eligible to vote
+        #[allow(dead_code)]
+        token_threshold_to_create_proposal: u8,
     },
 
     ///   0. `[]` Governance vote record key. Needs to be set with pubkey set to PDA with seeds of the
@@ -480,32 +483,30 @@ pub fn create_program_governance(
     governed_program: &Pubkey,
     governed_program_data: &Pubkey,
     governed_program_upgrade_authority: &Pubkey,
-    governance_mint: &Pubkey,
     payer: &Pubkey,
-    council_mint: &Option<Pubkey>,
+
+    realm: &Pubkey,
     vote_threshold: u8,
     min_instruction_hold_up_time: u64,
     max_voting_time: u64,
+    token_threshold_to_create_proposal: u8,
 ) -> Result<Instruction, ProgramError> {
-    let mut accounts = vec![
+    let accounts = vec![
         AccountMeta::new(*program_governance, false),
-        AccountMeta::new_readonly(*governed_program, false),
         AccountMeta::new(*governed_program_data, false),
         AccountMeta::new_readonly(*governed_program_upgrade_authority, true),
-        AccountMeta::new_readonly(*governance_mint, false),
         AccountMeta::new_readonly(*payer, true),
         AccountMeta::new_readonly(system_program::id(), false),
         AccountMeta::new_readonly(bpf_loader_upgradeable::id(), false),
     ];
 
-    if let Some(council_mint_key) = council_mint {
-        accounts.push(AccountMeta::new_readonly(*council_mint_key, false));
-    }
-
     let instruction = GovernanceInstruction::CreateProgramGovernance {
+        realm: *realm,
+        governed_program: *governed_program,
         vote_threshold,
         min_instruction_hold_up_time,
         max_voting_time,
+        token_threshold_to_create_proposal,
     };
 
     Ok(Instruction {

@@ -21,26 +21,23 @@ use solana_program::{
 pub fn process_create_program_governance(
     program_id: &Pubkey,
     accounts: &[AccountInfo],
+    realm: &Pubkey,
+    governed_program: &Pubkey,
     vote_threshold: u8,
-
-    minimum_slot_waiting_period: u64,
-    time_limit: u64,
+    min_instruction_hold_up_time: u64,
+    max_voting_time: u64,
+    token_threshold_to_create_proposal: u8,
 ) -> ProgramResult {
     let account_info_iter = &mut accounts.iter();
 
     let program_governance_info = next_account_info(account_info_iter)?; // 0
-    let governed_program_info = next_account_info(account_info_iter)?; // 1
+
     let governed_program_data_info = next_account_info(account_info_iter)?; // 2
     let governed_program_upgrade_authority_info = next_account_info(account_info_iter)?; // 3
-    let governance_mint_info = next_account_info(account_info_iter)?; // 4
 
     let payer_info = next_account_info(account_info_iter)?; // 5
     let system_info = next_account_info(account_info_iter)?; // 6
     let _bpf_upgrade_loader_account_info = next_account_info(account_info_iter)?; // 7
-
-    let council_mint_key = next_account_info(account_info_iter) // 8?
-        .map(|acc| Some(*acc.key))
-        .unwrap_or(None);
 
     // Assert current program upgrade authority signed the transaction as a temp. workaround until we can set_upgrade_authority via CPI.
     // Even though it doesn't transfer authority to the governance at the creation time it prevents from creating governance for programs owned by somebody else
@@ -48,7 +45,7 @@ pub fn process_create_program_governance(
 
     assert_program_upgrade_authority(
         &program_governance_info.key,
-        governed_program_info.key,
+        governed_program,
         governed_program_data_info,
         governed_program_upgrade_authority_info,
     )?;
@@ -71,24 +68,23 @@ pub fn process_create_program_governance(
 
     let program_governance_data = ProgramGovernance {
         account_type: GovernanceAccountType::ProgramGovernance,
+        realm: *realm,
 
-        min_instruction_hold_up_time: minimum_slot_waiting_period,
-        max_voting_time: time_limit,
-        program: *governed_program_info.key,
-        governance_mint: *governance_mint_info.key,
-
-        council_mint: council_mint_key,
+        min_instruction_hold_up_time,
+        max_voting_time,
+        governed_program: *governed_program,
 
         vote_threshold: vote_threshold,
 
         proposal_count: 0,
+        token_threshold_to_create_proposal: token_threshold_to_create_proposal,
     };
 
     create_and_serialize_account_signed::<ProgramGovernance>(
         payer_info,
         &program_governance_info,
         &program_governance_data,
-        get_program_governance_address_seeds(governed_program_info.key),
+        get_program_governance_address_seeds(governed_program),
         program_id,
         system_info,
     )?;

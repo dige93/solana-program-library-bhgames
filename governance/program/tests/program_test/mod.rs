@@ -178,10 +178,14 @@ impl GovernanceProgramTest {
     #[allow(dead_code)]
     pub async fn with_program_governance(
         &mut self,
-        governed_program: &GovernedProgramCookie,
+        realm_cookie: &RealmCookie,
+        governed_program_cookie: &GovernedProgramCookie,
     ) -> ProgramGovernanceCookie {
-        let (governance_address, _) = Pubkey::find_program_address(
-            &[PROGRAM_AUTHORITY_SEED, governed_program.address.as_ref()],
+        let (program_governance_address, _) = Pubkey::find_program_address(
+            &[
+                PROGRAM_AUTHORITY_SEED,
+                governed_program_cookie.address.as_ref(),
+            ],
             &id(),
         );
 
@@ -191,30 +195,31 @@ impl GovernanceProgramTest {
         let vote_threshold: u8 = 60;
         let min_instruction_hold_up_time: u64 = 10;
         let max_voting_time: u64 = 100;
+        let token_threshold_to_create_proposal: u8 = 5;
 
         let create_governance_instruction = create_program_governance(
-            &governance_address,
-            &governed_program.address,
-            &governed_program.data_address,
-            &governed_program.upgrade_authority.pubkey(),
-            &governance_mint,
+            &program_governance_address,
+            &governed_program_cookie.address,
+            &governed_program_cookie.data_address,
+            &governed_program_cookie.upgrade_authority.pubkey(),
             &self.payer.pubkey(),
-            &council_mint,
+            &realm_cookie.address,
             vote_threshold,
             min_instruction_hold_up_time,
             max_voting_time,
+            token_threshold_to_create_proposal,
         )
         .unwrap();
 
         self.process_transaction(
             &[create_governance_instruction],
-            Some(&[&governed_program.upgrade_authority]),
+            Some(&[&governed_program_cookie.upgrade_authority]),
         )
         .await
         .unwrap();
 
         ProgramGovernanceCookie {
-            address: governance_address,
+            address: program_governance_address,
             governance_mint,
             council_mint,
             vote_threshold,
