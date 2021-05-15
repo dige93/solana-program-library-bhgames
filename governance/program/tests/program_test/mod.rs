@@ -25,10 +25,9 @@ use spl_governance::{
     state::{
         program_governance::ProgramGovernance,
         proposal::Proposal,
-        realm::{get_governing_token_holding_address, Realm},
+        realm::{get_governing_token_holding_address, get_realm_address, Realm},
         voter_record::{get_voter_record_address, VoterRecord},
     },
-    tools::get_realm_address,
     PROGRAM_AUTHORITY_SEED,
 };
 

@@ -1,9 +1,7 @@
-use crate::{
-    state::{
-        enums::Vote, realm::get_governing_token_holding_address,
-        voter_record::get_voter_record_address,
-    },
-    tools::get_realm_address,
+use crate::state::{
+    enums::Vote,
+    realm::{get_governing_token_holding_address, get_realm_address},
+    voter_record::get_voter_record_address,
 };
 use borsh::{BorshDeserialize, BorshSchema, BorshSerialize};
 

@@ -10,13 +10,10 @@ use solana_program::{
 use crate::{
     error::GovernanceError,
     state::{
-        realm::deserialize_realm,
+        realm::{deserialize_realm, get_realm_address_seeds},
         voter_record::{deserialize_voter_record, get_voter_record_address_seeds},
     },
-    tools::{
-        get_realm_address_seeds,
-        token::{get_mint_from_token_account, transfer_spl_tokens_signed},
-    },
+    tools::token::{get_mint_from_token_account, transfer_spl_tokens_signed},
 };
 
 /// process_withdraw_governing_tokens

@@ -37,6 +37,14 @@ pub fn deserialize_realm(realm_info: &AccountInfo) -> Result<Realm, ProgramError
     deserialize_account::<Realm>(realm_info, &id())
 }
 
+pub fn get_realm_address_seeds(name: &String) -> Vec<&[u8]> {
+    vec![PROGRAM_AUTHORITY_SEED, &name.as_bytes()]
+}
+
+pub fn get_realm_address(name: &String) -> Pubkey {
+    Pubkey::find_program_address(&get_realm_address_seeds(&name)[..], &id()).0
+}
+
 pub fn get_governing_token_holding_address_seeds<'a>(
     realm: &'a Pubkey,
     governing_token_mint: &'a Pubkey,
