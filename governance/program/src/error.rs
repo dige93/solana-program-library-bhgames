@@ -189,6 +189,10 @@ pub enum GovernanceError {
     #[error("Invalid Token account owner")]
     InvalidTokenAccountOwnerError,
 
+    /// Token owner must sign
+    #[error("Token owner must sign")]
+    TokenOwnerMustSign,
+
     /// Realm with the given name and governing mints already exists
     #[error("Realm with the given name and governing mints already exists")]
     RealmAlreadyExists,
@@ -196,6 +200,10 @@ pub enum GovernanceError {
     /// Proposal for the Governance with the given name already exists
     #[error("Proposal for the Governance with the given name already exists")]
     ProposalAlreadyExists,
+
+    /// Proposal cannot be canceled
+    #[error("Proposal cannot be canceled")]
+    ProposalCannotBeCancelled,
 }
 
 impl PrintProgramError for GovernanceError {

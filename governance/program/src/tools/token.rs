@@ -7,7 +7,7 @@ use solana_program::{
     msg,
     program::{invoke, invoke_signed},
     program_error::ProgramError,
-    program_pack::Pack,
+    program_pack::{IsInitialized, Pack},
     pubkey::Pubkey,
     rent::Rent,
     system_instruction,
@@ -372,4 +372,25 @@ pub fn get_mint_from_token_account(
     let data = token_account_info.try_borrow_data().unwrap();
     let mint_data = array_ref![data, 0, 32];
     Ok(Pubkey::new_from_array(*mint_data))
+}
+
+pub fn assert_spl_token_owner_signed<'a>(
+    token_account_info: &AccountInfo<'a>,
+    expected_token_mint: &Pubkey,
+    expected_token_owner_info: &AccountInfo<'a>,
+) -> Result<(), ProgramError> {
+    let token_data =
+        spl_token::state::Account::unpack_from_slice(&token_account_info.data.borrow())?;
+
+    if token_data.amount == 0
+        || !token_data.is_initialized()
+        || token_data.owner != *expected_token_owner_info.key
+        || !expected_token_owner_info.is_signer
+        || token_data.mint != *expected_token_mint
+        || token_account_info.owner != &spl_token::id()
+    {
+        return Err(GovernanceError::TokenOwnerMustSign.into());
+    }
+
+    Ok(())
 }

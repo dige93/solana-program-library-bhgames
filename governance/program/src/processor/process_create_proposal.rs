@@ -85,6 +85,8 @@ pub fn process_create_proposal(
         account_governance: *account_governance_info.key,
         governing_token_type,
         state: ProposalState::Draft,
+        admin_mint: *admin_mint_info.key,
+        signatory_mint: *signatory_mint_info.key,
     };
 
     create_and_serialize_account_signed::<Proposal>(

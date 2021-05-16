@@ -73,6 +73,16 @@ impl Default for ProposalState {
     }
 }
 
+impl ProposalState {
+    pub fn can_cancel(&self) -> bool {
+        *self == ProposalState::Draft
+            || *self == ProposalState::Signing
+            || *self == ProposalState::Voting
+            || *self == ProposalState::Succeeded
+            || *self == ProposalState::Defeated
+    }
+}
+
 /// Vote  with number of votes
 #[derive(Clone, Debug, PartialEq, BorshDeserialize, BorshSerialize, BorshSchema)]
 pub enum Vote {

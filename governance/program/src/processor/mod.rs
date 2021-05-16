@@ -1,3 +1,4 @@
+pub mod process_cancel_proposal;
 pub mod process_create_account_governance;
 pub mod process_create_program_governance;
 pub mod z_process_add_custom_single_signer_transaction;
@@ -9,7 +10,6 @@ pub mod process_create_realm;
 pub mod process_deposit_governing_tokens;
 pub mod process_set_vote_authority;
 pub mod process_withdraw_governing_tokens;
-pub mod z_process_delete_proposal;
 pub mod z_process_deposit_source_tokens;
 pub mod z_process_execute;
 pub mod z_process_init_proposal;
@@ -22,6 +22,7 @@ pub mod z_process_withdraw_voting_tokens;
 
 use crate::instruction::GovernanceInstruction;
 use borsh::BorshDeserialize;
+use process_cancel_proposal::process_cancel_proposal;
 use process_create_account_governance::process_create_account_governance;
 use process_create_program_governance::process_create_program_governance;
 use process_create_proposal::process_create_proposal;
@@ -36,7 +37,6 @@ use solana_program::{
 use z_process_add_custom_single_signer_transaction::process_add_custom_single_signer_transaction;
 use z_process_add_signer::process_add_signer;
 use z_process_create_empty_governance_voting_record::process_create_empty_governance_voting_record;
-use z_process_delete_proposal::process_cancel_proposal;
 use z_process_deposit_source_tokens::process_deposit_source_tokens;
 use z_process_execute::process_execute;
 use z_process_init_proposal::process_init_proposal;
@@ -95,10 +95,7 @@ pub fn process_instruction(
             msg!("Instruction: Update Transaction Slot");
             process_update_transaction_slot(program_id, accounts, delay_slots)
         }
-        GovernanceInstruction::CancelProposal => {
-            msg!("Instruction: Delete Proposal");
-            process_cancel_proposal(program_id, accounts)
-        }
+        GovernanceInstruction::CancelProposal => process_cancel_proposal(program_id, accounts),
         GovernanceInstruction::SignProposal => {
             msg!("Instruction: Sign");
             process_sign(program_id, accounts)

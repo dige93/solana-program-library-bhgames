@@ -1,10 +1,13 @@
-use crate::{id, PROGRAM_AUTHORITY_SEED};
+use crate::{id, tools::account::deserialize_account, PROGRAM_AUTHORITY_SEED};
 
 use super::enums::{GovernanceAccountType, GoverningTokenType, ProposalState};
 
 use borsh::{BorshDeserialize, BorshSchema, BorshSerialize};
 
-use solana_program::{program_pack::IsInitialized, pubkey::Pubkey};
+use solana_program::{
+    account_info::AccountInfo, program_error::ProgramError, program_pack::IsInitialized,
+    pubkey::Pubkey,
+};
 
 /// Governance Proposal
 #[repr(C)]
@@ -28,12 +31,24 @@ pub struct Proposal {
 
     /// UTF-8 encoded Proposal name
     pub name: String,
+
+    /// Mint that creates signatory tokens of this Proposal
+    /// If there are outstanding signatory tokens, then cannot leave draft state. Signatories must burn tokens (ie agree
+    /// to move instruction to voting state) and bring mint to net 0 tokens outstanding. Each signatory gets 1 (serves as flag)
+    pub signatory_mint: Pubkey,
+
+    /// Admin ownership mint. One token is minted, can be used to grant admin status to a new person
+    pub admin_mint: Pubkey,
 }
 
 impl IsInitialized for Proposal {
     fn is_initialized(&self) -> bool {
         self.account_type == GovernanceAccountType::Proposal
     }
+}
+
+pub fn deserialize_proposal(proposal_info: &AccountInfo) -> Result<Proposal, ProgramError> {
+    deserialize_account::<Proposal>(proposal_info, &id())
 }
 
 pub fn get_proposal_address_seeds<'a>(

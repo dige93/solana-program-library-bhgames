@@ -17,8 +17,8 @@ use solana_sdk::{
 };
 use spl_governance::{
     instruction::{
-        create_account_governance, create_program_governance, create_proposal, create_realm,
-        deposit_governing_tokens, set_vote_authority, withdraw_governing_tokens,
+        cancel_proposal, create_account_governance, create_program_governance, create_proposal,
+        create_realm, deposit_governing_tokens, set_vote_authority, withdraw_governing_tokens,
     },
     processor::process_instruction,
     state::{
@@ -359,6 +359,8 @@ impl GovernanceProgramTest {
             account_governance: account_governance_cookie.address,
             governing_token_type,
             state: ProposalState::Draft,
+            admin_mint: admin_mint_keypair.pubkey(),
+            signatory_mint: signatory_mint_keypair.pubkey(),
         };
 
         let proposal_address = get_proposal_address(&account_governance_cookie.address, &name);
@@ -370,6 +372,23 @@ impl GovernanceProgramTest {
             admin_token_account: admin_token_keypair.pubkey(),
             signatory_token_account: signatory_token_keypair.pubkey(),
         }
+    }
+
+    #[allow(dead_code)]
+    pub async fn cancel_proposal(&mut self, proposal_cookie: &ProposalCookie) {
+        let cancel_proposal_instruction = cancel_proposal(
+            &proposal_cookie.address,
+            &proposal_cookie.admin_token_account,
+            &proposal_cookie.proposal_owner.pubkey(),
+        )
+        .unwrap();
+
+        self.process_transaction(
+            &[cancel_proposal_instruction],
+            Some(&[&proposal_cookie.proposal_owner]),
+        )
+        .await
+        .unwrap();
     }
 
     #[allow(dead_code)]

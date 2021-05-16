@@ -145,15 +145,10 @@ pub enum GovernanceInstruction {
     },
 
     /// [Requires Admin token]
-    /// Cancels Proposal by moving it into Cancelled state.
+    /// Cancels Proposal and transitions it into Cancelled state
     ///
-    ///   0. `[writable]` Proposal state account pub key.
-    ///   1. `[writable]` Admin account
-    ///   2. `[writable]` Admin validation account.
-    ///   3. `[]` Proposal account pub key.
-    ///   4. `[]` Transfer authority.
-    ///   5. `[]` Governance mint authority (pda with seed of Proposal key)
-    ///   6. `[]` Token program account.
+    ///   0. `[writable]` Proposal account
+    ///   1. `[signer]` Admin account
     CancelProposal,
 
     /// [Requires Signatory token]
@@ -402,6 +397,26 @@ pub enum GovernanceInstruction {
     },
 
     WithdrawGoverningTokens {},
+}
+
+pub fn cancel_proposal(
+    proposal: &Pubkey,
+    admin_token: &Pubkey,
+    proposal_owner: &Pubkey,
+) -> Result<Instruction, ProgramError> {
+    let accounts = vec![
+        AccountMeta::new(*proposal, false),
+        AccountMeta::new_readonly(*admin_token, false),
+        AccountMeta::new_readonly(*proposal_owner, true),
+    ];
+
+    let instruction = GovernanceInstruction::CancelProposal {};
+
+    Ok(Instruction {
+        program_id: id(),
+        accounts,
+        data: instruction.try_to_vec().unwrap(),
+    })
 }
 
 pub fn set_vote_authority(
