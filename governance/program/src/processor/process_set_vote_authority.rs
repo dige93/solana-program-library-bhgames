@@ -12,7 +12,7 @@ use crate::{
     state::voter_record::{deserialize_voter_record, get_voter_record_address_seeds},
 };
 
-/// process_set_vote_authority
+/// Processes SetVoteAuthority instruction
 pub fn process_set_vote_authority(
     _program_id: &Pubkey,
     accounts: &[AccountInfo],

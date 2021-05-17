@@ -15,7 +15,7 @@ use crate::{
     tools::{account::create_and_serialize_account_signed, token::create_spl_token_account_signed},
 };
 
-/// process_create_realm
+/// Processes CreateRealm instruction
 pub fn process_create_realm(
     program_id: &Pubkey,
     accounts: &[AccountInfo],

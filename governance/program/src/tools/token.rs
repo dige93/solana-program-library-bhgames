@@ -15,6 +15,7 @@ use solana_program::{
 
 use crate::error::GovernanceError;
 
+/// Creates and initializes SPL token account
 pub fn create_spl_token_account<'a>(
     payer_info: &AccountInfo<'a>,
     token_account_info: &AccountInfo<'a>,
@@ -63,6 +64,7 @@ pub fn create_spl_token_account<'a>(
     Ok(())
 }
 
+/// Creates and initializes SPL token account with PDA using the provided PDA seeds
 pub fn create_spl_token_account_signed<'a>(
     payer_info: &AccountInfo<'a>,
     token_account_info: &AccountInfo<'a>,
@@ -87,10 +89,10 @@ pub fn create_spl_token_account_signed<'a>(
 
     if account_address != *token_account_info.key {
         msg!(
-                "Create SPL Token Account with Program Derived Address: {:?} was requested while Address: {:?} was expected",
-                token_account_info.key,
-                account_address
-            );
+            "Create SPL Token Account with PDA: {:?} was requested while PDA: {:?} was expected",
+            token_account_info.key,
+            account_address
+        );
         return Err(ProgramError::InvalidSeeds);
     }
 
@@ -130,6 +132,7 @@ pub fn create_spl_token_account_signed<'a>(
     Ok(())
 }
 
+/// Creates and initializes SPL Token Mint
 pub fn create_spl_token_mint<'a>(
     payer_info: &AccountInfo<'a>,
     mint_account_info: &AccountInfo<'a>,
@@ -175,6 +178,7 @@ pub fn create_spl_token_mint<'a>(
     Ok(())
 }
 
+/// Transfers SPL Tokens
 pub fn transfer_spl_tokens<'a>(
     source_info: &AccountInfo<'a>,
     destination_info: &AccountInfo<'a>,
@@ -205,6 +209,7 @@ pub fn transfer_spl_tokens<'a>(
     Ok(())
 }
 
+/// Transfers SPL Tokens from a token account owned by the provided PDA authority with seeds
 pub fn transfer_spl_tokens_signed<'a>(
     source_info: &AccountInfo<'a>,
     destination_info: &AccountInfo<'a>,
@@ -254,6 +259,7 @@ pub fn transfer_spl_tokens_signed<'a>(
     Ok(())
 }
 
+/// Mints SPL Tokens using the provided PDA mint authority with seeds
 pub fn mint_spl_tokens_signed<'a>(
     token_mint_info: &AccountInfo<'a>,
     token_account_info: &AccountInfo<'a>,
@@ -302,6 +308,9 @@ pub fn mint_spl_tokens_signed<'a>(
     Ok(())
 }
 
+/// Creates SPL Token Mint and Token Account with 1 token minted
+/// The Token Mint authority is PDA with the provided seeds
+/// This Token setup is used to grant permission expressed via the SPL token possession
 pub fn setup_spl_token_permission_scheme_signed<'a>(
     payer_info: &AccountInfo<'a>,
     token_account_info: &AccountInfo<'a>,
@@ -346,7 +355,8 @@ pub fn setup_spl_token_permission_scheme_signed<'a>(
     Ok(())
 }
 
-/// Computationally cheap method to get amount from a token account. It reads amount without deserializing full account data
+/// Computationally cheap method to get amount from a token account
+/// It reads amount without deserializing full account data
 pub fn get_amount_from_token_account(
     token_account_info: &AccountInfo,
 ) -> Result<u64, ProgramError> {
@@ -360,7 +370,8 @@ pub fn get_amount_from_token_account(
     Ok(u64::from_le_bytes(*amount))
 }
 
-/// Computationally cheap method to get mint from a token account. It reads mint without deserializing full account data
+/// Computationally cheap method to get mint from a token account
+/// It reads mint without deserializing full account data
 pub fn get_mint_from_token_account(
     token_account_info: &AccountInfo,
 ) -> Result<Pubkey, ProgramError> {
@@ -374,7 +385,9 @@ pub fn get_mint_from_token_account(
     Ok(Pubkey::new_from_array(*mint_data))
 }
 
-pub fn assert_spl_token_owner_signed<'a>(
+/// Asserts the expected owner signed the current transaction and owns an SPL token for the expected mint
+/// It's used to validate permission expressed using the SPL token scheme
+pub fn assert_spl_token_owner_is_signer<'a>(
     token_account_info: &AccountInfo<'a>,
     expected_token_mint: &Pubkey,
     expected_token_owner_info: &AccountInfo<'a>,

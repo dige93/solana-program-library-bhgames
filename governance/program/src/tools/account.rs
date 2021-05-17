@@ -14,7 +14,7 @@ use solana_program::{
 
 use crate::error::GovernanceError;
 
-/// Creates account and serializes its data
+/// Creates an account and serializes its data
 pub fn create_and_serialize_account<'a, T: BorshSerialize>(
     payer_info: &AccountInfo<'a>,
     account_info: &AccountInfo<'a>,
@@ -49,7 +49,7 @@ pub fn create_and_serialize_account<'a, T: BorshSerialize>(
 }
 
 /// Creates a new account and serializes data into it using the provided seeds to make signed CPI call
-/// Note: This functions also checks the provided account Program Derived Address matches the supplied seeds
+/// Note: This functions also checks the provided account PDA matches the supplied seeds
 pub fn create_and_serialize_account_signed<'a, T: BorshSerialize>(
     payer_info: &AccountInfo<'a>,
     account_info: &AccountInfo<'a>,

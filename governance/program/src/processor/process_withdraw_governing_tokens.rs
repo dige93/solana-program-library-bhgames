@@ -16,7 +16,7 @@ use crate::{
     tools::token::{get_mint_from_token_account, transfer_spl_tokens_signed},
 };
 
-/// process_withdraw_governing_tokens
+/// Processes WithdrawGoverningTokens instruction
 pub fn process_withdraw_governing_tokens(
     program_id: &Pubkey,
     accounts: &[AccountInfo],

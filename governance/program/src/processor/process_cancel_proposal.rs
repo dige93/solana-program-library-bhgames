@@ -10,10 +10,10 @@ use solana_program::{
 use crate::{
     error::GovernanceError,
     state::{enums::ProposalState, proposal::deserialize_proposal},
-    tools::token::assert_spl_token_owner_signed,
+    tools::token::assert_spl_token_owner_is_signer,
 };
 
-/// process_cancel_proposal
+/// Processes CancelProposal instruction
 pub fn process_cancel_proposal(_program_id: &Pubkey, accounts: &[AccountInfo]) -> ProgramResult {
     let account_info_iter = &mut accounts.iter();
 
@@ -23,7 +23,7 @@ pub fn process_cancel_proposal(_program_id: &Pubkey, accounts: &[AccountInfo]) -
 
     let mut proposal_data = deserialize_proposal(proposal_info)?;
 
-    assert_spl_token_owner_signed(
+    assert_spl_token_owner_is_signer(
         admin_token_info,
         &proposal_data.admin_mint,
         proposal_owner_info,

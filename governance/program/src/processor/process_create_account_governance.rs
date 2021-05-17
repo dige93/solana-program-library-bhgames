@@ -14,7 +14,7 @@ use solana_program::{
     pubkey::Pubkey,
 };
 
-/// Create Account  Governance
+/// Processes CreateAccountGovernance instruction
 #[allow(clippy::too_many_arguments)]
 pub fn process_create_account_governance(
     program_id: &Pubkey,

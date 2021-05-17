@@ -1,4 +1,4 @@
-//! Governance utility functions
+//! Utility functions
 #![allow(missing_docs)]
 
 pub mod account;

@@ -399,6 +399,7 @@ pub enum GovernanceInstruction {
     WithdrawGoverningTokens {},
 }
 
+/// Creates CancelProposal instruction
 pub fn cancel_proposal(
     proposal: &Pubkey,
     admin_token: &Pubkey,
@@ -419,6 +420,7 @@ pub fn cancel_proposal(
     })
 }
 
+/// Creates SetVoteAuthority instruction
 pub fn set_vote_authority(
     realm: &Pubkey,
     governing_token_mint: &Pubkey,

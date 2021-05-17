@@ -20,7 +20,7 @@ use crate::{
     },
 };
 
-/// process_create_proposal
+/// Processes CreateProposal instruction
 pub fn process_create_proposal(
     program_id: &Pubkey,
     accounts: &[AccountInfo],

@@ -20,7 +20,7 @@ use crate::{
     },
 };
 
-/// process deposit governing tokens
+/// Processes DepositGoverningTokens instruction
 pub fn process_deposit_governing_tokens(
     program_id: &Pubkey,
     accounts: &[AccountInfo],
