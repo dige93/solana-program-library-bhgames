@@ -7,7 +7,7 @@ mod program_test;
 use program_test::*;
 
 #[tokio::test]
-async fn test_deposited_initial_governance_tokens() {
+async fn test_deposit_initial_governance_tokens() {
     // Arrange
     let mut governance_test = GovernanceProgramTest::start_new().await;
     let realm_cookie = governance_test.with_realm().await;
@@ -42,7 +42,7 @@ async fn test_deposited_initial_governance_tokens() {
 }
 
 #[tokio::test]
-async fn test_deposited_initial_council_tokens() {
+async fn test_deposit_initial_council_tokens() {
     // Arrange
     let mut governance_test = GovernanceProgramTest::start_new().await;
     let realm_cookie = governance_test.with_realm().await;
@@ -78,7 +78,7 @@ async fn test_deposited_initial_council_tokens() {
 }
 
 #[tokio::test]
-async fn test_deposited_subsequent_governance_tokens() {
+async fn test_deposit_subsequent_governance_tokens() {
     // Arrange
     let mut governance_test = GovernanceProgramTest::start_new().await;
     let realm_cookie = governance_test.with_realm().await;
@@ -110,7 +110,7 @@ async fn test_deposited_subsequent_governance_tokens() {
 }
 
 #[tokio::test]
-async fn test_deposited_subsequent_council_tokens() {
+async fn test_deposit_subsequent_council_tokens() {
     // Arrange
     let mut governance_test = GovernanceProgramTest::start_new().await;
     let realm_cookie = governance_test.with_realm().await;

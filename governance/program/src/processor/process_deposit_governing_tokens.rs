@@ -39,7 +39,7 @@ pub fn process_deposit_governing_tokens(
     let realm_data = deserialize_realm(realm_info)?;
     let governing_token_mint = get_mint_from_token_account(governing_token_holding_info)?;
 
-    let governing_token_type = if governing_token_mint == realm_data.governance_mint {
+    let governing_token_type = if governing_token_mint == realm_data.community_mint {
         GoverningTokenType::Community
     } else if Some(governing_token_mint) == realm_data.council_mint {
         GoverningTokenType::Council

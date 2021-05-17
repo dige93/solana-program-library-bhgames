@@ -17,8 +17,8 @@ pub struct Realm {
     /// Governance account type
     pub account_type: GovernanceAccountType,
 
-    /// Governance mint
-    pub governance_mint: Pubkey,
+    /// Community mint
+    pub community_mint: Pubkey,
 
     /// Council mint
     pub council_mint: Option<Pubkey>,

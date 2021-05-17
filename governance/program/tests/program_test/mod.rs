@@ -439,7 +439,7 @@ impl GovernanceProgramTest {
 
         let account = Realm {
             account_type: GovernanceAccountType::Realm,
-            governance_mint: governance_token_mint_keypair.pubkey(),
+            community_mint: governance_token_mint_keypair.pubkey(),
             council_mint: Some(council_token_mint_keypair.pubkey()),
             name: name,
         };
@@ -464,7 +464,7 @@ impl GovernanceProgramTest {
         self.with_initial_governaning_token_deposit(
             &realm_cookie.address,
             GoverningTokenType::Community,
-            &realm_cookie.account.governance_mint,
+            &realm_cookie.account.community_mint,
             &realm_cookie.governance_mint_authority,
         )
         .await
@@ -479,7 +479,7 @@ impl GovernanceProgramTest {
     ) {
         self.with_governing_token_deposit(
             &realm_cookie.address,
-            &realm_cookie.account.governance_mint,
+            &realm_cookie.account.community_mint,
             &realm_cookie.governance_mint_authority,
             voter_record_cookie,
             amount,
@@ -542,8 +542,8 @@ impl GovernanceProgramTest {
         .await;
 
         let deposit_governing_tokens_instruction = deposit_governing_tokens(
-            realm_address,
             governing_mint,
+            realm_address,
             &token_source.pubkey(),
             &token_owner.pubkey(),
             &self.payer.pubkey(),
@@ -600,8 +600,8 @@ impl GovernanceProgramTest {
         .await;
 
         let deposit_governing_tokens_instruction = deposit_governing_tokens(
-            realm,
             governing_token_mint,
+            realm,
             &voter_record_cookie.token_source,
             &voter_record_cookie.token_owner.pubkey(),
             &self.payer.pubkey(),
@@ -624,7 +624,7 @@ impl GovernanceProgramTest {
     ) {
         self.with_governing_token_vote_authority(
             &realm_cookie.address,
-            &realm_cookie.account.governance_mint,
+            &realm_cookie.account.community_mint,
             &voter_record_cookie,
         )
         .await;
@@ -676,7 +676,7 @@ impl GovernanceProgramTest {
         self.withdraw_governing_tokens(
             realm_cookie,
             voter_record_cookie,
-            &realm_cookie.account.governance_mint,
+            &realm_cookie.account.community_mint,
             &voter_record_cookie.token_owner,
         )
         .await
@@ -707,8 +707,8 @@ impl GovernanceProgramTest {
         governing_token_owner: &Keypair,
     ) -> Result<(), ProgramError> {
         let deposit_governing_tokens_instruction = withdraw_governing_tokens(
-            &realm_cookie.address,
             governing_token_mint,
+            &realm_cookie.address,
             &voter_record_cookie.token_source,
             &governing_token_owner.pubkey(),
         )

@@ -71,7 +71,7 @@ pub fn process_create_realm(
 
     let realm_data = Realm {
         account_type: GovernanceAccountType::Realm,
-        governance_mint: *governance_token_mint_info.key,
+        community_mint: *governance_token_mint_info.key,
         council_mint: council_token_mint_address,
         name: name.clone(),
     };

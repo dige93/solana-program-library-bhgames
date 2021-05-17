@@ -427,6 +427,7 @@ pub fn set_vote_authority(
     realm: &Pubkey,
     governing_token_mint: &Pubkey,
     vote_authority: &Pubkey,
+    // Accounts
     governing_token_owner: &Pubkey,
 ) -> Result<Instruction, ProgramError> {
     let vote_record_address =
@@ -453,18 +454,19 @@ pub fn set_vote_authority(
 /// Creates CreateRealm instruction
 pub fn create_realm(
     name: String,
-    governance_token_mint: &Pubkey,
+    // Accounts
+    community_token_mint: &Pubkey,
     payer: &Pubkey,
     council_token_mint: Option<Pubkey>,
 ) -> Result<Instruction, ProgramError> {
     let realm_address = get_realm_address(&name);
-    let governance_token_holding_address =
-        get_governing_token_holding_address(&realm_address, &governance_token_mint);
+    let community_token_holding_address =
+        get_governing_token_holding_address(&realm_address, &community_token_mint);
 
     let mut accounts = vec![
         AccountMeta::new(realm_address, false),
-        AccountMeta::new_readonly(*governance_token_mint, false),
-        AccountMeta::new(governance_token_holding_address, false),
+        AccountMeta::new_readonly(*community_token_mint, false),
+        AccountMeta::new(community_token_holding_address, false),
         AccountMeta::new_readonly(*payer, true),
         AccountMeta::new_readonly(system_program::id(), false),
         AccountMeta::new_readonly(spl_token::id(), false),
@@ -490,8 +492,9 @@ pub fn create_realm(
 
 /// Creates WithdrawGoverningTokens instruction
 pub fn withdraw_governing_tokens(
-    realm: &Pubkey,
     governing_token_mint: &Pubkey,
+    // Accounts
+    realm: &Pubkey,
     governing_token_destination: &Pubkey,
     governing_token_owner: &Pubkey,
 ) -> Result<Instruction, ProgramError> {
@@ -521,8 +524,9 @@ pub fn withdraw_governing_tokens(
 
 /// Creates DepositGoverningTokens instruction
 pub fn deposit_governing_tokens(
-    realm: &Pubkey,
     governing_token_mint: &Pubkey,
+    // Accounts
+    realm: &Pubkey,
     governing_token_source: &Pubkey,
     governing_token_owner: &Pubkey,
     payer: &Pubkey,

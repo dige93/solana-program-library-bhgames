@@ -104,8 +104,8 @@ async fn test_withdraw_governance_tokens_for_owner_must_sign_error() {
     let hacker_token_destination = Pubkey::new_unique();
 
     let mut instruction = withdraw_governing_tokens(
+        &realm_cookie.account.community_mint,
         &realm_cookie.address,
-        &realm_cookie.account.governance_mint,
         &hacker_token_destination,
         &voter_record_cookie.token_owner.pubkey(),
     )
@@ -138,7 +138,7 @@ async fn test_withdraw_governance_tokens_for_voter_record_address_mismatch_error
 
     let vote_record_address = get_voter_record_address(
         &realm_cookie.address,
-        &realm_cookie.account.governance_mint,
+        &realm_cookie.account.community_mint,
         &voter_record_cookie.token_owner.pubkey(),
     );
 
@@ -147,8 +147,8 @@ async fn test_withdraw_governance_tokens_for_voter_record_address_mismatch_error
         .await;
 
     let mut instruction = withdraw_governing_tokens(
+        &realm_cookie.account.community_mint,
         &realm_cookie.address,
-        &realm_cookie.account.governance_mint,
         &hacker_record_cookie.token_source,
         &hacker_record_cookie.token_owner.pubkey(),
     )
