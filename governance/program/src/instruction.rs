@@ -375,6 +375,7 @@ pub enum GovernanceInstruction {
         name: String,
     },
 
+    /// Deposit governing tokens
     DepositGoverningTokens {},
 
     /// Sets vote authority for the given Realm and Governing Token Mint (Governance or Council)
@@ -396,6 +397,7 @@ pub enum GovernanceInstruction {
         vote_authority: Pubkey,
     },
 
+    /// Withdraw governing tokens
     WithdrawGoverningTokens {},
 }
 

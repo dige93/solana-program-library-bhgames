@@ -51,6 +51,7 @@ impl IsInitialized for VoterRecord {
     }
 }
 
+/// Returns VoteRecord PDA address
 pub fn get_voter_record_address(
     realm: &Pubkey,
     governing_token_mint: &Pubkey,
@@ -63,6 +64,7 @@ pub fn get_voter_record_address(
     .0
 }
 
+/// Returns VoterRecord PDA seeds
 pub fn get_voter_record_address_seeds<'a>(
     realm: &'a Pubkey,
     governing_token_mint: &'a Pubkey,
@@ -76,6 +78,7 @@ pub fn get_voter_record_address_seeds<'a>(
     ]
 }
 
+/// Deserializes account and checks owner program
 pub fn deserialize_voter_record(
     voter_record_info: &AccountInfo,
     voter_record_seeds: Vec<&[u8]>,

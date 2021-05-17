@@ -47,10 +47,12 @@ impl IsInitialized for Proposal {
     }
 }
 
+/// Deserializes account and checks owner program
 pub fn deserialize_proposal(proposal_info: &AccountInfo) -> Result<Proposal, ProgramError> {
     deserialize_account::<Proposal>(proposal_info, &id())
 }
 
+/// Returns Proposal PDA seeds
 pub fn get_proposal_address_seeds<'a>(
     account_governance: &'a Pubkey,
     name: &'a String,
@@ -62,6 +64,7 @@ pub fn get_proposal_address_seeds<'a>(
     ]
 }
 
+/// Returns Proposal PDA address
 pub fn get_proposal_address<'a>(account_governance: &'a Pubkey, name: &'a String) -> Pubkey {
     Pubkey::find_program_address(
         &get_proposal_address_seeds(&account_governance, &name)[..],

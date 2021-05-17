@@ -74,6 +74,7 @@ impl Default for ProposalState {
 }
 
 impl ProposalState {
+    /// Checks if Proposal in the given state can be cancelled
     pub fn can_cancel(&self) -> bool {
         *self == ProposalState::Draft
             || *self == ProposalState::Signing

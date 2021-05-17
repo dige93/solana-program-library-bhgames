@@ -48,12 +48,14 @@ impl IsInitialized for AccountGovernance {
     }
 }
 
+/// Deserializes account and checks owner program
 pub fn deserialize_account_governance(
     account_governance_info: &AccountInfo,
 ) -> Result<AccountGovernance, ProgramError> {
     deserialize_account::<AccountGovernance>(account_governance_info, &id())
 }
 
+/// Returns Program Governance PDA seeds
 pub fn get_program_governance_address_seeds<'a>(
     realm: &'a Pubkey,
     governed_program: &'a Pubkey,
@@ -65,6 +67,7 @@ pub fn get_program_governance_address_seeds<'a>(
     ]
 }
 
+/// Returns ProgramGovernance PDA address
 pub fn get_program_governance_address<'a>(
     realm: &'a Pubkey,
     governed_program: &'a Pubkey,
@@ -76,6 +79,7 @@ pub fn get_program_governance_address<'a>(
     .0
 }
 
+/// Returns Account Governance PDA seeds
 pub fn get_account_governance_address_seeds<'a>(
     realm: &'a Pubkey,
     governed_account: &'a Pubkey,
@@ -87,6 +91,7 @@ pub fn get_account_governance_address_seeds<'a>(
     ]
 }
 
+/// Returns AccountGovernance PDA address
 pub fn get_account_governance_address<'a>(
     realm: &'a Pubkey,
     governed_account: &'a Pubkey,
