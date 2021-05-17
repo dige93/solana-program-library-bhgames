@@ -5,12 +5,43 @@ use solana_program::{
     account_info::AccountInfo, bpf_loader_upgradeable, program_error::ProgramError, pubkey::Pubkey,
 };
 
-use crate::{error::GovernanceError, state::upgradable_loader_state::UpgradeableLoaderState};
+use serde_derive::{Deserialize, Serialize};
 
-/// Checks whether the target program upgrade authority is the current upgrade authority of the program
+use crate::error::GovernanceError;
+
+/// Upgradeable loader account states.
+/// Note: The struct is taken as is from solana-sdk which doesn't support bpf and can't be referenced from a program
+#[derive(Debug, Serialize, Deserialize, PartialEq, Clone, Copy)]
+pub enum UpgradeableLoaderState {
+    /// Account is not initialized.
+    Uninitialized,
+    /// A Buffer account.
+    Buffer {
+        /// Authority address
+        authority_address: Option<Pubkey>,
+        // The raw program data follows this serialized structure in the
+        // account's data.
+    },
+    /// An Program account.
+    Program {
+        /// Address of the ProgramData account.
+        programdata_address: Pubkey,
+    },
+    /// A ProgramData account.
+    ProgramData {
+        /// Slot that the program was last modified.
+        slot: u64,
+        /// Address of the Program's upgrade authority.
+        upgrade_authority_address: Option<Pubkey>,
+        // The raw program data follows this serialized structure in the
+        // account's data.
+    },
+}
+
+/// Checks whether the expected program upgrade authority is the current upgrade authority of the program
 /// If it's not then it asserts the current program upgrade authority  is a signer of the transaction
 pub fn assert_program_upgrade_authority(
-    target_upgrade_authority: &Pubkey,
+    expected_upgrade_authority: &Pubkey,
     program_address: &Pubkey,
     program_data_info: &AccountInfo,
     program_upgrade_authority_info: &AccountInfo,
@@ -38,7 +69,7 @@ pub fn assert_program_upgrade_authority(
 
     match upgrade_authority {
         Some(upgrade_authority) => {
-            if upgrade_authority != *target_upgrade_authority {
+            if upgrade_authority != *expected_upgrade_authority {
                 if upgrade_authority != *program_upgrade_authority_info.key {
                     return Err(GovernanceError::InvalidUpgradeAuthority.into());
                 }
