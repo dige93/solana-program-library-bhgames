@@ -28,8 +28,8 @@ use solana_program::{
 pub fn process_init_proposal(
     program_id: &Pubkey,
     accounts: &[AccountInfo],
-    _name: &String,
-    _desc_link: &String,
+    _name: &str,
+    _desc_link: &str,
 ) -> ProgramResult {
     let account_info_iter = &mut accounts.iter();
 

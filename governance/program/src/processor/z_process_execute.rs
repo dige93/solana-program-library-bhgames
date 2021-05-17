@@ -64,24 +64,19 @@ pub fn process_execute(program_id: &Pubkey, accounts: &[AccountInfo]) -> Program
 
     let mut added_authority = false;
 
-    loop {
-        if let Ok(next_account) = next_account_info(account_info_iter) {
-            // TODO: Review this check. Can't we just check for the governance key and allow other governance accounts?
-            if next_account.data_len() == 1000 {
-                // check it's governance account using sie
-                // You better be initialized, and if you are, you better at least be mine...
-                let _nefarious_governance: AccountGovernance =
-                    assert_initialized_old(&next_account)?;
-                assert_account_equiv(&next_account, &proposal.governance)?;
-                added_authority = true;
-                if next_account.key != &governance_authority {
-                    return Err(GovernanceError::InvalidGovernanceKey.into());
-                }
+    while let Ok(next_account) = next_account_info(account_info_iter) {
+        // TODO: Review this check. Can't we just check for the governance key and allow other governance accounts?
+        if next_account.data_len() == 1000 {
+            // check it's governance account using sie
+            // You better be initialized, and if you are, you better at least be mine...
+            let _nefarious_governance: AccountGovernance = assert_initialized_old(&next_account)?;
+            assert_account_equiv(&next_account, &proposal.governance)?;
+            added_authority = true;
+            if next_account.key != &governance_authority {
+                return Err(GovernanceError::InvalidGovernanceKey.into());
             }
-            account_infos.push(next_account.clone());
-        } else {
-            break;
         }
+        account_infos.push(next_account.clone());
     }
 
     if account_infos.len() > (MAX_ACCOUNTS_ALLOWED - 2) {

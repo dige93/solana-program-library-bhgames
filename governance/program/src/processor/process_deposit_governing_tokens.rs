@@ -85,7 +85,7 @@ pub fn process_deposit_governing_tokens(
         )?;
     } else {
         let mut voter_record_data =
-            deserialize_voter_record(voter_record_info, voter_record_address_seeds)?;
+            deserialize_voter_record(voter_record_info, &voter_record_address_seeds)?;
 
         voter_record_data.token_deposit_amount = voter_record_data
             .token_deposit_amount

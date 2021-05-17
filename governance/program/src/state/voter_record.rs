@@ -81,16 +81,13 @@ pub fn get_voter_record_address_seeds<'a>(
 /// Deserializes account and checks owner program
 pub fn deserialize_voter_record(
     voter_record_info: &AccountInfo,
-    voter_record_seeds: Vec<&[u8]>,
+    voter_record_seeds: &[&[u8]],
 ) -> Result<VoterRecord, ProgramError> {
-    let (voter_record_address, _) = Pubkey::find_program_address(&voter_record_seeds[..], &id());
+    let (voter_record_address, _) = Pubkey::find_program_address(&voter_record_seeds, &id());
 
     if voter_record_address != *voter_record_info.key {
         return Err(GovernanceError::InvalidVoterAccountAddress.into());
     }
 
-    Ok(deserialize_account::<VoterRecord>(
-        voter_record_info,
-        &id(),
-    )?)
+    deserialize_account::<VoterRecord>(voter_record_info, &id())
 }

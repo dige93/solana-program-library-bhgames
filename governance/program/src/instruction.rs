@@ -558,6 +558,7 @@ pub fn deposit_governing_tokens(
 }
 
 /// Creates CreateProgramGovernance instruction
+#[allow(clippy::too_many_arguments)]
 pub fn create_program_governance(
     realm: &Pubkey,
     governed_program: &Pubkey,
@@ -633,6 +634,7 @@ pub fn create_account_governance(
 }
 
 /// Creates CreateProposal instruction
+#[allow(clippy::too_many_arguments)]
 pub fn create_proposal(
     name: String,
     governing_token_type: GoverningTokenType,

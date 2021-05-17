@@ -65,10 +65,11 @@ pub fn create_spl_token_account<'a>(
 }
 
 /// Creates and initializes SPL token account with PDA using the provided PDA seeds
+#[allow(clippy::too_many_arguments)]
 pub fn create_spl_token_account_signed<'a>(
     payer_info: &AccountInfo<'a>,
     token_account_info: &AccountInfo<'a>,
-    token_account_address_seeds: &Vec<&[u8]>,
+    token_account_address_seeds: &[&[u8]],
     token_mint_info: &AccountInfo<'a>,
     token_account_owner_info: &AccountInfo<'a>,
     program_id: &Pubkey,
@@ -85,7 +86,7 @@ pub fn create_spl_token_account_signed<'a>(
     );
 
     let (account_address, bump_seed) =
-        Pubkey::find_program_address(&token_account_address_seeds[..], program_id);
+        Pubkey::find_program_address(&token_account_address_seeds, program_id);
 
     if account_address != *token_account_info.key {
         msg!(
@@ -214,13 +215,12 @@ pub fn transfer_spl_tokens_signed<'a>(
     source_info: &AccountInfo<'a>,
     destination_info: &AccountInfo<'a>,
     authority_info: &AccountInfo<'a>,
-    authority_seeds: &Vec<&[u8]>,
+    authority_seeds: &[&[u8]],
     program_id: &Pubkey,
     amount: u64,
     spl_token_info: &AccountInfo<'a>,
 ) -> ProgramResult {
-    let (authority_address, bump_seed) =
-        Pubkey::find_program_address(&authority_seeds[..], program_id);
+    let (authority_address, bump_seed) = Pubkey::find_program_address(&authority_seeds, program_id);
 
     if authority_address != *authority_info.key {
         msg!(
@@ -264,13 +264,13 @@ pub fn mint_spl_tokens_signed<'a>(
     token_mint_info: &AccountInfo<'a>,
     token_account_info: &AccountInfo<'a>,
     mint_authority_info: &AccountInfo<'a>,
-    mint_authority_seeds: &Vec<&[u8]>,
+    mint_authority_seeds: &[&[u8]],
     program_id: &Pubkey,
     amount: u64,
     spl_token_info: &AccountInfo<'a>,
 ) -> ProgramResult {
     let (mint_authority_address, bump_seed) =
-        Pubkey::find_program_address(&mint_authority_seeds[..], program_id);
+        Pubkey::find_program_address(&mint_authority_seeds, program_id);
 
     if mint_authority_address != *mint_authority_info.key {
         msg!(
@@ -311,13 +311,14 @@ pub fn mint_spl_tokens_signed<'a>(
 /// Creates SPL Token Mint and Token Account with 1 token minted
 /// The Token Mint authority is PDA with the provided seeds
 /// This Token setup is used to grant permission expressed via the SPL token possession
+#[allow(clippy::too_many_arguments)]
 pub fn setup_spl_token_permission_scheme_signed<'a>(
     payer_info: &AccountInfo<'a>,
     token_account_info: &AccountInfo<'a>,
     token_account_owner_info: &AccountInfo<'a>,
     mint_account_info: &AccountInfo<'a>,
     mint_authority_info: &AccountInfo<'a>,
-    mint_authority_seeds: &Vec<&[u8]>,
+    mint_authority_seeds: &[&[u8]],
     program_id: &Pubkey,
     system_info: &AccountInfo<'a>,
     spl_token_info: &AccountInfo<'a>,
