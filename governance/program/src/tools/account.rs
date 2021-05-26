@@ -9,7 +9,7 @@ use solana_program::{
     program_pack::IsInitialized,
     pubkey::Pubkey,
     rent::Rent,
-    system_instruction::create_account,
+    system_instruction::{create_account, transfer},
 };
 
 use crate::error::GovernanceError;
@@ -117,4 +117,41 @@ pub fn deserialize_account<T: BorshDeserialize + IsInitialized>(
     } else {
         Ok(account)
     }
+}
+
+/// Transfers lamports between accounts using the provided seeds to invoke signed CPI call
+/// Note: This functions also checks the provided account PDA matches the supplied seeds
+pub fn transfer_signed<'a>(
+    from_info: &AccountInfo<'a>,
+    from_seeds: &[&[u8]],
+    to_info: &AccountInfo<'a>,
+    lamports: u64,
+    program_id: &Pubkey,
+    system_info: &AccountInfo<'a>,
+) -> Result<(), ProgramError> {
+    // Get PDA and assert it's the same as the requested account address
+    let (from_address, bump_seed) = Pubkey::find_program_address(from_seeds, program_id);
+
+    if from_address != *from_info.key {
+        msg!(
+            "Transfer from account with PDA: {:?} was requested while PDA: {:?} was expected",
+            from_info.key,
+            from_address
+        );
+        return Err(ProgramError::InvalidSeeds);
+    }
+
+    let transfer_instruction = transfer(from_info.key, to_info.key, lamports);
+
+    let mut signers_seeds = from_seeds.to_vec();
+    let bump = &[bump_seed];
+    signers_seeds.push(bump);
+
+    invoke_signed(
+        &transfer_instruction,
+        &[from_info.clone(), to_info.clone(), system_info.clone()],
+        &[&signers_seeds[..]],
+    )?;
+
+    Ok(())
 }

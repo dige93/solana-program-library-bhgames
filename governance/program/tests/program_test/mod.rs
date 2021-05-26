@@ -788,6 +788,38 @@ impl GovernanceProgramTest {
             .unwrap();
     }
 
+    #[allow(dead_code)]
+    pub async fn create_empty_token_account(
+        &mut self,
+        token_account_keypair: &Keypair,
+        token_mint: &Pubkey,
+        owner: &Pubkey,
+    ) {
+        let create_account_instruction = system_instruction::create_account(
+            &self.payer.pubkey(),
+            &token_account_keypair.pubkey(),
+            self.rent
+                .minimum_balance(spl_token::state::Account::get_packed_len()),
+            spl_token::state::Account::get_packed_len() as u64,
+            &spl_token::id(),
+        );
+
+        let initialize_account_instruction = spl_token::instruction::initialize_account(
+            &spl_token::id(),
+            &token_account_keypair.pubkey(),
+            token_mint,
+            &owner,
+        )
+        .unwrap();
+
+        self.process_transaction(
+            &[create_account_instruction, initialize_account_instruction],
+            Some(&[&token_account_keypair]),
+        )
+        .await
+        .unwrap();
+    }
+
     pub async fn create_token_account(
         &mut self,
         token_account_keypair: &Keypair,

@@ -308,6 +308,55 @@ pub fn mint_spl_tokens_signed<'a>(
     Ok(())
 }
 
+/// Burns SPL Tokens using the provided PDA mint authority with seeds
+pub fn burn_spl_tokens_signed<'a>(
+    token_account_info: &AccountInfo<'a>,
+    token_mint_info: &AccountInfo<'a>,
+    token_account_authority_info: &AccountInfo<'a>,
+    token_account_authority_seeds: &[&[u8]],
+    program_id: &Pubkey,
+    amount: u64,
+    spl_token_info: &AccountInfo<'a>,
+) -> ProgramResult {
+    let (token_authority_address, bump_seed) =
+        Pubkey::find_program_address(&token_account_authority_seeds, program_id);
+
+    if token_authority_address != *token_account_authority_info.key {
+        msg!(
+            "Burn SPL Token with account Authority PDA: {:?} was requested while PDA: {:?} was expected",
+            token_account_authority_info.key,
+            token_authority_address
+        );
+        return Err(ProgramError::InvalidSeeds);
+    }
+
+    let burn_instruction = spl_token::instruction::burn(
+        &spl_token::id(),
+        token_account_info.key,
+        &token_mint_info.key,
+        token_account_authority_info.key,
+        &[],
+        amount,
+    )?;
+
+    let mut signers_seeds = token_account_authority_seeds.to_vec();
+    let bump = &[bump_seed];
+    signers_seeds.push(bump);
+
+    invoke_signed(
+        &burn_instruction,
+        &[
+            spl_token_info.clone(),
+            token_account_info.clone(),
+            token_mint_info.clone(),
+            token_account_authority_info.clone(),
+        ],
+        &[&signers_seeds[..]],
+    )?;
+
+    Ok(())
+}
+
 /// Creates SPL Token Mint and Token Account with 1 token minted
 /// The Token Mint authority is PDA with the provided seeds
 /// This Token setup is used to grant permission expressed via the SPL token possession

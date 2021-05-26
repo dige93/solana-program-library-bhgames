@@ -98,6 +98,7 @@ pub fn process_create_proposal(
         system_info,
     )?;
 
+    /// Should we check PDA in deserialize?
     let mut account_governance_data: AccountGovernance =
         deserialize_account_governance(account_governance_info)?;
 
