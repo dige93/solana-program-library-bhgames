@@ -28,6 +28,7 @@ assert_matches = "1.5.0"
 proptest = "0.10"
 solana-program-test = "1.6.7"
 solana-sdk = "1.6.7"
+base64 = "0.13"
 
 [lib]
 crate-type = ["cdylib", "lib"]

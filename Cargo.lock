@@ -3762,6 +3762,7 @@ version = "0.1.0"
 dependencies = [
  "arrayref",
  "assert_matches",
+ "base64 0.13.0",
  "bincode",
  "borsh",
  "num-derive",
