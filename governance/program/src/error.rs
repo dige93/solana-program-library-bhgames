@@ -83,6 +83,10 @@ pub enum GovernanceError {
     #[error("Invalid Governance config")]
     InvalidGovernanceConfig,
 
+    /// Invalid governed account
+    #[error("Invalid governed account")]
+    InvalidGovernedAccount,
+
     /// Proposal for the given Governance, Governing Token Mint and index already exists
     #[error("Proposal for the given Governance, Governing Token Mint and index already exists")]
     ProposalAlreadyExists,

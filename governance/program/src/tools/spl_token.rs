@@ -204,6 +204,11 @@ pub fn assert_is_valid_spl_token_mint(mint_info: &AccountInfo) -> Result<(), Pro
     Ok(())
 }
 
+/// Returns true if the given account is SPL Token mint account
+pub fn is_spl_token_mint_account(account_info: &AccountInfo) -> bool {
+    account_info.owner == &spl_token::id() && account_info.data_len() == Mint::LEN
+}
+
 /// Computationally cheap method to get amount from a token account
 /// It reads amount without deserializing full account data
 pub fn get_spl_token_amount(token_account_info: &AccountInfo) -> Result<u64, ProgramError> {

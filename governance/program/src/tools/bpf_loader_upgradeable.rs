@@ -94,3 +94,8 @@ pub fn assert_program_upgrade_authority_is_signer(
 
     Ok(())
 }
+
+/// Returns true if the given account is bpf_loader_upgradeable program
+pub fn is_bpf_loader_upgradable_program_account(account_info: &AccountInfo) -> bool {
+    account_info.owner == &bpf_loader_upgradeable::id() && account_info.executable
+}

@@ -4,8 +4,8 @@ use crate::{
     state::{
         enums::GovernanceAccountType,
         governance::{
-            assert_is_valid_governance_config, get_account_governance_address_seeds, Governance,
-            GovernanceConfig,
+            assert_is_valid_governance_config, assert_is_valid_governed_account,
+            get_account_governance_address_seeds, Governance, GovernanceConfig,
         },
     },
     tools::account::create_and_serialize_account_signed,
@@ -27,13 +27,15 @@ pub fn process_create_account_governance(
     let account_info_iter = &mut accounts.iter();
 
     let realm_info = next_account_info(account_info_iter)?; // 0
-    let account_governance_info = next_account_info(account_info_iter)?; // 0
-    let payer_info = next_account_info(account_info_iter)?; // 1
-    let system_info = next_account_info(account_info_iter)?; // 2
+    let account_governance_info = next_account_info(account_info_iter)?; // 1
+    let governed_account_info = next_account_info(account_info_iter)?; // 2
+    let payer_info = next_account_info(account_info_iter)?; // 3
+    let system_info = next_account_info(account_info_iter)?; // 4
 
-    let rent_sysvar_info = next_account_info(account_info_iter)?; // 3
+    let rent_sysvar_info = next_account_info(account_info_iter)?; // 5
     let rent = &Rent::from_account_info(rent_sysvar_info)?;
 
+    assert_is_valid_governed_account(governed_account_info)?;
     assert_is_valid_governance_config(program_id, &config, realm_info)?;
 
     let account_governance_data = Governance {

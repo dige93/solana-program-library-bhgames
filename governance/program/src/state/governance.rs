@@ -1,8 +1,12 @@
 //! Governance Account
 
 use crate::{
-    error::GovernanceError, state::enums::GovernanceAccountType, tools::account::get_account_data,
-    tools::account::AccountMaxSize,
+    error::GovernanceError,
+    state::enums::GovernanceAccountType,
+    tools::{
+        account::get_account_data, bpf_loader_upgradeable::is_bpf_loader_upgradable_program_account,
+    },
+    tools::{account::AccountMaxSize, spl_token::is_spl_token_mint_account},
 };
 use borsh::{BorshDeserialize, BorshSchema, BorshSerialize};
 use solana_program::{
@@ -183,6 +187,19 @@ pub fn assert_is_valid_governance_config(
         || governance_config.yes_vote_threshold_percentage > 100
     {
         return Err(GovernanceError::InvalidGovernanceConfig.into());
+    }
+
+    Ok(())
+}
+
+/// Asserts the given account can be governed by AccountGovernance
+pub fn assert_is_valid_governed_account(account_info: &AccountInfo) -> Result<(), ProgramError> {
+    // SPL Token mint and Upgradable programs are not valid because governance for them should be created using their specific instructions
+    //  CreateMintGovernance and CreateProgramGovernance accordingly
+    if is_spl_token_mint_account(account_info)
+        || is_bpf_loader_upgradable_program_account(account_info)
+    {
+        return Err(GovernanceError::InvalidGovernedAccount.into());
     }
 
     Ok(())

@@ -102,9 +102,10 @@ pub enum GovernanceInstruction {
     ///
     ///   0. `[]` Realm account the created Governance belongs to
     ///   1. `[writable]` Account Governance account. PDA seeds: ['account-governance', realm, governed_account]
-    ///   2. `[signer]` Payer
-    ///   3. `[]` System program
-    ///   4. `[]` Sysvar Rent
+    ///   2  `[]` Account governed by this Governance
+    ///   3. `[signer]` Payer
+    ///   4. `[]` System program
+    ///   5. `[]` Sysvar Rent
     CreateAccountGovernance {
         /// Governance config
         #[allow(dead_code)]
@@ -486,6 +487,7 @@ pub fn create_account_governance(
     let accounts = vec![
         AccountMeta::new_readonly(config.realm, false),
         AccountMeta::new(account_governance_address, false),
+        AccountMeta::new_readonly(config.governed_account, false),
         AccountMeta::new_readonly(*payer, true),
         AccountMeta::new_readonly(system_program::id(), false),
         AccountMeta::new_readonly(sysvar::rent::id(), false),
