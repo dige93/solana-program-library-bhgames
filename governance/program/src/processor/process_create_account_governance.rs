@@ -43,7 +43,7 @@ pub fn process_create_account_governance(
         governed_account: *governed_account_info.key,
         config,
         proposals_count: 0,
-        reserved: [0; 8],
+        //reserved: [0; 8],
     };
 
     create_and_serialize_account_signed::<Governance>(

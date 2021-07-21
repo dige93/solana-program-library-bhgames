@@ -699,7 +699,7 @@ impl GovernanceProgramTest {
             governed_account: governed_account_cookie.address,
             config: governance_config.clone(),
             proposals_count: 0,
-            reserved: [0; 8],
+            // reserved: [0; 8],
         };
 
         self.process_transaction(&[create_account_governance_instruction], None)
@@ -838,7 +838,7 @@ impl GovernanceProgramTest {
             governed_account: governed_program_cookie.address,
             config,
             proposals_count: 0,
-            reserved: [0; 8],
+            //reserved: [0; 8],
         };
 
         let program_governance_address = get_program_governance_address(
@@ -903,7 +903,7 @@ impl GovernanceProgramTest {
             governed_account: governed_mint_cookie.address,
             config,
             proposals_count: 0,
-            reserved: [0; 8],
+            // reserved: [0; 8],
         };
 
         let mint_governance_address = get_mint_governance_address(
@@ -968,7 +968,7 @@ impl GovernanceProgramTest {
             governed_account: governed_token_cookie.address,
             config,
             proposals_count: 0,
-            reserved: [0; 8],
+            //reserved: [0; 8],
         };
 
         let token_governance_address = get_token_governance_address(

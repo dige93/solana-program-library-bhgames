@@ -62,9 +62,9 @@ pub struct Governance {
 
     /// Running count of proposals
     pub proposals_count: u32,
-
-    /// Reserved space for future versions
-    pub reserved: [u8; 8],
+    // Reserved space for future versions
+    // temp. comment out to make it compatible with devnet state
+    // pub reserved: [u8; 8],
 }
 
 impl AccountMaxSize for Governance {}
