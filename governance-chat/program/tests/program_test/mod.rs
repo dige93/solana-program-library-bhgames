@@ -18,80 +18,10 @@ use self::cookies::MessageCookie;
 
 pub mod cookies;
 
-pub struct ProgramTestBench {
-    pub context: ProgramTestContext,
-    pub rent: Rent,
-    pub payer: Keypair,
-}
-
-impl ProgramTestBench {
-    pub async fn start_new() -> Self {
-        let program_id = Pubkey::from_str("GovernanceChat11111111111111111111111111111").unwrap();
-
-        let mut pt = ProgramTest::default();
-
-        pt.add_program(
-            "spl_governance_chat",
-            program_id,
-            processor!(process_instruction),
-        );
-
-        // let governance_program_id =
-        //     Pubkey::from_str("Governance111111111111111111111111111111111").unwrap();
-
-        // program_test.add_program(
-        //     "spl_governance",
-        //     governance_program_id,
-        //     processor!(spl_governance::processor::process_instruction),
-        // );
-
-        let mut context = pt.start_with_context().await;
-        let rent = context.banks_client.get_rent().await.unwrap();
-        let payer = clone_keypair(&context.payer);
-
-        Self {
-            context,
-            rent,
-            payer,
-        }
-    }
-
-    pub async fn process_transaction(
-        &mut self,
-        instructions: &[Instruction],
-        signers: Option<&[&Keypair]>,
-    ) -> Result<(), ProgramError> {
-        let mut transaction =
-            Transaction::new_with_payer(instructions, Some(&self.context.payer.pubkey()));
-
-        let mut all_signers = vec![&self.context.payer];
-
-        if let Some(signers) = signers {
-            all_signers.extend_from_slice(signers);
-        }
-
-        let recent_blockhash = self
-            .context
-            .banks_client
-            .get_recent_blockhash()
-            .await
-            .unwrap();
-
-        transaction.sign(&all_signers, recent_blockhash);
-
-        self.context
-            .banks_client
-            .process_transaction(transaction)
-            .await
-            .map_err(map_transaction_error)?;
-
-        Ok(())
-    }
-}
-
 pub struct GovernanceChatProgramTest {
     pub governance: GovernanceProgramTest,
     pub program_id: Pubkey,
+    pub payer: Keypair,
 }
 
 impl GovernanceChatProgramTest {
@@ -104,26 +34,25 @@ impl GovernanceChatProgramTest {
         };
 
         let bench = GovernanceProgramTest::start_with_programs(&[program]).await;
+        let payer = clone_keypair(&bench.context.payer);
 
         Self {
             governance: bench,
             program_id,
+            payer,
         }
     }
 
     pub fn bench(&mut self) -> &mut GovernanceProgramTest {
-        &self.governance
+        &mut self.governance
     }
 
     #[allow(dead_code)]
     pub async fn with_message(&mut self) -> MessageCookie {
         let proposal = Pubkey::new_unique();
 
-        let post_message_ix = post_message(
-            &self.program_id,
-            &self.bench().context.payer.pubkey(),
-            &self.bench().context.payer.pubkey(),
-        );
+        let post_message_ix =
+            post_message(&self.program_id, &self.payer.pubkey(), &self.payer.pubkey());
 
         let message = Message {
             proposal: Pubkey::new_unique(),
