@@ -1,4 +1,4 @@
-use std::str::FromStr;
+use std::{borrow::Borrow, rc::Rc, str::FromStr};
 
 use solana_program::{
     instruction::Instruction, program_error::ProgramError, pubkey::Pubkey, rent::Rent,
@@ -9,46 +9,50 @@ use solana_sdk::{signature::Keypair, signer::Signer, transaction::Transaction};
 use spl_governance_chat::{
     instruction::post_message, processor::process_instruction, state::Message,
 };
-use spl_governance_test_sdk::tools::map_transaction_error;
+use spl_governance_test_sdk::{
+    tools::{clone_keypair, map_transaction_error},
+    GovernanceProgramTest, TestBenchProgram,
+};
 
 use self::cookies::MessageCookie;
 
 pub mod cookies;
 
-pub struct GovernanceChatProgramTest {
+pub struct ProgramTestBench {
     pub context: ProgramTestContext,
     pub rent: Rent,
-    pub next_realm_id: u8,
-    pub program_id: Pubkey,
+    pub payer: Keypair,
 }
 
-impl GovernanceChatProgramTest {
+impl ProgramTestBench {
     pub async fn start_new() -> Self {
         let program_id = Pubkey::from_str("GovernanceChat11111111111111111111111111111").unwrap();
 
-        let mut program_test = ProgramTest::new(
+        let mut pt = ProgramTest::default();
+
+        pt.add_program(
             "spl_governance_chat",
             program_id,
             processor!(process_instruction),
         );
 
-        let governance_program_id =
-            Pubkey::from_str("Governance111111111111111111111111111111111").unwrap();
+        // let governance_program_id =
+        //     Pubkey::from_str("Governance111111111111111111111111111111111").unwrap();
 
-        program_test.add_program(
-            "spl_governance",
-            governance_program_id,
-            processor!(spl_governance::processor::process_instruction),
-        );
+        // program_test.add_program(
+        //     "spl_governance",
+        //     governance_program_id,
+        //     processor!(spl_governance::processor::process_instruction),
+        // );
 
-        let mut context = program_test.start_with_context().await;
+        let mut context = pt.start_with_context().await;
         let rent = context.banks_client.get_rent().await.unwrap();
+        let payer = clone_keypair(&context.payer);
 
         Self {
             context,
             rent,
-            next_realm_id: 0,
-            program_id,
+            payer,
         }
     }
 
@@ -83,6 +87,33 @@ impl GovernanceChatProgramTest {
 
         Ok(())
     }
+}
+
+pub struct GovernanceChatProgramTest {
+    pub governance: GovernanceProgramTest,
+    pub program_id: Pubkey,
+}
+
+impl GovernanceChatProgramTest {
+    pub async fn start_new() -> Self {
+        let program_id = Pubkey::from_str("GovernanceChat11111111111111111111111111111").unwrap();
+        let program = TestBenchProgram {
+            program_name: "spl_governance_chat",
+            program_id: program_id,
+            process_instruction: processor!(process_instruction),
+        };
+
+        let bench = GovernanceProgramTest::start_with_programs(&[program]).await;
+
+        Self {
+            governance: bench,
+            program_id,
+        }
+    }
+
+    pub fn bench(&mut self) -> &mut GovernanceProgramTest {
+        &self.governance
+    }
 
     #[allow(dead_code)]
     pub async fn with_message(&mut self) -> MessageCookie {
@@ -90,8 +121,8 @@ impl GovernanceChatProgramTest {
 
         let post_message_ix = post_message(
             &self.program_id,
-            &self.context.payer.pubkey(),
-            &self.context.payer.pubkey(),
+            &self.bench().context.payer.pubkey(),
+            &self.bench().context.payer.pubkey(),
         );
 
         let message = Message {
@@ -102,7 +133,8 @@ impl GovernanceChatProgramTest {
             body: "post ".to_string(),
         };
 
-        self.process_transaction(&[post_message_ix], None)
+        self.bench()
+            .process_transaction(&[post_message_ix], None)
             .await
             .unwrap();
 

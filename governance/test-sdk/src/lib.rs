@@ -24,6 +24,7 @@ use solana_program_test::*;
 
 use solana_sdk::{
     account::Account,
+    process_instruction::ProcessInstructionWithContext,
     signature::{Keypair, Signer},
     transaction::Transaction,
 };
@@ -79,6 +80,12 @@ pub struct GovernanceProgramTest {
     pub program_id: Pubkey,
 }
 
+pub struct TestBenchProgram<'a> {
+    pub program_name: &'a str,
+    pub program_id: Pubkey,
+    pub process_instruction: Option<ProcessInstructionWithContext>,
+}
+
 impl GovernanceProgramTest {
     pub async fn start_new() -> Self {
         let program_id = Pubkey::from_str("Governance111111111111111111111111111111111").unwrap();
@@ -88,6 +95,34 @@ impl GovernanceProgramTest {
             program_id,
             processor!(process_instruction),
         );
+
+        let mut context = program_test.start_with_context().await;
+        let rent = context.banks_client.get_rent().await.unwrap();
+
+        Self {
+            context,
+            rent,
+            next_realm_id: 0,
+            program_id,
+        }
+    }
+
+    pub async fn start_with_programs<'a>(programs: &[TestBenchProgram<'a>]) -> Self {
+        let program_id = Pubkey::from_str("Governance111111111111111111111111111111111").unwrap();
+
+        let mut program_test = ProgramTest::new(
+            "spl_governance",
+            program_id,
+            processor!(process_instruction),
+        );
+
+        for program in programs {
+            program_test.add_program(
+                program.program_name,
+                program.program_id,
+                program.process_instruction,
+            )
+        }
 
         let mut context = program_test.start_with_context().await;
         let rent = context.banks_client.get_rent().await.unwrap();
