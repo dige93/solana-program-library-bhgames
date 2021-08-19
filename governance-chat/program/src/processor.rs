@@ -32,8 +32,8 @@ pub fn process_instruction(
 pub fn process_post_message(program_id: &Pubkey, accounts: &[AccountInfo]) -> ProgramResult {
     let account_info_iter = &mut accounts.iter();
 
-    // let proposal_info = next_account_info(account_info_iter)?; // 0
-    // let mut proposal_data = get_proposal_data(program_id, proposal_info)?;
+    let proposal_info = next_account_info(account_info_iter)?; // 0
+                                                               // let mut _proposal_data = get_proposal_data(program_id, proposal_info)?;
 
     Ok(())
 }

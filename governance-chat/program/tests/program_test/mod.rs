@@ -9,9 +9,9 @@ use solana_sdk::{signature::Keypair, signer::Signer, transaction::Transaction};
 use spl_governance_chat::{
     instruction::post_message, processor::process_instruction, state::Message,
 };
+use spl_governance_test_sdk::tools::map_transaction_error;
 
-pub mod tools;
-use self::{cookies::MessageCookie, tools::map_transaction_error};
+use self::cookies::MessageCookie;
 
 pub mod cookies;
 
@@ -26,10 +26,19 @@ impl GovernanceChatProgramTest {
     pub async fn start_new() -> Self {
         let program_id = Pubkey::from_str("GovernanceChat11111111111111111111111111111").unwrap();
 
-        let program_test = ProgramTest::new(
+        let mut program_test = ProgramTest::new(
             "spl_governance_chat",
             program_id,
             processor!(process_instruction),
+        );
+
+        let governance_program_id =
+            Pubkey::from_str("Governance111111111111111111111111111111111").unwrap();
+
+        program_test.add_program(
+            "spl_governance",
+            governance_program_id,
+            processor!(spl_governance::processor::process_instruction),
         );
 
         let mut context = program_test.start_with_context().await;

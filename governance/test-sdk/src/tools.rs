@@ -1,3 +1,5 @@
+//#![cfg(feature = "test-bpf")]
+
 use std::convert::TryFrom;
 
 use solana_program::{instruction::InstructionError, program_error::ProgramError};

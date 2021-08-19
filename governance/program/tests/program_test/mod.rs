@@ -1,3 +1,5 @@
+#![cfg(feature = "test-bpf")]
+
 use std::{borrow::Borrow, str::FromStr};
 
 use borsh::BorshDeserialize;
@@ -58,20 +60,16 @@ use spl_governance::{
     tools::bpf_loader_upgradeable::get_program_data_address,
 };
 
-pub mod cookies;
-use crate::program_test::{cookies::SignatoryRecordCookie, tools::clone_keypair};
+mod cookies;
+use crate::program_test::cookies::SignatoryRecordCookie;
 
-use self::{
-    cookies::{
-        GovernanceCookie, GovernedAccountCookie, GovernedMintCookie, GovernedProgramCookie,
-        GovernedTokenCookie, ProposalCookie, ProposalInstructionCookie, RealmCookie,
-        TokenAccountCookie, TokenOwnerRecordCookie, VoteRecordCookie,
-    },
-    tools::NopOverride,
+use crate::program_test::cookies::{
+    GovernanceCookie, GovernedAccountCookie, GovernedMintCookie, GovernedProgramCookie,
+    GovernedTokenCookie, ProposalCookie, ProposalInstructionCookie, RealmCookie,
+    TokenAccountCookie, TokenOwnerRecordCookie, VoteRecordCookie,
 };
 
-pub mod tools;
-use self::tools::map_transaction_error;
+use spl_governance_test_sdk::tools::{clone_keypair, map_transaction_error, NopOverride};
 
 pub struct GovernanceProgramTest {
     pub context: ProgramTestContext,
