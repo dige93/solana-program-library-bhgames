@@ -4,9 +4,13 @@ use crate::instruction::GovernanceChatInstruction;
 use borsh::BorshDeserialize;
 
 use solana_program::{
-    account_info::AccountInfo, entrypoint::ProgramResult, msg, program_error::ProgramError,
+    account_info::{next_account_info, AccountInfo},
+    entrypoint::ProgramResult,
+    msg,
+    program_error::ProgramError,
     pubkey::Pubkey,
 };
+use spl_governance::state::proposal::get_proposal_data;
 
 /// Processes an instruction
 pub fn process_instruction(
@@ -25,6 +29,11 @@ pub fn process_instruction(
 }
 
 /// Processes PostMessage instruction
-pub fn process_post_message(_program_id: &Pubkey, _accounts: &[AccountInfo]) -> ProgramResult {
+pub fn process_post_message(program_id: &Pubkey, accounts: &[AccountInfo]) -> ProgramResult {
+    let account_info_iter = &mut accounts.iter();
+
+    // let proposal_info = next_account_info(account_info_iter)?; // 0
+    // let mut proposal_data = get_proposal_data(program_id, proposal_info)?;
+
     Ok(())
 }

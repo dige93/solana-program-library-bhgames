@@ -6,10 +6,14 @@ use solana_program::{
 use solana_program_test::{processor, ProgramTest, ProgramTestContext};
 
 use solana_sdk::{signature::Keypair, signer::Signer, transaction::Transaction};
-use spl_governance_chat::processor::process_instruction;
+use spl_governance_chat::{
+    instruction::post_message, processor::process_instruction, state::Message,
+};
 
 pub mod tools;
-use self::tools::map_transaction_error;
+use self::{cookies::MessageCookie, tools::map_transaction_error};
+
+pub mod cookies;
 
 pub struct GovernanceChatProgramTest {
     pub context: ProgramTestContext,
@@ -69,5 +73,33 @@ impl GovernanceChatProgramTest {
             .map_err(map_transaction_error)?;
 
         Ok(())
+    }
+
+    #[allow(dead_code)]
+    pub async fn with_message(&mut self) -> MessageCookie {
+        let proposal = Pubkey::new_unique();
+
+        let post_message_ix = post_message(
+            &self.program_id,
+            &self.context.payer.pubkey(),
+            &self.context.payer.pubkey(),
+        );
+
+        let message = Message {
+            proposal: Pubkey::new_unique(),
+            author: Pubkey::new_unique(),
+            post_at: 10,
+            parent: None,
+            body: "post ".to_string(),
+        };
+
+        self.process_transaction(&[post_message_ix], None)
+            .await
+            .unwrap();
+
+        MessageCookie {
+            address: Pubkey::new_unique(),
+            account: message,
+        }
     }
 }

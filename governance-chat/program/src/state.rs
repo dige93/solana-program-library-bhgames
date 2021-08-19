@@ -7,17 +7,17 @@ use solana_program::{clock::UnixTimestamp, pubkey::Pubkey};
 #[derive(Clone, Debug, PartialEq, BorshDeserialize, BorshSerialize, BorshSchema)]
 pub struct Message {
     /// The proposal the message is for
-    proposal: Pubkey,
+    pub proposal: Pubkey,
 
     /// Author of the proposal
-    author: Pubkey,
+    pub author: Pubkey,
 
     /// Message timestamp
     pub post_at: UnixTimestamp,
 
     /// Parent message
-    parent: Option<Pubkey>,
+    pub parent: Option<Pubkey>,
 
     /// Body of the message
-    body: String,
+    pub body: String,
 }
