@@ -1,4 +1,4 @@
-#![cfg(feature = "test-bpf-all")]
+#![cfg(feature = "test-bpf")]
 
 mod program_test;
 

@@ -7,7 +7,8 @@ use spl_governance::state::{
     realm::Realm, signatory_record::SignatoryRecord, token_owner_record::TokenOwnerRecord,
     vote_record::VoteRecord,
 };
-use spl_governance_test_sdk::tools::clone_keypair;
+
+use crate::tools::clone_keypair;
 
 //use crate::tools::clone_keypair;
 
