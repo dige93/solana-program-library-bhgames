@@ -1,7 +1,5 @@
 #![cfg(feature = "test-bpf")]
 
-mod program_test;
-
 use solana_program::{
     instruction::{AccountMeta, Instruction},
     program_error::ProgramError,
@@ -9,12 +7,12 @@ use solana_program::{
 };
 use solana_program_test::tokio;
 
-use program_test::*;
 use spl_governance::{
     error::GovernanceError,
     instruction::Vote,
     state::enums::{InstructionExecutionStatus, ProposalState},
 };
+use spl_governance_test_sdk::GovernanceProgramTest;
 
 #[tokio::test]
 async fn test_execute_mint_instruction() {

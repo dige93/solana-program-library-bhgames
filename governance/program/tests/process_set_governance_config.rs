@@ -1,8 +1,5 @@
 #![cfg(feature = "test-bpf")]
 
-mod program_test;
-
-use program_test::*;
 use solana_program_test::tokio;
 use solana_sdk::{signature::Keypair, signer::Signer};
 use spl_governance::{
@@ -10,6 +7,7 @@ use spl_governance::{
     instruction::{set_governance_config, Vote},
     state::enums::VoteThresholdPercentage,
 };
+use spl_governance_test_sdk::GovernanceProgramTest;
 
 use spl_governance_test_sdk::tools::ProgramInstructionError;
 

@@ -2,10 +2,8 @@
 
 use solana_program_test::*;
 
-mod program_test;
-
-use program_test::*;
 use spl_governance::state::{enums::MintMaxVoteWeightSource, realm::RealmConfigArgs};
+use spl_governance_test_sdk::GovernanceProgramTest;
 
 #[tokio::test]
 async fn test_create_realm() {

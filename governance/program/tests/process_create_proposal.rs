@@ -3,11 +3,9 @@
 use solana_program::{instruction::AccountMeta, pubkey::Pubkey};
 use solana_program_test::*;
 
-mod program_test;
-
-use program_test::*;
 use solana_sdk::signature::Keypair;
 use spl_governance::error::GovernanceError;
+use spl_governance_test_sdk::GovernanceProgramTest;
 
 #[tokio::test]
 async fn test_create_community_proposal() {

@@ -1,11 +1,9 @@
 #![cfg(feature = "test-bpf")]
 
-mod program_test;
-
 use solana_program_test::tokio;
 
-use program_test::*;
 use spl_governance::{error::GovernanceError, instruction::Vote, state::enums::ProposalState};
+use spl_governance_test_sdk::GovernanceProgramTest;
 
 #[tokio::test]
 async fn test_cancel_proposal() {
