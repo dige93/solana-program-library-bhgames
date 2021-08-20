@@ -34,7 +34,7 @@ impl GovernanceChatProgramTest {
         };
 
         let bench = GovernanceProgramTest::start_with_programs(&[program]).await;
-        let payer = clone_keypair(&bench.context.payer);
+        let payer = clone_keypair(&bench.bench.payer);
 
         Self {
             governance: bench,

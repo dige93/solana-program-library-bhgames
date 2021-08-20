@@ -28,6 +28,7 @@ use solana_sdk::{
     signature::{Keypair, Signer},
     transaction::Transaction,
 };
+
 use spl_governance::{
     instruction::{
         add_signatory, cancel_proposal, cast_vote, create_account_governance,
@@ -73,48 +74,22 @@ use crate::cookies::{
 
 use crate::tools::{clone_keypair, map_transaction_error, NopOverride};
 
-pub struct GovernanceProgramTest {
-    pub context: ProgramTestContext,
-    pub rent: Rent,
-    pub next_realm_id: u8,
-    pub program_id: Pubkey,
-}
-
+#[derive(Clone)]
 pub struct TestBenchProgram<'a> {
     pub program_name: &'a str,
     pub program_id: Pubkey,
     pub process_instruction: Option<ProcessInstructionWithContext>,
 }
 
-impl GovernanceProgramTest {
-    pub async fn start_new() -> Self {
-        let program_id = Pubkey::from_str("Governance111111111111111111111111111111111").unwrap();
+pub struct ProgramTestBench {
+    pub context: ProgramTestContext,
+    pub rent: Rent,
+    pub payer: Keypair,
+}
 
-        let program_test = ProgramTest::new(
-            "spl_governance",
-            program_id,
-            processor!(process_instruction),
-        );
-
-        let mut context = program_test.start_with_context().await;
-        let rent = context.banks_client.get_rent().await.unwrap();
-
-        Self {
-            context,
-            rent,
-            next_realm_id: 0,
-            program_id,
-        }
-    }
-
+impl ProgramTestBench {
     pub async fn start_with_programs<'a>(programs: &[TestBenchProgram<'a>]) -> Self {
-        let program_id = Pubkey::from_str("Governance111111111111111111111111111111111").unwrap();
-
-        let mut program_test = ProgramTest::new(
-            "spl_governance",
-            program_id,
-            processor!(process_instruction),
-        );
+        let mut program_test = ProgramTest::default();
 
         for program in programs {
             program_test.add_program(
@@ -127,9 +102,43 @@ impl GovernanceProgramTest {
         let mut context = program_test.start_with_context().await;
         let rent = context.banks_client.get_rent().await.unwrap();
 
+        let payer = clone_keypair(&context.payer);
+
         Self {
             context,
             rent,
+            payer,
+        }
+    }
+}
+pub struct GovernanceProgramTest {
+    pub bench: ProgramTestBench,
+
+    pub next_realm_id: u8,
+    pub program_id: Pubkey,
+}
+
+impl GovernanceProgramTest {
+    pub async fn start_new() -> Self {
+        Self::start_with_programs(&[]).await
+    }
+
+    pub async fn start_with_programs<'a>(programs: &[TestBenchProgram<'a>]) -> Self {
+        let program_id = Pubkey::from_str("Governance111111111111111111111111111111111").unwrap();
+
+        let program = TestBenchProgram {
+            program_name: "spl_governance",
+            program_id,
+            process_instruction: processor!(process_instruction),
+        };
+
+        let mut all_programs = programs.to_vec();
+        all_programs.push(program);
+
+        let bench = ProgramTestBench::start_with_programs(&all_programs).await;
+
+        Self {
+            bench,
             next_realm_id: 0,
             program_id,
         }
@@ -141,15 +150,16 @@ impl GovernanceProgramTest {
         signers: Option<&[&Keypair]>,
     ) -> Result<(), ProgramError> {
         let mut transaction =
-            Transaction::new_with_payer(instructions, Some(&self.context.payer.pubkey()));
+            Transaction::new_with_payer(instructions, Some(&self.bench.payer.pubkey()));
 
-        let mut all_signers = vec![&self.context.payer];
+        let mut all_signers = vec![&self.bench.payer];
 
         if let Some(signers) = signers {
             all_signers.extend_from_slice(signers);
         }
 
         let recent_blockhash = self
+            .bench
             .context
             .banks_client
             .get_recent_blockhash()
@@ -158,7 +168,8 @@ impl GovernanceProgramTest {
 
         transaction.sign(&all_signers, recent_blockhash);
 
-        self.context
+        self.bench
+            .context
             .banks_client
             .process_transaction(transaction)
             .await
@@ -239,7 +250,7 @@ impl GovernanceProgramTest {
             &self.program_id,
             &realm_authority.pubkey(),
             &community_token_mint_keypair.pubkey(),
-            &self.context.payer.pubkey(),
+            &self.bench.payer.pubkey(),
             council_token_mint_pubkey,
             name.clone(),
             config_args.min_community_tokens_to_create_governance,
@@ -299,7 +310,7 @@ impl GovernanceProgramTest {
             &self.program_id,
             &realm_authority.pubkey(),
             &realm_cookie.account.community_mint,
-            &self.context.payer.pubkey(),
+            &self.bench.payer.pubkey(),
             Some(council_mint),
             name.clone(),
             min_community_tokens_to_create_governance,
@@ -472,7 +483,7 @@ impl GovernanceProgramTest {
             &token_source.pubkey(),
             &token_owner.pubkey(),
             &token_owner.pubkey(),
-            &self.context.payer.pubkey(),
+            &self.bench.payer.pubkey(),
             governing_mint,
         );
 
@@ -524,7 +535,7 @@ impl GovernanceProgramTest {
         self.create_empty_token_account(
             &token_account_keypair,
             &realm_cookie.account.community_mint,
-            &self.context.payer.pubkey(),
+            &self.bench.payer.pubkey(),
         )
         .await;
 
@@ -560,7 +571,7 @@ impl GovernanceProgramTest {
             &token_owner_record_cookie.token_source,
             &token_owner_record_cookie.token_owner.pubkey(),
             &token_owner_record_cookie.token_owner.pubkey(),
-            &self.context.payer.pubkey(),
+            &self.bench.payer.pubkey(),
             governing_token_mint,
         );
 
@@ -887,7 +898,7 @@ impl GovernanceProgramTest {
             &realm_cookie.address,
             &governed_account_cookie.address,
             &token_owner_record_cookie.address,
-            &self.context.payer.pubkey(),
+            &self.bench.payer.pubkey(),
             governance_config.clone(),
         );
 
@@ -929,11 +940,12 @@ impl GovernanceProgramTest {
         let program_data = read_file(path_buf);
 
         let program_buffer_rent = self
+            .bench
             .rent
             .minimum_balance(UpgradeableLoaderState::programdata_len(program_data.len()).unwrap());
 
         let mut instructions = bpf_loader_upgradeable::create_buffer(
-            &self.context.payer.pubkey(),
+            &self.bench.payer.pubkey(),
             &program_buffer_keypair.pubkey(),
             &program_upgrade_authority_keypair.pubkey(),
             program_buffer_rent,
@@ -953,11 +965,12 @@ impl GovernanceProgramTest {
         }
 
         let program_account_rent = self
+            .bench
             .rent
             .minimum_balance(UpgradeableLoaderState::program_len().unwrap());
 
         let deploy_instructions = bpf_loader_upgradeable::deploy_with_max_program_len(
-            &self.context.payer.pubkey(),
+            &self.bench.payer.pubkey(),
             &program_keypair.pubkey(),
             &program_buffer_keypair.pubkey(),
             &program_upgrade_authority_keypair.pubkey(),
@@ -1021,7 +1034,7 @@ impl GovernanceProgramTest {
             &governed_program_cookie.address,
             &governed_program_cookie.upgrade_authority.pubkey(),
             &token_owner_record_cookie.address,
-            &self.context.payer.pubkey(),
+            &self.bench.payer.pubkey(),
             config.clone(),
             governed_program_cookie.transfer_upgrade_authority,
         );
@@ -1090,7 +1103,7 @@ impl GovernanceProgramTest {
             &governed_mint_cookie.address,
             &governed_mint_cookie.mint_authority.pubkey(),
             &token_owner_record_cookie.address,
-            &self.context.payer.pubkey(),
+            &self.bench.payer.pubkey(),
             config.clone(),
             governed_mint_cookie.transfer_mint_authority,
         );
@@ -1159,7 +1172,7 @@ impl GovernanceProgramTest {
             &governed_token_cookie.address,
             &governed_token_cookie.token_owner.pubkey(),
             &token_owner_record_cookie.address,
-            &self.context.payer.pubkey(),
+            &self.bench.payer.pubkey(),
             config.clone(),
             governed_token_cookie.transfer_token_owner,
         );
@@ -1249,7 +1262,7 @@ impl GovernanceProgramTest {
             &governance_cookie.address,
             &token_owner_record_cookie.address,
             &governance_authority.pubkey(),
-            &self.context.payer.pubkey(),
+            &self.bench.payer.pubkey(),
             &governance_cookie.account.realm,
             name.clone(),
             description_link.clone(),
@@ -1324,7 +1337,7 @@ impl GovernanceProgramTest {
             &proposal_cookie.address,
             &token_owner_record_cookie.address,
             &token_owner_record_cookie.token_owner.pubkey(),
-            &self.context.payer.pubkey(),
+            &self.bench.payer.pubkey(),
             &signatory.pubkey(),
         );
 
@@ -1470,7 +1483,7 @@ impl GovernanceProgramTest {
             &token_owner_record_cookie.address,
             &proposal_cookie.account.governing_token_mint,
             Some(token_owner_record_cookie.token_owner.pubkey()),
-            Some(self.context.payer.pubkey()),
+            Some(self.bench.payer.pubkey()),
         );
 
         instruction_override(&mut relinquish_vote_instruction);
@@ -1522,7 +1535,7 @@ impl GovernanceProgramTest {
             &token_owner_record_cookie.address,
             &token_owner_record_cookie.token_owner.pubkey(),
             &proposal_cookie.account.governing_token_mint,
-            &self.context.payer.pubkey(),
+            &self.bench.payer.pubkey(),
             vote.clone(),
         );
 
@@ -1595,7 +1608,7 @@ impl GovernanceProgramTest {
         self.create_empty_token_account(
             &token_account_keypair,
             &governed_mint_cookie.address,
-            &self.context.payer.pubkey(),
+            &self.bench.payer.pubkey(),
         )
         .await;
 
@@ -1630,7 +1643,7 @@ impl GovernanceProgramTest {
         self.create_empty_token_account(
             &token_account_keypair,
             &governed_token_cookie.token_mint,
-            &self.context.payer.pubkey(),
+            &self.bench.payer.pubkey(),
         )
         .await;
 
@@ -1668,11 +1681,12 @@ impl GovernanceProgramTest {
         let program_data = read_file(path_buf);
 
         let program_buffer_rent = self
+            .bench
             .rent
             .minimum_balance(UpgradeableLoaderState::programdata_len(program_data.len()).unwrap());
 
         let mut instructions = bpf_loader_upgradeable::create_buffer(
-            &self.context.payer.pubkey(),
+            &self.bench.payer.pubkey(),
             &program_buffer_keypair.pubkey(),
             &buffer_authority_keypair.pubkey(),
             program_buffer_rent,
@@ -1766,7 +1780,7 @@ impl GovernanceProgramTest {
             &proposal_cookie.address,
             &token_owner_record_cookie.address,
             &token_owner_record_cookie.token_owner.pubkey(),
-            &self.context.payer.pubkey(),
+            &self.bench.payer.pubkey(),
             instruction_index,
             hold_up_time,
             instruction_data.clone(),
@@ -1826,7 +1840,7 @@ impl GovernanceProgramTest {
             &token_owner_record_cookie.address,
             &token_owner_record_cookie.token_owner.pubkey(),
             &proposal_instruction_cookie.address,
-            &self.context.payer.pubkey(),
+            &self.bench.payer.pubkey(),
         );
 
         self.process_transaction(
@@ -1926,7 +1940,8 @@ impl GovernanceProgramTest {
 
     #[allow(dead_code)]
     async fn get_packed_account<T: Pack + IsInitialized>(&mut self, address: &Pubkey) -> T {
-        self.context
+        self.bench
+            .context
             .banks_client
             .get_packed_account_data::<T>(*address)
             .await
@@ -1938,7 +1953,8 @@ impl GovernanceProgramTest {
         &mut self,
         address: &Pubkey,
     ) -> T {
-        self.context
+        self.bench
+            .context
             .banks_client
             .get_account(*address)
             .await
@@ -1960,7 +1976,10 @@ impl GovernanceProgramTest {
 
         while clock.unix_timestamp <= unix_timestamp {
             // Since the exact time is not deterministic keep wrapping by arbitrary 400 slots until we pass the requested timestamp
-            self.context.warp_to_slot(clock.slot + n * 400).unwrap();
+            self.bench
+                .context
+                .warp_to_slot(clock.slot + n * 400)
+                .unwrap();
 
             n += 1;
             clock = self.get_clock().await;
@@ -1977,7 +1996,7 @@ impl GovernanceProgramTest {
     #[allow(dead_code)]
     pub async fn advance_clock(&mut self) {
         let clock = self.get_clock().await;
-        self.context.warp_to_slot(clock.slot + 2).unwrap();
+        self.bench.context.warp_to_slot(clock.slot + 2).unwrap();
     }
 
     #[allow(dead_code)]
@@ -1998,7 +2017,8 @@ impl GovernanceProgramTest {
 
     #[allow(dead_code)]
     pub async fn get_account(&mut self, address: &Pubkey) -> Option<Account> {
-        self.context
+        self.bench
+            .context
             .banks_client
             .get_account(*address)
             .await
@@ -2016,11 +2036,11 @@ impl GovernanceProgramTest {
     }
 
     pub async fn create_mint(&mut self, mint_keypair: &Keypair, mint_authority: &Pubkey) {
-        let mint_rent = self.rent.minimum_balance(spl_token::state::Mint::LEN);
+        let mint_rent = self.bench.rent.minimum_balance(spl_token::state::Mint::LEN);
 
         let instructions = [
             system_instruction::create_account(
-                &self.context.payer.pubkey(),
+                &self.bench.payer.pubkey(),
                 &mint_keypair.pubkey(),
                 mint_rent,
                 spl_token::state::Mint::LEN as u64,
@@ -2049,9 +2069,10 @@ impl GovernanceProgramTest {
         owner: &Pubkey,
     ) {
         let create_account_instruction = system_instruction::create_account(
-            &self.context.payer.pubkey(),
+            &self.bench.payer.pubkey(),
             &token_account_keypair.pubkey(),
-            self.rent
+            self.bench
+                .rent
                 .minimum_balance(spl_token::state::Account::get_packed_len()),
             spl_token::state::Account::get_packed_len() as u64,
             &spl_token::id(),
@@ -2110,9 +2131,10 @@ impl GovernanceProgramTest {
         transfer_authority: &Pubkey,
     ) {
         let create_account_instruction = system_instruction::create_account(
-            &self.context.payer.pubkey(),
+            &self.bench.payer.pubkey(),
             &token_account_keypair.pubkey(),
-            self.rent
+            self.bench
+                .rent
                 .minimum_balance(spl_token::state::Account::get_packed_len()),
             spl_token::state::Account::get_packed_len() as u64,
             &spl_token::id(),
