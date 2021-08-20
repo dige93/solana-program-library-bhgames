@@ -1,5 +1,8 @@
 #![cfg(feature = "test-bpf")]
 
+#[path = "sdk/src/lib.rs"]
+mod spl_governance_test_sdk;
+
 use solana_program_test::tokio;
 
 use spl_governance::error::GovernanceError;

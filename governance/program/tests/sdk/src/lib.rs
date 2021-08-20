@@ -64,15 +64,14 @@ use spl_governance::{
     tools::bpf_loader_upgradeable::get_program_data_address,
 };
 
-use crate::cookies::SignatoryRecordCookie;
-
-use crate::cookies::{
-    GovernanceCookie, GovernedAccountCookie, GovernedMintCookie, GovernedProgramCookie,
-    GovernedTokenCookie, ProposalCookie, ProposalInstructionCookie, RealmCookie,
-    TokenAccountCookie, TokenOwnerRecordCookie, VoteRecordCookie,
+use self::{
+    cookies::{
+        GovernanceCookie, GovernedAccountCookie, GovernedMintCookie, GovernedProgramCookie,
+        GovernedTokenCookie, ProposalCookie, ProposalInstructionCookie, RealmCookie,
+        SignatoryRecordCookie, TokenAccountCookie, TokenOwnerRecordCookie, VoteRecordCookie,
+    },
+    tools::{clone_keypair, map_transaction_error, NopOverride},
 };
-
-use crate::tools::{clone_keypair, map_transaction_error, NopOverride};
 
 #[derive(Clone)]
 pub struct TestBenchProgram<'a> {

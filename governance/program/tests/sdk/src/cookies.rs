@@ -6,7 +6,7 @@ use spl_governance::state::{
     vote_record::VoteRecord,
 };
 
-use crate::tools::clone_keypair;
+use super::tools::clone_keypair;
 
 //use crate::tools::clone_keypair;
 
