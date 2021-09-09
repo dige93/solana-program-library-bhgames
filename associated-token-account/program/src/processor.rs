@@ -48,7 +48,7 @@ pub fn process_create_associated_token_account(
     let account_info_iter = &mut accounts.iter();
 
     let payer_info = next_account_info(account_info_iter)?;
-    let associated_account_info = next_account_info(account_info_iter)?;
+    let wallet_associated_account_info = next_account_info(account_info_iter)?;
     let wallet_info = next_account_info(account_info_iter)?;
     let mint_info = next_account_info(account_info_iter)?;
     let system_info = next_account_info(account_info_iter)?;
@@ -59,7 +59,7 @@ pub fn process_create_associated_token_account(
         program_id,
         mint_info,
         wallet_info,
-        associated_account_info,
+        wallet_associated_account_info,
         payer_info,
         spl_token_info,
         system_info,
@@ -78,7 +78,7 @@ pub fn process_mint_to(
     let mint_info = next_account_info(account_info_iter)?; // 0
     let mint_authority_info = next_account_info(account_info_iter)?; // 1
     let wallet_info = next_account_info(account_info_iter)?; // 2
-    let associated_account_info = next_account_info(account_info_iter)?; // 3
+    let wallet_associated_account_info = next_account_info(account_info_iter)?; // 3
     let payer_info = next_account_info(account_info_iter)?; // 4
     let spl_token_info = next_account_info(account_info_iter)?; // 5
     let system_info = next_account_info(account_info_iter)?; // 6
@@ -86,14 +86,13 @@ pub fn process_mint_to(
 
     // TODO: Check if wallet is spl token account for the same mint
     // Reject none system accounts?  Should we mint to SPL token account anyway?
-    // Check if ATA exists before creating it
 
-    if associated_account_info.data_is_empty() {
+    if wallet_associated_account_info.data_is_empty() {
         create_associated_token_account(
             program_id,
             mint_info,
             wallet_info,
-            associated_account_info,
+            wallet_associated_account_info,
             payer_info,
             spl_token_info,
             system_info,
@@ -103,7 +102,7 @@ pub fn process_mint_to(
 
     mint_spl_tokens_to(
         mint_info,
-        associated_account_info,
+        wallet_associated_account_info,
         mint_authority_info,
         amount,
         spl_token_info,
@@ -115,7 +114,7 @@ fn create_associated_token_account<'a>(
     program_id: &Pubkey,
     mint_info: &AccountInfo<'a>,
     wallet_info: &AccountInfo<'a>,
-    associated_account_info: &AccountInfo<'a>,
+    wallet_associated_account_info: &AccountInfo<'a>,
     payer_info: &AccountInfo<'a>,
     spl_token_info: &AccountInfo<'a>,
     system_info: &AccountInfo<'a>,
@@ -127,7 +126,7 @@ fn create_associated_token_account<'a>(
         program_id,
         spl_token_info.key,
     );
-    if associated_token_address != *associated_account_info.key {
+    if associated_token_address != *wallet_associated_account_info.key {
         msg!("Error: Associated address does not match seed derivation");
         return Err(ProgramError::InvalidSeeds);
     }
@@ -147,7 +146,7 @@ fn create_associated_token_account<'a>(
         spl_token::state::Account::LEN,
         &spl_token::id(),
         system_info,
-        associated_account_info,
+        wallet_associated_account_info,
         associated_token_account_signer_seeds,
     )?;
 
@@ -155,12 +154,12 @@ fn create_associated_token_account<'a>(
     invoke(
         &spl_token::instruction::initialize_account(
             spl_token_info.key,
-            associated_account_info.key,
+            wallet_associated_account_info.key,
             mint_info.key,
             wallet_info.key,
         )?,
         &[
-            associated_account_info.clone(),
+            wallet_associated_account_info.clone(),
             mint_info.clone(),
             wallet_info.clone(),
             rent_sysvar_info.clone(),

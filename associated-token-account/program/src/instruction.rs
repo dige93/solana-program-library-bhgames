@@ -48,7 +48,7 @@ pub fn create_associated_token_account(
     wallet: &Pubkey,
     mint: &Pubkey,
 ) -> Instruction {
-    let associated_account_address = get_associated_token_address(wallet, mint);
+    let wallet_associated_account_address = get_associated_token_address(wallet, mint);
 
     let instruction_data = AssociatedTokenAccountInstruction::CreateAssociatedTokenAccount {};
 
@@ -56,7 +56,7 @@ pub fn create_associated_token_account(
         program_id: id(),
         accounts: vec![
             AccountMeta::new(*payer, true),
-            AccountMeta::new(associated_account_address, false),
+            AccountMeta::new(wallet_associated_account_address, false),
             AccountMeta::new_readonly(*wallet, false),
             AccountMeta::new_readonly(*mint, false),
             AccountMeta::new_readonly(solana_program::system_program::id(), false),
@@ -77,7 +77,7 @@ pub fn mint_to(
     // Args
     amount: u64,
 ) -> Instruction {
-    let associated_account_address = get_associated_token_address(wallet, mint);
+    let wallet_associated_account_address = get_associated_token_address(wallet, mint);
 
     let instruction_data = AssociatedTokenAccountInstruction::MintTo { amount };
 
@@ -87,7 +87,7 @@ pub fn mint_to(
             AccountMeta::new(*mint, false),
             AccountMeta::new_readonly(*mint_authority, true),
             AccountMeta::new_readonly(*wallet, false),
-            AccountMeta::new(associated_account_address, false),
+            AccountMeta::new(wallet_associated_account_address, false),
             AccountMeta::new_readonly(*payer, true),
             AccountMeta::new_readonly(spl_token::id(), false),
             AccountMeta::new_readonly(system_program::id(), false),
