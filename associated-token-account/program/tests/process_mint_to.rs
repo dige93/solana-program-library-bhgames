@@ -22,9 +22,9 @@ async fn test_mint_to() {
         .unwrap();
 
     // Assert
-    let _ata_account = ata_test.bench.get_token_account(&ata_cookie.address).await;
+    let ata_account = ata_test.bench.get_token_account(&ata_cookie.address).await;
 
-    // assert_eq!(ata_account.amount, amount);
+    assert_eq!(ata_account.amount, amount);
 }
 
 //#[tokio::test]
@@ -50,7 +50,7 @@ async fn test_mint_to_twice() {
         .unwrap();
 
     // Assert
-    let _ata_account = ata_test.bench.get_token_account(&ata_cookie.address).await;
+    let ata_account = ata_test.bench.get_token_account(&ata_cookie.address).await;
 
-    // assert_eq!(ata_account.amount, amount);
+    assert_eq!(ata_account.amount, amount);
 }

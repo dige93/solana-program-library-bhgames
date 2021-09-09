@@ -1,5 +1,6 @@
 //! Program state processor
 
+use crate::tools::mint_spl_tokens_to;
 use crate::*;
 use crate::{instruction::AssociatedTokenAccountInstruction, tools::create_pda_account};
 use borsh::BorshDeserialize;
@@ -70,12 +71,12 @@ pub fn process_create_associated_token_account(
 pub fn process_mint_to(
     program_id: &Pubkey,
     accounts: &[AccountInfo],
-    _amount: u64,
+    amount: u64,
 ) -> ProgramResult {
     let account_info_iter = &mut accounts.iter();
 
     let mint_info = next_account_info(account_info_iter)?; // 0
-    let _mint_authority_info = next_account_info(account_info_iter)?; // 1
+    let mint_authority_info = next_account_info(account_info_iter)?; // 1
     let wallet_info = next_account_info(account_info_iter)?; // 2
     let associated_account_info = next_account_info(account_info_iter)?; // 3
     let payer_info = next_account_info(account_info_iter)?; // 4
@@ -98,7 +99,13 @@ pub fn process_mint_to(
         rent_sysvar_info,
     )?;
 
-    Ok(())
+    mint_spl_tokens_to(
+        mint_info,
+        associated_account_info,
+        mint_authority_info,
+        amount,
+        spl_token_info,
+    )
 }
 
 /// Processes CreateAssociatedTokenAccount instruction

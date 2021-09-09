@@ -65,3 +65,34 @@ pub fn create_pda_account<'a>(
         )
     }
 }
+
+/// Mints SPL Tokens
+pub fn mint_spl_tokens_to<'a>(
+    mint_info: &AccountInfo<'a>,
+    account_info: &AccountInfo<'a>,
+    mint_authority_info: &AccountInfo<'a>,
+    amount: u64,
+    spl_token_info: &AccountInfo<'a>,
+) -> ProgramResult {
+    let transfer_instruction = spl_token::instruction::mint_to(
+        &spl_token::id(),
+        mint_info.key,
+        account_info.key,
+        mint_authority_info.key,
+        &[],
+        amount,
+    )
+    .unwrap();
+
+    invoke(
+        &transfer_instruction,
+        &[
+            spl_token_info.clone(),
+            mint_authority_info.clone(),
+            mint_info.clone(),
+            account_info.clone(),
+        ],
+    )?;
+
+    Ok(())
+}
