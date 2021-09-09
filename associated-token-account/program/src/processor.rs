@@ -106,8 +106,20 @@ pub fn process_create_associated_token_account(
 /// Processes CreateAssociatedTokenAccount instruction
 pub fn process_mint_to(
     _program_id: &Pubkey,
-    _accounts: &[AccountInfo],
+    accounts: &[AccountInfo],
     _amount: u64,
 ) -> ProgramResult {
+    let account_info_iter = &mut accounts.iter();
+
+    let mint_info = next_account_info(account_info_iter)?;
+    let mint_authority_info = next_account_info(account_info_iter)?;
+    let wallet_info = next_account_info(account_info_iter)?;
+    let associated_account_info = next_account_info(account_info_iter)?;
+    let payer_info = next_account_info(account_info_iter)?;
+    let spl_token_info = next_account_info(account_info_iter)?;
+    let system_info = next_account_info(account_info_iter)?;
+
+    let rent = Rent::get()?;
+
     Ok(())
 }
