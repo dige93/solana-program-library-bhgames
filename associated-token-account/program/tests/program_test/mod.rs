@@ -3,7 +3,9 @@ use solana_program_test::ProgramTest;
 
 use solana_program_test::*;
 use solana_sdk::signer::Signer;
-use spl_associated_token_account::{id, instruction::mint_to, processor::process_instruction};
+use spl_associated_token_account::{
+    get_associated_token_address, id, instruction::mint_to, processor::process_instruction,
+};
 
 use crate::program_test::tools::{ProgramTestBench, TestBenchProgram};
 
@@ -45,6 +47,7 @@ pub struct AssociatedTokenAccountProgramTest {
 }
 
 impl AssociatedTokenAccountProgramTest {
+    #[allow(dead_code)]
     pub async fn start_new() -> Self {
         let ata_program = TestBenchProgram {
             program_name: "spl_associated_token_account",
@@ -60,6 +63,7 @@ impl AssociatedTokenAccountProgramTest {
         }
     }
 
+    #[allow(dead_code)]
     pub async fn mint_to(
         &mut self,
         wallet_cookie: &WalletCookie,
@@ -78,8 +82,11 @@ impl AssociatedTokenAccountProgramTest {
             .process_transaction(&[mint_to_instruction], Some(&[&mint_cookie.mint_authority]))
             .await?;
 
+        let associated_account_address =
+            get_associated_token_address(&wallet_cookie.address, &mint_cookie.address);
+
         Ok(TokenAccountCookie {
-            address: Pubkey::new_unique(),
+            address: associated_account_address,
         })
     }
 }

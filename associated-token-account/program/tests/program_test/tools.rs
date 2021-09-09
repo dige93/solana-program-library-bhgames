@@ -93,6 +93,7 @@ impl ProgramTestBench {
         Ok(())
     }
 
+    #[allow(dead_code)]
     pub async fn create_mint(&mut self, mint_keypair: &Keypair, mint_authority: &Pubkey) {
         let mint_rent = self.rent.minimum_balance(spl_token::state::Mint::LEN);
 
@@ -119,6 +120,7 @@ impl ProgramTestBench {
             .unwrap();
     }
 
+    #[allow(dead_code)]
     pub async fn with_mint(&mut self) -> MintCookie {
         let mint_keypair = Keypair::new();
         let mint_authority = Keypair::new();
@@ -132,6 +134,7 @@ impl ProgramTestBench {
         }
     }
 
+    #[allow(dead_code)]
     pub async fn with_wallet(&mut self) -> WalletCookie {
         let account_keypair = Keypair::new();
         let account_rent = self.rent.minimum_balance(0);

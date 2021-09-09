@@ -25,6 +25,15 @@ pub enum AssociatedTokenAccountInstruction {
 
     /// Mints tokens to an associated token account
     /// If the account doesn't exist then it'll be created
+    ///
+    ///   0. `[writeable]` Token Mint
+    ///   1. `[signer]` Token Mint's minting authority
+    ///   2. `[]` Wallet address for the associated token account   
+    ///   3. `[writeable]` Associated token account address to mint tokens to
+    ///   4. `[signer]` Payer
+    ///   5. `[]` SPL Token program   
+    ///   6. `[]` System program     
+    ///   7. `[]` Rent sysvar    
     MintTo {
         /// Amount to mint
         #[allow(dead_code)]
@@ -35,22 +44,21 @@ pub enum AssociatedTokenAccountInstruction {
 /// Creates CreateAssociatedTokenAccount instruction
 pub fn create_associated_token_account(
     // Accounts
-    funding_address: &Pubkey,
-    wallet_address: &Pubkey,
-    spl_token_mint_address: &Pubkey,
+    payer: &Pubkey,
+    wallet: &Pubkey,
+    mint: &Pubkey,
 ) -> Instruction {
-    let associated_account_address =
-        get_associated_token_address(wallet_address, spl_token_mint_address);
+    let associated_account_address = get_associated_token_address(wallet, mint);
 
     let instruction_data = AssociatedTokenAccountInstruction::CreateAssociatedTokenAccount {};
 
     Instruction {
         program_id: id(),
         accounts: vec![
-            AccountMeta::new(*funding_address, true),
+            AccountMeta::new(*payer, true),
             AccountMeta::new(associated_account_address, false),
-            AccountMeta::new_readonly(*wallet_address, false),
-            AccountMeta::new_readonly(*spl_token_mint_address, false),
+            AccountMeta::new_readonly(*wallet, false),
+            AccountMeta::new_readonly(*mint, false),
             AccountMeta::new_readonly(solana_program::system_program::id(), false),
             AccountMeta::new_readonly(spl_token::id(), false),
             AccountMeta::new_readonly(sysvar::rent::id(), false),
@@ -80,9 +88,10 @@ pub fn mint_to(
             AccountMeta::new_readonly(*mint_authority, true),
             AccountMeta::new_readonly(*wallet, false),
             AccountMeta::new(associated_account_address, false),
-            AccountMeta::new(*payer, true),
+            AccountMeta::new_readonly(*payer, true),
             AccountMeta::new_readonly(spl_token::id(), false),
             AccountMeta::new_readonly(system_program::id(), false),
+            AccountMeta::new_readonly(sysvar::rent::id(), false),
         ],
         data: instruction_data.try_to_vec().unwrap(),
     }
