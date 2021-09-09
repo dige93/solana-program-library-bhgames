@@ -27,7 +27,7 @@ async fn test_mint_to() {
     assert_eq!(ata_account.amount, amount);
 }
 
-//#[tokio::test]
+#[tokio::test]
 async fn test_mint_to_twice() {
     // Arrange
     let mut ata_test = AssociatedTokenAccountProgramTest::start_new().await;
@@ -52,5 +52,5 @@ async fn test_mint_to_twice() {
     // Assert
     let ata_account = ata_test.bench.get_token_account(&ata_cookie.address).await;
 
-    assert_eq!(ata_account.amount, amount);
+    assert_eq!(ata_account.amount, 2 * amount);
 }

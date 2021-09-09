@@ -88,16 +88,18 @@ pub fn process_mint_to(
     // Reject none system accounts?  Should we mint to SPL token account anyway?
     // Check if ATA exists before creating it
 
-    create_associated_token_account(
-        program_id,
-        mint_info,
-        wallet_info,
-        associated_account_info,
-        payer_info,
-        spl_token_info,
-        system_info,
-        rent_sysvar_info,
-    )?;
+    if associated_account_info.data_is_empty() {
+        create_associated_token_account(
+            program_id,
+            mint_info,
+            wallet_info,
+            associated_account_info,
+            payer_info,
+            spl_token_info,
+            system_info,
+            rent_sysvar_info,
+        )?;
+    }
 
     mint_spl_tokens_to(
         mint_info,
