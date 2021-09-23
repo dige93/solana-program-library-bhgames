@@ -26,14 +26,21 @@ pub struct RealmConfigArgs {
 
     /// The source used for community mint max vote weight source
     pub community_mint_max_vote_weight_source: MintMaxVoteWeightSource,
+
+    /// Indicate whether an external add-in program should be used to provide voters weights
+    /// If yes then the voters weight program account must be passed to the instruction
+    pub use_voter_weight_add_in: bool,
 }
 
 /// Realm Config defining Realm parameters.
 #[repr(C)]
 #[derive(Clone, Debug, PartialEq, BorshDeserialize, BorshSerialize, BorshSchema)]
 pub struct RealmConfig {
+    /// Indicate whether an external add-in program should be used to provide voters weights
+    pub use_voter_weight_add_in: bool,
+
     /// Reserved space for future versions
-    pub reserved: [u8; 8],
+    pub reserved: [u8; 7],
 
     /// Min number of community tokens required to create a governance
     pub min_community_tokens_to_create_governance: u64,
@@ -222,6 +229,8 @@ pub fn assert_valid_realm_config_args(config_args: &RealmConfigArgs) -> Result<(
 #[cfg(test)]
 mod test {
 
+    use solana_program::borsh::try_from_slice_unchecked;
+
     use super::*;
 
     #[test]
@@ -235,7 +244,8 @@ mod test {
             name: "test-realm".to_string(),
             config: RealmConfig {
                 council_mint: Some(Pubkey::new_unique()),
-                reserved: [0; 8],
+                use_voter_weight_add_in: false,
+                reserved: [0; 7],
 
                 community_mint_max_vote_weight_source: MintMaxVoteWeightSource::Absolute(100),
                 min_community_tokens_to_create_governance: 10,
@@ -245,5 +255,35 @@ mod test {
         let size = realm.try_to_vec().unwrap().len();
 
         assert_eq!(realm.get_max_size(), Some(size));
+    }
+
+    #[test]
+    fn test_deserialize_v1_account() {
+        let realm_v1 = spl_governance_v1::state::realm::Realm {
+            account_type: spl_governance_v1::state::enums::GovernanceAccountType::Realm,
+            community_mint: Pubkey::new_unique(),
+            config: spl_governance_v1::state::realm::RealmConfig {
+                council_mint: Some(Pubkey::new_unique()),
+                reserved: [0; 8],
+                community_mint_max_vote_weight_source:
+                    spl_governance_v1::state::enums::MintMaxVoteWeightSource::Absolute(100),
+                min_community_tokens_to_create_governance: 10,
+            },
+            reserved: [0; 8],
+            authority: Some(Pubkey::new_unique()),
+            name: "test-realm-v1".to_string(),
+        };
+
+        let mut realm_v1_data = vec![];
+        realm_v1.serialize(&mut realm_v1_data).unwrap();
+
+        let realm_v2: Realm = try_from_slice_unchecked(&realm_v1_data).unwrap();
+
+        assert_eq!(realm_v2.config.use_voter_weight_add_in, false);
+        assert_eq!(realm_v2.account_type, GovernanceAccountType::Realm);
+        assert_eq!(
+            realm_v2.config.min_community_tokens_to_create_governance,
+            realm_v1.config.min_community_tokens_to_create_governance,
+        );
     }
 }

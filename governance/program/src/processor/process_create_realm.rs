@@ -92,11 +92,12 @@ pub fn process_create_realm(
         authority: Some(*realm_authority_info.key),
         config: RealmConfig {
             council_mint: council_token_mint_address,
-            reserved: [0; 8],
+            reserved: [0; 7],
             community_mint_max_vote_weight_source: config_args
                 .community_mint_max_vote_weight_source,
             min_community_tokens_to_create_governance: config_args
                 .min_community_tokens_to_create_governance,
+            use_voter_weight_add_in: config_args.use_voter_weight_add_in,
         },
     };
 

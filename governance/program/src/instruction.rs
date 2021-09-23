@@ -409,10 +409,12 @@ pub fn create_realm(
     community_token_mint: &Pubkey,
     payer: &Pubkey,
     council_token_mint: Option<Pubkey>,
+    _voter_weight_add_in: Option<Pubkey>,
     // Args
     name: String,
     min_community_tokens_to_create_governance: u64,
     community_mint_max_vote_weight_source: MintMaxVoteWeightSource,
+    use_voter_weight_add_in: bool,
 ) -> Instruction {
     let realm_address = get_realm_address(program_id, &name);
     let community_token_holding_address =
@@ -445,6 +447,7 @@ pub fn create_realm(
             use_council_mint,
             min_community_tokens_to_create_governance,
             community_mint_max_vote_weight_source,
+            use_voter_weight_add_in,
         },
         name,
     };
@@ -1171,10 +1174,11 @@ pub fn set_realm_config(
     realm: &Pubkey,
     realm_authority: &Pubkey,
     council_token_mint: Option<Pubkey>,
-
+    _voter_weight_add_in: Option<Pubkey>,
     // Args
     min_community_tokens_to_create_governance: u64,
     community_mint_max_vote_weight_source: MintMaxVoteWeightSource,
+    use_voter_weight_add_in: bool,
 ) -> Instruction {
     let mut accounts = vec![
         AccountMeta::new(*realm, false),
@@ -1197,6 +1201,7 @@ pub fn set_realm_config(
             use_council_mint,
             min_community_tokens_to_create_governance,
             community_mint_max_vote_weight_source,
+            use_voter_weight_add_in,
         },
     };
 
