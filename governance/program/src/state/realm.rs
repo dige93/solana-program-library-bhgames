@@ -229,6 +229,7 @@ pub fn assert_valid_realm_config_args(config_args: &RealmConfigArgs) -> Result<(
 #[cfg(test)]
 mod test {
 
+    use crate::instruction::GovernanceInstruction;
     use solana_program::borsh::try_from_slice_unchecked;
 
     use super::*;
@@ -258,7 +259,8 @@ mod test {
     }
 
     #[test]
-    fn test_deserialize_v1_account() {
+    fn test_deserialize_v2_realm_account_from_v1() {
+        // Arrange
         let realm_v1 = spl_governance_v1::state::realm::Realm {
             account_type: spl_governance_v1::state::enums::GovernanceAccountType::Realm,
             community_mint: Pubkey::new_unique(),
@@ -277,13 +279,54 @@ mod test {
         let mut realm_v1_data = vec![];
         realm_v1.serialize(&mut realm_v1_data).unwrap();
 
+        // Act
         let realm_v2: Realm = try_from_slice_unchecked(&realm_v1_data).unwrap();
 
+        // Assert
         assert!(!realm_v2.config.use_voter_weight_add_in);
         assert_eq!(realm_v2.account_type, GovernanceAccountType::Realm);
         assert_eq!(
             realm_v2.config.min_community_tokens_to_create_governance,
             realm_v1.config.min_community_tokens_to_create_governance,
         );
+    }
+
+    #[test]
+    fn test_deserialize_v1_create_realm_instruction_from_v2() {
+        // Arrange
+        let create_realm_ix = GovernanceInstruction::CreateRealm {
+            name: "test-realm".to_string(),
+            config_args: RealmConfigArgs {
+                use_council_mint: true,
+                min_community_tokens_to_create_governance: 100,
+                community_mint_max_vote_weight_source:
+                    MintMaxVoteWeightSource::FULL_SUPPLY_FRACTION,
+                use_voter_weight_add_in: false,
+            },
+        };
+
+        let mut create_realm_ix_data = vec![];
+        create_realm_ix
+            .serialize(&mut create_realm_ix_data)
+            .unwrap();
+
+        // Act
+        let create_realm_ix_v1: spl_governance_v1::instruction::GovernanceInstruction =
+            try_from_slice_unchecked(&create_realm_ix_data).unwrap();
+
+        // Assert
+        if let spl_governance_v1::instruction::GovernanceInstruction::CreateRealm {
+            name,
+            config_args,
+        } = create_realm_ix_v1
+        {
+            assert_eq!("test-realm", name);
+            assert_eq!(
+                spl_governance_v1::state::enums::MintMaxVoteWeightSource::FULL_SUPPLY_FRACTION,
+                config_args.community_mint_max_vote_weight_source
+            );
+        } else {
+            panic!("Can't deserialize v1 CreateRealm instruction from v2");
+        }
     }
 }
