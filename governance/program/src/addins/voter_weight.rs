@@ -29,6 +29,10 @@ pub struct VoterWeightRecord {
 
     /// The as of timestamp the voter weight is calculated for
     pub voter_weight_at: UnixTimestamp,
+
+    /// When the voting weight expires
+    /// It can be used for voter weight decaying with time
+    pub voter_weight_expiry: Option<UnixTimestamp>,
 }
 
 impl AccountMaxSize for VoterWeightRecord {}
