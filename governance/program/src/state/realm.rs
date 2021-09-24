@@ -29,7 +29,7 @@ pub struct RealmConfigArgs {
 
     /// Indicate whether an external add-in program should be used to provide voters weights
     /// If yes then the voters weight program account must be passed to the instruction
-    pub use_voter_weight_add_in: bool,
+    pub use_voter_weight_addin: bool,
 }
 
 /// Realm Config defining Realm parameters.
@@ -37,7 +37,7 @@ pub struct RealmConfigArgs {
 #[derive(Clone, Debug, PartialEq, BorshDeserialize, BorshSerialize, BorshSchema)]
 pub struct RealmConfig {
     /// Indicate whether an external add-in program should be used to provide voters weights
-    pub use_voter_weight_add_in: bool,
+    pub use_voter_weight_addin: bool,
 
     /// Reserved space for future versions
     pub reserved: [u8; 7],
@@ -245,7 +245,7 @@ mod test {
             name: "test-realm".to_string(),
             config: RealmConfig {
                 council_mint: Some(Pubkey::new_unique()),
-                use_voter_weight_add_in: false,
+                use_voter_weight_addin: false,
                 reserved: [0; 7],
 
                 community_mint_max_vote_weight_source: MintMaxVoteWeightSource::Absolute(100),
@@ -283,7 +283,7 @@ mod test {
         let realm_v2: Realm = try_from_slice_unchecked(&realm_v1_data).unwrap();
 
         // Assert
-        assert!(!realm_v2.config.use_voter_weight_add_in);
+        assert!(!realm_v2.config.use_voter_weight_addin);
         assert_eq!(realm_v2.account_type, GovernanceAccountType::Realm);
         assert_eq!(
             realm_v2.config.min_community_tokens_to_create_governance,
@@ -301,7 +301,7 @@ mod test {
                 min_community_tokens_to_create_governance: 100,
                 community_mint_max_vote_weight_source:
                     MintMaxVoteWeightSource::FULL_SUPPLY_FRACTION,
-                use_voter_weight_add_in: false,
+                use_voter_weight_addin: false,
             },
         };
 

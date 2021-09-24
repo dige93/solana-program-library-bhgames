@@ -14,6 +14,7 @@ members = [
   "governance/test-sdk",
   "governance/chat/program",
   "governance/stake-pool/program",
+  "governance/voter-weight-addin/program",
   "libraries/math",
   "memo/program",
   "name-service/program",

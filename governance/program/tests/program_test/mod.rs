@@ -49,6 +49,7 @@ use spl_governance::{
 };
 
 pub mod cookies;
+
 use crate::program_test::cookies::SignatoryRecordCookie;
 
 use spl_governance_test_sdk::{
@@ -66,9 +67,11 @@ pub struct GovernanceProgramTest {
     pub bench: ProgramTestBench,
     pub next_realm_id: u8,
     pub program_id: Pubkey,
+    pub voter_weight_addin_id: Option<Pubkey>,
 }
 
 impl GovernanceProgramTest {
+    #[allow(dead_code)]
     pub async fn start_new() -> Self {
         let program_id = Pubkey::from_str("Governance111111111111111111111111111111111").unwrap();
 
@@ -84,6 +87,35 @@ impl GovernanceProgramTest {
             bench,
             next_realm_id: 0,
             program_id,
+            voter_weight_addin_id: None,
+        }
+    }
+    #[allow(dead_code)]
+    pub async fn start_with_voter_weight_addin() -> Self {
+        let program_id = Pubkey::from_str("Governance111111111111111111111111111111111").unwrap();
+
+        let program = TestBenchProgram {
+            program_name: "spl_governance",
+            program_id,
+            process_instruction: processor!(process_instruction),
+        };
+
+        let voter_weight_addin_id =
+            Pubkey::from_str("VoterWeight11111111111111111111111111111111").unwrap();
+
+        let vote_weight_addin = TestBenchProgram {
+            program_name: "spl_governance_voter_weight_addin",
+            program_id: voter_weight_addin_id,
+            process_instruction: None,
+        };
+
+        let bench = ProgramTestBench::start_new(&[program, vote_weight_addin]).await;
+
+        Self {
+            bench,
+            next_realm_id: 0,
+            program_id,
+            voter_weight_addin_id: Some(voter_weight_addin_id),
         }
     }
 
@@ -94,7 +126,7 @@ impl GovernanceProgramTest {
 
             community_mint_max_vote_weight_source: MintMaxVoteWeightSource::FULL_SUPPLY_FRACTION,
             min_community_tokens_to_create_governance: 10,
-            use_voter_weight_add_in: false,
+            use_voter_weight_addin: false,
         };
 
         self.with_realm_using_config_args(&config_args).await
@@ -168,7 +200,7 @@ impl GovernanceProgramTest {
             name.clone(),
             config_args.min_community_tokens_to_create_governance,
             config_args.community_mint_max_vote_weight_source.clone(),
-            config_args.use_voter_weight_add_in,
+            config_args.use_voter_weight_addin,
         );
 
         self.bench
@@ -192,7 +224,7 @@ impl GovernanceProgramTest {
                 community_mint_max_vote_weight_source: config_args
                     .community_mint_max_vote_weight_source
                     .clone(),
-                use_voter_weight_add_in: false,
+                use_voter_weight_addin: false,
             },
         };
 
@@ -254,7 +286,7 @@ impl GovernanceProgramTest {
                 community_mint_max_vote_weight_source:
                     MintMaxVoteWeightSource::FULL_SUPPLY_FRACTION,
                 min_community_tokens_to_create_governance,
-                use_voter_weight_add_in: false,
+                use_voter_weight_addin: false,
             },
         };
 
@@ -657,7 +689,7 @@ impl GovernanceProgramTest {
             None,
             config_args.min_community_tokens_to_create_governance,
             config_args.community_mint_max_vote_weight_source.clone(),
-            config_args.use_voter_weight_add_in,
+            config_args.use_voter_weight_addin,
         );
 
         instruction_override(&mut set_realm_config_ix);
