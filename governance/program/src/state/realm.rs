@@ -279,7 +279,7 @@ mod test {
 
         let realm_v2: Realm = try_from_slice_unchecked(&realm_v1_data).unwrap();
 
-        assert_eq!(realm_v2.config.use_voter_weight_add_in, false);
+        assert!(!realm_v2.config.use_voter_weight_add_in);
         assert_eq!(realm_v2.account_type, GovernanceAccountType::Realm);
         assert_eq!(
             realm_v2.config.min_community_tokens_to_create_governance,
