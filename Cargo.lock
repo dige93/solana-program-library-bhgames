@@ -3766,6 +3766,7 @@ dependencies = [
  "solana-program-test",
  "solana-sdk",
  "spl-governance 2.1.1",
+ "spl-governance-chat",
  "spl-governance-test-sdk",
  "spl-token 3.2.0",
  "thiserror",

@@ -30,21 +30,26 @@ async fn test_create_realm_with_voter_weight_addin() {
 async fn test_create_governance_with_voter_weight_addin() {
     // Arrange
     let mut governance_test = GovernanceProgramTest::start_with_voter_weight_addin().await;
-    let governed_account_cookie = governance_test.with_governed_account().await;
+    // let governed_account_cookie = governance_test.with_governed_account().await;
 
     let realm_cookie = governance_test.with_realm().await;
 
     let token_owner_record_cookie = governance_test.with_token_owner_record(&realm_cookie).await;
 
-    // Act
-    let _account_governance_cookie = governance_test
-        .with_account_governance(
-            &realm_cookie,
-            &governed_account_cookie,
-            &token_owner_record_cookie,
-        )
+    governance_test
+        .with_voter_weight_addin_deposit(&token_owner_record_cookie)
         .await
         .unwrap();
+
+    // Act
+    // let _account_governance_cookie = governance_test
+    //     .with_account_governance(
+    //         &realm_cookie,
+    //         &governed_account_cookie,
+    //         &token_owner_record_cookie,
+    //     )
+    //     .await
+    //     .unwrap();
 
     // // Assert
 }

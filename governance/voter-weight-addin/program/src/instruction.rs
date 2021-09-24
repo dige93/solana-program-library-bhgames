@@ -15,4 +15,12 @@ pub enum VoterWeightAddinInstruction {
         #[allow(dead_code)]
         time_offset: u64,
     },
+
+    /// Deposits given amount
+    /// VoterWeightRecord
+    Deposit {
+        /// The deposit amount
+        #[allow(dead_code)]
+        amount: u64,
+    },
 }

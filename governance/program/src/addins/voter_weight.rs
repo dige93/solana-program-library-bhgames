@@ -3,6 +3,8 @@
 use borsh::{BorshDeserialize, BorshSchema, BorshSerialize};
 use solana_program::{clock::UnixTimestamp, instruction::Instruction, pubkey::Pubkey};
 
+use crate::tools::account::AccountMaxSize;
+
 /// VoterWeight account type
 #[derive(Clone, Debug, PartialEq, BorshDeserialize, BorshSerialize, BorshSchema)]
 pub enum VoterWeightAccountType {
@@ -28,6 +30,8 @@ pub struct VoterWeightRecord {
     /// The as of timestamp the voter weight is calculated for
     pub voter_weight_at: UnixTimestamp,
 }
+
+impl AccountMaxSize for VoterWeightRecord {}
 
 /// /// VoterWeight instruction
 #[derive(Clone, Debug, PartialEq, BorshDeserialize, BorshSerialize, BorshSchema)]

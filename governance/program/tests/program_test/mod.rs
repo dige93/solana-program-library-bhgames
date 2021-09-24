@@ -7,6 +7,7 @@ use solana_program::{
     program_error::ProgramError,
     program_pack::{IsInitialized, Pack},
     pubkey::Pubkey,
+    system_program,
 };
 
 use solana_program_test::*;
@@ -2009,5 +2010,38 @@ impl GovernanceProgramTest {
     #[allow(dead_code)]
     pub async fn get_mint_account(&mut self, address: &Pubkey) -> spl_token::state::Mint {
         self.get_packed_account(address).await
+    }
+
+    /// ----------- VoterWeight Addin -----------------------------
+    #[allow(dead_code)]
+    pub async fn with_voter_weight_addin_deposit(
+        &mut self,
+        token_owner_record_cookie: &TokenOwnerRecordCookie,
+    ) -> Result<(), ProgramError> {
+        let voter_weight_record_account = Keypair::new();
+
+        // Governance program has no dependency on the voter-weight-addin program and hence we can't use its instruction creator here
+        // and the instruction has to be created manually
+        let accounts = vec![
+            AccountMeta::new_readonly(
+                token_owner_record_cookie.account.governing_token_owner,
+                false,
+            ),
+            AccountMeta::new(voter_weight_record_account.pubkey(), true),
+            AccountMeta::new_readonly(self.bench.payer.pubkey(), true),
+            AccountMeta::new_readonly(system_program::id(), false),
+        ];
+
+        let deposit_ix = Instruction {
+            program_id: self.voter_weight_addin_id.unwrap(),
+            accounts,
+            data: vec![1, 100, 0, 0, 0, 0, 0, 0, 0], // 1 - Deposit instruction, 100 amount (u64)
+        };
+
+        self.bench
+            .process_transaction(&[deposit_ix], Some(&[&voter_weight_record_account]))
+            .await?;
+
+        Ok(())
     }
 }
