@@ -1168,6 +1168,7 @@ pub fn set_realm_authority(
 }
 
 /// Creates SetRealmConfig instruction
+#[allow(clippy::too_many_arguments)]
 pub fn set_realm_config(
     program_id: &Pubkey,
     // Accounts
