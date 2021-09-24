@@ -54,6 +54,7 @@ pub fn process_deposit(
         governing_token_owner: *governing_token_owner_info.key,
         voter_weight: amount,
         voter_weight_at: Clock::get().unwrap().unix_timestamp,
+        voter_weight_expiry: None,
     };
 
     create_and_serialize_account(
