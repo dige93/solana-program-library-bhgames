@@ -43,7 +43,7 @@ pub enum VoterWeightInstruction {
     },
 }
 
-/// Creates SetRealmAuthority instruction
+/// Creates Revise instruction
 pub fn revise(
     program_id: &Pubkey,
     // Accounts

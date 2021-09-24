@@ -27,7 +27,7 @@ pub struct RealmConfigArgs {
     /// The source used for community mint max vote weight source
     pub community_mint_max_vote_weight_source: MintMaxVoteWeightSource,
 
-    /// Indicate whether an external add-in program should be used to provide voters weights
+    /// Indicates whether an external addin program should be used to provide voters weights
     /// If yes then the voters weight program account must be passed to the instruction
     pub use_voter_weight_addin: bool,
 }
@@ -36,7 +36,7 @@ pub struct RealmConfigArgs {
 #[repr(C)]
 #[derive(Clone, Debug, PartialEq, BorshDeserialize, BorshSerialize, BorshSchema)]
 pub struct RealmConfig {
-    /// Indicate whether an external add-in program should be used to provide voters weights
+    /// Indicates whether an external addin program should be used to provide voters weights
     pub use_voter_weight_addin: bool,
 
     /// Reserved space for future versions

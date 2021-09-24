@@ -73,25 +73,18 @@ pub struct GovernanceProgramTest {
 impl GovernanceProgramTest {
     #[allow(dead_code)]
     pub async fn start_new() -> Self {
-        let program_id = Pubkey::from_str("Governance111111111111111111111111111111111").unwrap();
-
-        let program = TestBenchProgram {
-            program_name: "spl_governance",
-            program_id,
-            process_instruction: processor!(process_instruction),
-        };
-
-        let bench = ProgramTestBench::start_new(&[program]).await;
-
-        Self {
-            bench,
-            next_realm_id: 0,
-            program_id,
-            voter_weight_addin_id: None,
-        }
+        Self::start_impl(false).await
     }
+
     #[allow(dead_code)]
     pub async fn start_with_voter_weight_addin() -> Self {
+        Self::start_impl(true).await
+    }
+
+    #[allow(dead_code)]
+    async fn start_impl(use_voter_weight_addin: bool) -> Self {
+        let mut programs = vec![];
+
         let program_id = Pubkey::from_str("Governance111111111111111111111111111111111").unwrap();
 
         let program = TestBenchProgram {
@@ -100,22 +93,31 @@ impl GovernanceProgramTest {
             process_instruction: processor!(process_instruction),
         };
 
-        let voter_weight_addin_id =
-            Pubkey::from_str("VoterWeight11111111111111111111111111111111").unwrap();
+        programs.push(program);
 
-        let vote_weight_addin = TestBenchProgram {
-            program_name: "spl_governance_voter_weight_addin",
-            program_id: voter_weight_addin_id,
-            process_instruction: None,
+        let voter_weight_addin_id = if use_voter_weight_addin {
+            let voter_weight_addin_id =
+                Pubkey::from_str("VoterWeight11111111111111111111111111111111").unwrap();
+
+            let vote_weight_addin = TestBenchProgram {
+                program_name: "spl_governance_voter_weight_addin",
+                program_id: voter_weight_addin_id,
+                process_instruction: None,
+            };
+
+            programs.push(vote_weight_addin);
+            Some(voter_weight_addin_id)
+        } else {
+            None
         };
 
-        let bench = ProgramTestBench::start_new(&[program, vote_weight_addin]).await;
+        let bench = ProgramTestBench::start_new(&programs).await;
 
         Self {
             bench,
             next_realm_id: 0,
             program_id,
-            voter_weight_addin_id: Some(voter_weight_addin_id),
+            voter_weight_addin_id,
         }
     }
 
