@@ -128,7 +128,7 @@ impl GovernanceProgramTest {
 
             community_mint_max_vote_weight_source: MintMaxVoteWeightSource::FULL_SUPPLY_FRACTION,
             min_community_tokens_to_create_governance: 10,
-            use_voter_weight_addin: false,
+            use_voter_weight_addin: self.voter_weight_addin_id.is_some(),
         };
 
         self.with_realm_using_config_args(&config_args).await
@@ -326,6 +326,22 @@ impl GovernanceProgramTest {
             &realm_cookie.account.community_mint,
             &realm_cookie.community_mint_authority,
             100,
+        )
+        .await
+    }
+
+    #[allow(dead_code)]
+    pub async fn with_token_owner_record(
+        &mut self,
+        realm_cookie: &RealmCookie,
+    ) -> TokenOwnerRecordCookie {
+        self.with_initial_governing_token_deposit(
+            &realm_cookie.address,
+            &realm_cookie.account.community_mint,
+            &realm_cookie.community_mint_authority,
+            // Deposit 0 to create token owner record
+            // TODO: Make it possible to create TokenOwnerRecord without depositing
+            0,
         )
         .await
     }

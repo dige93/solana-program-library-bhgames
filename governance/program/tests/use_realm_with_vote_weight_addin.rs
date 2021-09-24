@@ -5,21 +5,44 @@ use solana_program_test::*;
 mod program_test;
 
 use program_test::*;
-use spl_governance::addins::voter_weight::revise;
 
 #[tokio::test]
 async fn test_create_realm_with_voter_weight_addin() {
     // Arrange
     let mut governance_test = GovernanceProgramTest::start_with_voter_weight_addin().await;
 
-    let _realm_cookie = governance_test.with_realm().await;
+    // Act
+
+    let realm_cookie = governance_test.with_realm().await;
+
+    // Assert
+
+    let realm_account = governance_test
+        .get_realm_account(&realm_cookie.address)
+        .await;
+
+    assert!(realm_account.config.use_voter_weight_addin);
+
+    // TODO: Check addins
+}
+
+#[tokio::test]
+async fn test_create_governance_with_voter_weight_addin() {
+    // Arrange
+    let mut governance_test = GovernanceProgramTest::start_with_voter_weight_addin().await;
+    let governed_account_cookie = governance_test.with_governed_account().await;
+
+    let realm_cookie = governance_test.with_realm().await;
+
+    let token_owner_record_cookie = governance_test.with_token_owner_record(&realm_cookie).await;
 
     // Act
-    let revise_ix = revise(&governance_test.voter_weight_addin_id.unwrap(), 100);
-
-    governance_test
-        .bench
-        .process_transaction(&[revise_ix], None)
+    let _account_governance_cookie = governance_test
+        .with_account_governance(
+            &realm_cookie,
+            &governed_account_cookie,
+            &token_owner_record_cookie,
+        )
         .await
         .unwrap();
 
