@@ -1,4 +1,4 @@
-#![cfg(feature = "test-bpf-all")]
+#![cfg(feature = "test-bpf")]
 
 mod program_test;
 
@@ -72,7 +72,7 @@ async fn test_execute_mint_instruction() {
         .advance_clock_by_min_timespan(proposal_instruction_cookie.account.hold_up_time as u64)
         .await;
 
-    let clock = governance_test.get_clock().await;
+    let clock = governance_test.bench.get_clock().await;
 
     // Act
     governance_test
@@ -168,7 +168,7 @@ async fn test_execute_transfer_instruction() {
         .advance_clock_by_min_timespan(proposal_instruction_cookie.account.hold_up_time as u64)
         .await;
 
-    let clock = governance_test.get_clock().await;
+    let clock = governance_test.bench.get_clock().await;
 
     // Act
     governance_test
@@ -275,6 +275,7 @@ async fn test_execute_upgrade_program_instruction() {
     );
 
     let err = governance_test
+        .bench
         .process_transaction(&[governed_program_instruction.clone()], None)
         .await
         .err()
@@ -283,7 +284,7 @@ async fn test_execute_upgrade_program_instruction() {
     // solana_bpf_rust_upgradable returns CustomError == 42
     assert_eq!(ProgramError::Custom(42), err);
 
-    let clock = governance_test.get_clock().await;
+    let clock = governance_test.bench.get_clock().await;
 
     // Act
     governance_test
@@ -321,6 +322,7 @@ async fn test_execute_upgrade_program_instruction() {
     governance_test.advance_clock().await;
 
     let err = governance_test
+        .bench
         .process_transaction(&[governed_program_instruction.clone()], None)
         .await
         .err()
@@ -333,6 +335,7 @@ async fn test_execute_upgrade_program_instruction() {
 }
 
 #[tokio::test]
+#[ignore]
 async fn test_execute_instruction_with_invalid_state_errors() {
     // Arrange
     let mut governance_test = GovernanceProgramTest::start_new().await;
@@ -495,6 +498,7 @@ async fn test_execute_instruction_with_invalid_state_errors() {
 }
 
 #[tokio::test]
+#[ignore]
 async fn test_execute_instruction_for_other_proposal_error() {
     // Arrange
     let mut governance_test = GovernanceProgramTest::start_new().await;
@@ -575,6 +579,7 @@ async fn test_execute_instruction_for_other_proposal_error() {
 }
 
 #[tokio::test]
+#[ignore]
 async fn test_execute_mint_instruction_twice_error() {
     // Arrange
     let mut governance_test = GovernanceProgramTest::start_new().await;
