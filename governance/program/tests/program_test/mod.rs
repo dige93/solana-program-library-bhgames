@@ -15,13 +15,15 @@ use solana_program_test::*;
 use solana_sdk::signature::{Keypair, Signer};
 
 use spl_governance::{
+    addins::voter_weight::{VoterWeightAccountType, VoterWeightRecord},
     instruction::{
         add_signatory, cancel_proposal, cast_vote, create_account_governance,
-        create_mint_governance, create_program_governance, create_proposal, create_realm,
-        create_token_governance, deposit_governing_tokens, execute_instruction, finalize_vote,
-        flag_instruction_error, insert_instruction, relinquish_vote, remove_instruction,
-        remove_signatory, set_governance_config, set_governance_delegate, set_realm_authority,
-        set_realm_config, sign_off_proposal, withdraw_governing_tokens, Vote,
+        create_account_governance2, create_mint_governance, create_program_governance,
+        create_proposal, create_realm, create_token_governance, deposit_governing_tokens,
+        execute_instruction, finalize_vote, flag_instruction_error, insert_instruction,
+        relinquish_vote, remove_instruction, remove_signatory, set_governance_config,
+        set_governance_delegate, set_realm_authority, set_realm_config, sign_off_proposal,
+        withdraw_governing_tokens, Vote,
     },
     processor::process_instruction,
     state::{
@@ -51,7 +53,7 @@ use spl_governance::{
 
 pub mod cookies;
 
-use crate::program_test::cookies::SignatoryRecordCookie;
+use crate::program_test::cookies::{SignatoryRecordCookie, VoterWeightCookie};
 
 use spl_governance_test_sdk::{
     tools::{clone_keypair, NopOverride},
@@ -498,6 +500,7 @@ impl GovernanceProgramTest {
             token_owner,
             governance_authority: None,
             governance_delegate,
+            voter_weight: None,
         }
     }
 
@@ -880,12 +883,21 @@ impl GovernanceProgramTest {
         token_owner_record_cookie: &TokenOwnerRecordCookie,
         governance_config: &GovernanceConfig,
     ) -> Result<GovernanceCookie, ProgramError> {
-        let create_account_governance_instruction = create_account_governance(
+        let (voter_weight_addin, voter_weight) =
+            if let Some(voter_weight) = &token_owner_record_cookie.voter_weight {
+                (self.voter_weight_addin_id, Some(voter_weight.address))
+            } else {
+                (None, None)
+            };
+
+        let create_account_governance_instruction = create_account_governance2(
             &self.program_id,
             &realm_cookie.address,
             &governed_account_cookie.address,
             &token_owner_record_cookie.address,
             &self.bench.payer.pubkey(),
+            voter_weight,
+            voter_weight_addin,
             governance_config.clone(),
         );
 
@@ -2017,7 +2029,7 @@ impl GovernanceProgramTest {
     pub async fn with_voter_weight_addin_deposit(
         &mut self,
         token_owner_record_cookie: &TokenOwnerRecordCookie,
-    ) -> Result<(), ProgramError> {
+    ) -> Result<VoterWeightCookie, ProgramError> {
         let voter_weight_record_account = Keypair::new();
 
         // Governance program has no dependency on the voter-weight-addin program and hence we can't use its instruction creator here
@@ -2038,10 +2050,21 @@ impl GovernanceProgramTest {
             data: vec![1, 100, 0, 0, 0, 0, 0, 0, 0], // 1 - Deposit instruction, 100 amount (u64)
         };
 
+        let clock = self.bench.get_clock().await;
+
         self.bench
             .process_transaction(&[deposit_ix], Some(&[&voter_weight_record_account]))
             .await?;
 
-        Ok(())
+        Ok(VoterWeightCookie {
+            address: voter_weight_record_account.pubkey(),
+            account: VoterWeightRecord {
+                account_type: VoterWeightAccountType::VoterWeightRecord,
+                governing_token_owner: token_owner_record_cookie.account.governing_token_owner,
+                voter_weight: 100,
+                voter_weight_at: clock.unix_timestamp,
+                voter_weight_expiry: None,
+            },
+        })
     }
 }

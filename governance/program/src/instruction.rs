@@ -586,10 +586,35 @@ pub fn create_account_governance(
     // Args
     config: GovernanceConfig,
 ) -> Instruction {
+    create_account_governance2(
+        program_id,
+        realm,
+        governed_account,
+        token_owner_record,
+        payer,
+        None,
+        None,
+        config,
+    )
+}
+
+/// Creates CreateAccountGovernance instruction using optional voter weight addin
+pub fn create_account_governance2(
+    program_id: &Pubkey,
+    // Accounts
+    realm: &Pubkey,
+    governed_account: &Pubkey,
+    token_owner_record: &Pubkey,
+    payer: &Pubkey,
+    voter_weight: Option<Pubkey>,
+    voter_weight_addin: Option<Pubkey>,
+    // Args
+    config: GovernanceConfig,
+) -> Instruction {
     let account_governance_address =
         get_account_governance_address(program_id, realm, governed_account);
 
-    let accounts = vec![
+    let mut accounts = vec![
         AccountMeta::new_readonly(*realm, false),
         AccountMeta::new(account_governance_address, false),
         AccountMeta::new_readonly(*governed_account, false),
@@ -598,6 +623,14 @@ pub fn create_account_governance(
         AccountMeta::new_readonly(system_program::id(), false),
         AccountMeta::new_readonly(sysvar::rent::id(), false),
     ];
+
+    if let Some(voter_weight_record) = voter_weight {
+        accounts.push(AccountMeta::new(voter_weight_record, false));
+        accounts.push(AccountMeta::new_readonly(
+            voter_weight_addin.unwrap(),
+            false,
+        ));
+    }
 
     let instruction = GovernanceInstruction::CreateAccountGovernance { config };
 

@@ -46,7 +46,10 @@ pub fn process_create_account_governance(
     let token_owner_record_data =
         get_token_owner_record_data_for_realm(program_id, token_owner_record_info, realm_info.key)?;
 
-    token_owner_record_data.assert_can_create_governance(&realm_data)?;
+    if realm_data.config.use_voter_weight_addin {
+    } else {
+        token_owner_record_data.assert_can_create_governance(&realm_data)?;
+    };
 
     let account_governance_data = Governance {
         account_type: GovernanceAccountType::AccountGovernance,

@@ -33,6 +33,7 @@ pub struct VoterWeightRecord {
     /// When the voting weight expires
     /// It can be used for voter weight decaying with time
     pub voter_weight_expiry: Option<UnixTimestamp>,
+    // TODO: Add valid slot
 }
 
 impl AccountMaxSize for VoterWeightRecord {}
