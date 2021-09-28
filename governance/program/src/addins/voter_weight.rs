@@ -35,7 +35,9 @@ pub struct VoterWeightRecord {
     /// The Realm the VoterWeightRecord belongs to
     pub realm: Pubkey,
 
-    /// Governing Token Mint the TokenOwnerRecord holds deposit for
+    /// Governing Token Mint the TokenOwnerRecord is associated with
+    /// Note: The addin can take deposits of any tokens and is not restricted to the community or council tokens only
+    // The mint here is to link the record to either community or council mint of the realm
     pub governing_token_mint: Pubkey,
 
     /// The owner of the governing token and voter
@@ -75,7 +77,7 @@ impl VoterWeightRecord {
     }
 }
 
-/// Deserializes account and checks owner program
+/// Deserializes VoterWeightRecord account and checks owner program
 pub fn get_voter_weight_record_data(
     program_id: &Pubkey,
     voter_weight_record_info: &AccountInfo,
@@ -83,7 +85,7 @@ pub fn get_voter_weight_record_data(
     get_account_data::<VoterWeightRecord>(voter_weight_record_info, program_id)
 }
 
-/// Deserializes account and checks owner program
+/// Deserializes VoterWeightRecord account, checks owner program and asserts it's for the same realm, mint and token owner as the provided TokenOwnerRecord
 pub fn get_voter_weight_record_data_for_token_owner_record(
     program_id: &Pubkey,
     voter_weight_record_info: &AccountInfo,
