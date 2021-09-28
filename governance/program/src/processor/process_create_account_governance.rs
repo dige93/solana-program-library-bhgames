@@ -1,6 +1,7 @@
 //! Program state processor
 
 use crate::{
+    addins::voter_weight::get_voter_weight_data,
     state::{
         enums::GovernanceAccountType,
         governance::{
@@ -47,6 +48,11 @@ pub fn process_create_account_governance(
         get_token_owner_record_data_for_realm(program_id, token_owner_record_info, realm_info.key)?;
 
     if realm_data.config.use_voter_weight_addin {
+        let voter_weight_info = next_account_info(account_info_iter)?;
+        // TODO: take the addin program id from Addins
+        let voter_weight_addin_info = next_account_info(account_info_iter)?;
+        let _voter_weight_data =
+            get_voter_weight_data(voter_weight_addin_info.key, voter_weight_info)?;
     } else {
         token_owner_record_data.assert_can_create_governance(&realm_data)?;
     };

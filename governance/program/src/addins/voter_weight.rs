@@ -1,9 +1,12 @@
 //! VoterWeight Addin interface
 
 use borsh::{BorshDeserialize, BorshSchema, BorshSerialize};
-use solana_program::{clock::UnixTimestamp, instruction::Instruction, pubkey::Pubkey};
+use solana_program::{
+    account_info::AccountInfo, clock::UnixTimestamp, instruction::Instruction,
+    program_error::ProgramError, program_pack::IsInitialized, pubkey::Pubkey,
+};
 
-use crate::tools::account::AccountMaxSize;
+use crate::tools::account::{get_account_data, AccountMaxSize};
 
 /// VoterWeight account type
 #[derive(Clone, Debug, PartialEq, BorshDeserialize, BorshSerialize, BorshSchema)]
@@ -37,6 +40,20 @@ pub struct VoterWeightRecord {
 }
 
 impl AccountMaxSize for VoterWeightRecord {}
+
+impl IsInitialized for VoterWeightRecord {
+    fn is_initialized(&self) -> bool {
+        self.account_type == VoterWeightAccountType::VoterWeightRecord
+    }
+}
+
+/// Deserializes account and checks owner program
+pub fn get_voter_weight_data(
+    program_id: &Pubkey,
+    voter_weight_info: &AccountInfo,
+) -> Result<VoterWeightRecord, ProgramError> {
+    get_account_data::<VoterWeightRecord>(voter_weight_info, program_id)
+}
 
 /// /// VoterWeight instruction
 #[derive(Clone, Debug, PartialEq, BorshDeserialize, BorshSerialize, BorshSchema)]
