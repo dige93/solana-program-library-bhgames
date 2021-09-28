@@ -17,13 +17,12 @@ use solana_sdk::signature::{Keypair, Signer};
 use spl_governance::{
     addins::voter_weight::{VoterWeightAccountType, VoterWeightRecord},
     instruction::{
-        add_signatory, cancel_proposal, cast_vote, create_account_governance,
-        create_account_governance2, create_mint_governance, create_program_governance,
-        create_proposal, create_realm, create_token_governance, deposit_governing_tokens,
-        execute_instruction, finalize_vote, flag_instruction_error, insert_instruction,
-        relinquish_vote, remove_instruction, remove_signatory, set_governance_config,
-        set_governance_delegate, set_realm_authority, set_realm_config, sign_off_proposal,
-        withdraw_governing_tokens, Vote,
+        add_signatory, cancel_proposal, cast_vote, create_account_governance2,
+        create_mint_governance, create_program_governance, create_proposal, create_realm,
+        create_token_governance, deposit_governing_tokens, execute_instruction, finalize_vote,
+        flag_instruction_error, insert_instruction, relinquish_vote, remove_instruction,
+        remove_signatory, set_governance_config, set_governance_delegate, set_realm_authority,
+        set_realm_config, sign_off_proposal, withdraw_governing_tokens, Vote,
     },
     processor::process_instruction,
     state::{
