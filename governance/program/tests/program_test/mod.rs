@@ -228,7 +228,7 @@ impl GovernanceProgramTest {
                 community_mint_max_vote_weight_source: config_args
                     .community_mint_max_vote_weight_source
                     .clone(),
-                use_voter_weight_addin: false,
+                use_community_voter_weight_addin: false,
             },
         };
 
@@ -290,7 +290,7 @@ impl GovernanceProgramTest {
                 community_mint_max_vote_weight_source:
                     MintMaxVoteWeightSource::FULL_SUPPLY_FRACTION,
                 min_community_tokens_to_create_governance,
-                use_voter_weight_addin: false,
+                use_community_voter_weight_addin: false,
             },
         };
 
@@ -2039,6 +2039,10 @@ impl GovernanceProgramTest {
         let accounts = vec![
             AccountMeta::new_readonly(self.program_id, false),
             AccountMeta::new_readonly(token_owner_record_cookie.account.realm, false),
+            AccountMeta::new_readonly(
+                token_owner_record_cookie.account.governing_token_mint,
+                false,
+            ),
             AccountMeta::new_readonly(token_owner_record_cookie.address, false),
             AccountMeta::new(voter_weight_record_account.pubkey(), true),
             AccountMeta::new_readonly(self.bench.payer.pubkey(), true),
@@ -2051,8 +2055,6 @@ impl GovernanceProgramTest {
             data: vec![1, 100, 0, 0, 0, 0, 0, 0, 0], // 1 - Deposit instruction, 100 amount (u64)
         };
 
-        let clock = self.bench.get_clock().await;
-
         self.bench
             .process_transaction(&[deposit_ix], Some(&[&voter_weight_record_account]))
             .await?;
@@ -2061,11 +2063,11 @@ impl GovernanceProgramTest {
             address: voter_weight_record_account.pubkey(),
             account: VoterWeightRecord {
                 account_type: VoterWeightAccountType::VoterWeightRecord,
+                realm: token_owner_record_cookie.account.realm,
+                governing_token_mint: token_owner_record_cookie.account.governing_token_mint,
                 governing_token_owner: token_owner_record_cookie.account.governing_token_owner,
                 voter_weight: 100,
-                voter_weight_at: clock.unix_timestamp,
                 voter_weight_expiry: None,
-                realm: token_owner_record_cookie.account.realm,
             },
         })
     }

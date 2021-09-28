@@ -21,7 +21,7 @@ async fn test_create_realm_with_voter_weight_addin() {
         .get_realm_account(&realm_cookie.address)
         .await;
 
-    assert!(realm_account.config.use_voter_weight_addin);
+    assert!(realm_account.config.use_community_voter_weight_addin);
 
     // TODO: Check addins
 }

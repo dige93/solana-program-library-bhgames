@@ -97,7 +97,7 @@ pub fn process_create_realm(
                 .community_mint_max_vote_weight_source,
             min_community_tokens_to_create_governance: config_args
                 .min_community_tokens_to_create_governance,
-            use_voter_weight_addin: config_args.use_voter_weight_addin,
+            use_community_voter_weight_addin: config_args.use_voter_weight_addin,
         },
     };
 

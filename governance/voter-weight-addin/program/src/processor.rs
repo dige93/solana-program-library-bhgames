@@ -3,22 +3,17 @@
 use borsh::BorshDeserialize;
 use spl_governance::{
     addins::voter_weight::{VoterWeightAccountType, VoterWeightRecord},
-    state::{
-        realm::get_realm_data,
-        token_owner_record::get_token_owner_record_data_for_realm_and_governing_mint,
-    },
+    state::token_owner_record::get_token_owner_record_data_for_realm_and_governing_mint,
 };
 // TODO: Move to shared governance tools
 use spl_governance_chat::tools::account::create_and_serialize_account;
 
 use solana_program::{
     account_info::{next_account_info, AccountInfo},
-    clock::Clock,
     entrypoint::ProgramResult,
     msg,
     program_error::ProgramError,
     pubkey::Pubkey,
-    sysvar::Sysvar,
 };
 
 use crate::instruction::VoterWeightAddinInstruction;
@@ -52,29 +47,28 @@ pub fn process_deposit(
 
     let governance_program_info = next_account_info(account_info_iter)?; // 0
     let realm_info = next_account_info(account_info_iter)?; // 1
-    let governing_token_owner_info = next_account_info(account_info_iter)?; // 2
+    let governing_token_mint_info = next_account_info(account_info_iter)?; // 1
+    let token_owner_record_info = next_account_info(account_info_iter)?; // 2
     let voter_weight_record_info = next_account_info(account_info_iter)?; // 3
     let payer_info = next_account_info(account_info_iter)?; // 4
     let system_info = next_account_info(account_info_iter)?; // 5
 
-    let realm_data = get_realm_data(governance_program_info.key, realm_info)?;
-    let governing_token_owner_data = get_token_owner_record_data_for_realm_and_governing_mint(
+    let token_owner_record_data = get_token_owner_record_data_for_realm_and_governing_mint(
         governance_program_info.key,
-        governing_token_owner_info,
+        token_owner_record_info,
         realm_info.key,
-        &realm_data.community_mint,
+        governing_token_mint_info.key,
     )?;
 
-    // TODO: Custom deposit logic goes here
-    // Note: Assert realm community mint and the deposit mint match
+    // TODO: Custom deposit logic and validation goes here
 
     let voter_weight_record_data = VoterWeightRecord {
         account_type: VoterWeightAccountType::VoterWeightRecord,
-        governing_token_owner: governing_token_owner_data.governing_token_owner,
-        voter_weight: amount,
-        voter_weight_at: Clock::get().unwrap().unix_timestamp,
-        voter_weight_expiry: None,
         realm: *realm_info.key,
+        governing_token_mint: *governing_token_mint_info.key,
+        governing_token_owner: token_owner_record_data.governing_token_owner,
+        voter_weight: amount,
+        voter_weight_expiry: None,
     };
 
     create_and_serialize_account(

@@ -2,11 +2,19 @@
 
 use borsh::{BorshDeserialize, BorshSchema, BorshSerialize};
 use solana_program::{
-    account_info::AccountInfo, clock::UnixTimestamp, instruction::Instruction,
-    program_error::ProgramError, program_pack::IsInitialized, pubkey::Pubkey,
+    account_info::AccountInfo,
+    clock::{Clock, Slot},
+    program_error::ProgramError,
+    program_pack::IsInitialized,
+    pubkey::Pubkey,
+    sysvar::Sysvar,
 };
 
-use crate::tools::account::{get_account_data, AccountMaxSize};
+use crate::{
+    error::GovernanceError,
+    state::token_owner_record::TokenOwnerRecord,
+    tools::account::{get_account_data, AccountMaxSize},
+};
 
 /// VoterWeight account type
 #[derive(Clone, Debug, PartialEq, BorshDeserialize, BorshSerialize, BorshSchema)]
@@ -27,19 +35,21 @@ pub struct VoterWeightRecord {
     /// The Realm the VoterWeightRecord belongs to
     pub realm: Pubkey,
 
+    /// Governing Token Mint the TokenOwnerRecord holds deposit for
+    pub governing_token_mint: Pubkey,
+
     /// The owner of the governing token and voter
     pub governing_token_owner: Pubkey,
 
     /// Voter's weight
     pub voter_weight: u64,
 
-    /// The as of timestamp the voter weight is calculated for
-    pub voter_weight_at: UnixTimestamp,
-
-    /// When the voting weight expires
-    /// It can be used for voter weight decaying with time
-    pub voter_weight_expiry: Option<UnixTimestamp>,
-    // TODO: Add valid slot
+    /// The slot when the voting weight expires
+    /// It should be set to None if the weight never expires
+    /// If the voter weight decays with time, for example for time locked based weights, then the expiry must be set
+    /// As a common pattern Revise instruction to update the weight should be invoked before governance instruction within the same transaction
+    /// and the expiry set to the current slot to provide up to date weight
+    pub voter_weight_expiry: Option<Slot>,
 }
 
 impl AccountMaxSize for VoterWeightRecord {}
@@ -47,6 +57,21 @@ impl AccountMaxSize for VoterWeightRecord {}
 impl IsInitialized for VoterWeightRecord {
     fn is_initialized(&self) -> bool {
         self.account_type == VoterWeightAccountType::VoterWeightRecord
+    }
+}
+
+impl VoterWeightRecord {
+    /// Asserts the VoterWeightRecord hasn't expired
+    pub fn assert_is_up_to_date(&self) -> Result<(), ProgramError> {
+        if let Some(voter_weight_expiry) = self.voter_weight_expiry {
+            let slot = Clock::get().unwrap().slot;
+
+            if slot > voter_weight_expiry {
+                return Err(GovernanceError::VoterWeightRecordExpired.into());
+            }
+        }
+
+        Ok(())
     }
 }
 
@@ -58,35 +83,26 @@ pub fn get_voter_weight_record_data(
     get_account_data::<VoterWeightRecord>(voter_weight_record_info, program_id)
 }
 
-/// /// VoterWeight instruction
-#[derive(Clone, Debug, PartialEq, BorshDeserialize, BorshSerialize, BorshSchema)]
-pub enum VoterWeightInstruction {
-    /// Revises voter weight providing up to date voter weight
-    ///
-    /// 0. `[writable]` VoterWeightRecord
-    /// 1. `[]` Token owner
-    Revise {
-        /// The time offset (in seconds) into the future for which the voter weight should be revised
-        #[allow(dead_code)]
-        time_offset: u64,
-    },
-}
-
-/// Creates Revise instruction
-pub fn revise(
+/// Deserializes account and checks owner program
+pub fn get_voter_weight_record_data_for_token_owner_record(
     program_id: &Pubkey,
-    // Accounts
+    voter_weight_record_info: &AccountInfo,
+    token_owner_record: &TokenOwnerRecord,
+) -> Result<VoterWeightRecord, ProgramError> {
+    let voter_weight_record_data =
+        get_voter_weight_record_data(program_id, voter_weight_record_info)?;
 
-    // Args
-    time_offset: u64,
-) -> Instruction {
-    let accounts = vec![];
-
-    let instruction = VoterWeightInstruction::Revise { time_offset };
-
-    Instruction {
-        program_id: *program_id,
-        accounts,
-        data: instruction.try_to_vec().unwrap(),
+    if voter_weight_record_data.realm != token_owner_record.realm {
+        return Err(GovernanceError::InvalidVoterWeightRecordForRealm.into());
     }
+
+    if voter_weight_record_data.governing_token_mint != token_owner_record.governing_token_mint {
+        return Err(GovernanceError::InvalidVoterWeightRecordForGoverningTokenMint.into());
+    }
+
+    if voter_weight_record_data.governing_token_owner != token_owner_record.governing_token_owner {
+        return Err(GovernanceError::InvalidVoterWeightRecordForTokenOwner.into());
+    }
+
+    Ok(voter_weight_record_data)
 }

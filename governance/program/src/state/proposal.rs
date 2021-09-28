@@ -566,7 +566,7 @@ mod test {
             config: RealmConfig {
                 council_mint: Some(Pubkey::new_unique()),
                 reserved: [0; 7],
-                use_voter_weight_addin: false,
+                use_community_voter_weight_addin: false,
 
                 community_mint_max_vote_weight_source:
                     MintMaxVoteWeightSource::FULL_SUPPLY_FRACTION,

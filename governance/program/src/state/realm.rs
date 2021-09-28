@@ -36,8 +36,8 @@ pub struct RealmConfigArgs {
 #[repr(C)]
 #[derive(Clone, Debug, PartialEq, BorshDeserialize, BorshSerialize, BorshSchema)]
 pub struct RealmConfig {
-    /// Indicates whether an external addin program should be used to provide voters weights
-    pub use_voter_weight_addin: bool,
+    /// Indicates whether an external addin program should be used to provide voters weights for the community mint
+    pub use_community_voter_weight_addin: bool,
 
     /// Reserved space for future versions
     pub reserved: [u8; 7],
@@ -245,7 +245,7 @@ mod test {
             name: "test-realm".to_string(),
             config: RealmConfig {
                 council_mint: Some(Pubkey::new_unique()),
-                use_voter_weight_addin: false,
+                use_community_voter_weight_addin: false,
                 reserved: [0; 7],
 
                 community_mint_max_vote_weight_source: MintMaxVoteWeightSource::Absolute(100),
@@ -283,7 +283,7 @@ mod test {
         let realm_v2: Realm = try_from_slice_unchecked(&realm_v1_data).unwrap();
 
         // Assert
-        assert!(!realm_v2.config.use_voter_weight_addin);
+        assert!(!realm_v2.config.use_community_voter_weight_addin);
         assert_eq!(realm_v2.account_type, GovernanceAccountType::Realm);
         assert_eq!(
             realm_v2.config.min_community_tokens_to_create_governance,
