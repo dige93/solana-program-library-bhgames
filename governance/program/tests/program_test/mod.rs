@@ -2034,10 +2034,9 @@ impl GovernanceProgramTest {
         // Governance program has no dependency on the voter-weight-addin program and hence we can't use its instruction creator here
         // and the instruction has to be created manually
         let accounts = vec![
-            AccountMeta::new_readonly(
-                token_owner_record_cookie.account.governing_token_owner,
-                false,
-            ),
+            AccountMeta::new_readonly(self.program_id, false),
+            AccountMeta::new_readonly(token_owner_record_cookie.account.realm, false),
+            AccountMeta::new_readonly(token_owner_record_cookie.address, false),
             AccountMeta::new(voter_weight_record_account.pubkey(), true),
             AccountMeta::new_readonly(self.bench.payer.pubkey(), true),
             AccountMeta::new_readonly(system_program::id(), false),
@@ -2063,6 +2062,7 @@ impl GovernanceProgramTest {
                 voter_weight: 100,
                 voter_weight_at: clock.unix_timestamp,
                 voter_weight_expiry: None,
+                realm: token_owner_record_cookie.account.realm,
             },
         })
     }

@@ -24,6 +24,9 @@ pub struct VoterWeightRecord {
     /// VoterWeight account type
     pub account_type: VoterWeightAccountType,
 
+    /// The Realm the VoterWeightRecord belongs to
+    pub realm: Pubkey,
+
     /// The owner of the governing token and voter
     pub governing_token_owner: Pubkey,
 
