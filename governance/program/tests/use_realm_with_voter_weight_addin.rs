@@ -37,12 +37,12 @@ async fn test_create_governance_with_voter_weight_addin() {
     let mut token_owner_record_cookie =
         governance_test.with_token_owner_record(&realm_cookie).await;
 
-    let voter_weight_cookie = governance_test
+    let voter_weight_record_cookie = governance_test
         .with_voter_weight_addin_deposit(&token_owner_record_cookie)
         .await
         .unwrap();
 
-    token_owner_record_cookie.voter_weight = Some(voter_weight_cookie);
+    token_owner_record_cookie.voter_weight_record = Some(voter_weight_record_cookie);
 
     // Act
     let _account_governance_cookie = governance_test

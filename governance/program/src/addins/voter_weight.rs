@@ -21,7 +21,7 @@ pub enum VoterWeightAccountType {
 /// VoterWeight Record account
 #[derive(Clone, Debug, PartialEq, BorshDeserialize, BorshSerialize, BorshSchema)]
 pub struct VoterWeightRecord {
-    /// VoterWeight account type
+    /// VoterWeightRecord account type
     pub account_type: VoterWeightAccountType,
 
     /// The Realm the VoterWeightRecord belongs to
@@ -51,11 +51,11 @@ impl IsInitialized for VoterWeightRecord {
 }
 
 /// Deserializes account and checks owner program
-pub fn get_voter_weight_data(
+pub fn get_voter_weight_record_data(
     program_id: &Pubkey,
-    voter_weight_info: &AccountInfo,
+    voter_weight_record_info: &AccountInfo,
 ) -> Result<VoterWeightRecord, ProgramError> {
-    get_account_data::<VoterWeightRecord>(voter_weight_info, program_id)
+    get_account_data::<VoterWeightRecord>(voter_weight_record_info, program_id)
 }
 
 /// /// VoterWeight instruction

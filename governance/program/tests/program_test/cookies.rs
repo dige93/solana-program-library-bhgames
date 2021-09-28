@@ -48,7 +48,7 @@ pub struct TokenOwnerRecordCookie {
 
     pub governance_delegate: Keypair,
 
-    pub voter_weight: Option<VoterWeightCookie>,
+    pub voter_weight_record: Option<VoterWeightRecordCookie>,
 }
 
 impl TokenOwnerRecordCookie {
@@ -152,7 +152,7 @@ pub struct ProposalInstructionCookie {
 }
 
 #[derive(Debug)]
-pub struct VoterWeightCookie {
+pub struct VoterWeightRecordCookie {
     pub address: Pubkey,
     pub account: VoterWeightRecord,
 }

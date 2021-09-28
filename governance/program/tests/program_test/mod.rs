@@ -52,7 +52,7 @@ use spl_governance::{
 
 pub mod cookies;
 
-use crate::program_test::cookies::{SignatoryRecordCookie, VoterWeightCookie};
+use crate::program_test::cookies::{SignatoryRecordCookie, VoterWeightRecordCookie};
 
 use spl_governance_test_sdk::{
     tools::{clone_keypair, NopOverride},
@@ -499,7 +499,7 @@ impl GovernanceProgramTest {
             token_owner,
             governance_authority: None,
             governance_delegate,
-            voter_weight: None,
+            voter_weight_record: None,
         }
     }
 
@@ -882,9 +882,12 @@ impl GovernanceProgramTest {
         token_owner_record_cookie: &TokenOwnerRecordCookie,
         governance_config: &GovernanceConfig,
     ) -> Result<GovernanceCookie, ProgramError> {
-        let (voter_weight_addin, voter_weight) =
-            if let Some(voter_weight) = &token_owner_record_cookie.voter_weight {
-                (self.voter_weight_addin_id, Some(voter_weight.address))
+        let (voter_weight_addin, voter_weight_record) =
+            if let Some(voter_weight_record) = &token_owner_record_cookie.voter_weight_record {
+                (
+                    self.voter_weight_addin_id,
+                    Some(voter_weight_record.address),
+                )
             } else {
                 (None, None)
             };
@@ -895,7 +898,7 @@ impl GovernanceProgramTest {
             &governed_account_cookie.address,
             &token_owner_record_cookie.address,
             &self.bench.payer.pubkey(),
-            voter_weight,
+            voter_weight_record,
             voter_weight_addin,
             governance_config.clone(),
         );
@@ -2028,7 +2031,7 @@ impl GovernanceProgramTest {
     pub async fn with_voter_weight_addin_deposit(
         &mut self,
         token_owner_record_cookie: &TokenOwnerRecordCookie,
-    ) -> Result<VoterWeightCookie, ProgramError> {
+    ) -> Result<VoterWeightRecordCookie, ProgramError> {
         let voter_weight_record_account = Keypair::new();
 
         // Governance program has no dependency on the voter-weight-addin program and hence we can't use its instruction creator here
@@ -2054,7 +2057,7 @@ impl GovernanceProgramTest {
             .process_transaction(&[deposit_ix], Some(&[&voter_weight_record_account]))
             .await?;
 
-        Ok(VoterWeightCookie {
+        Ok(VoterWeightRecordCookie {
             address: voter_weight_record_account.pubkey(),
             account: VoterWeightRecord {
                 account_type: VoterWeightAccountType::VoterWeightRecord,

@@ -599,6 +599,7 @@ pub fn create_account_governance(
 }
 
 /// Creates CreateAccountGovernance instruction using optional voter weight addin
+#[allow(clippy::too_many_arguments)]
 pub fn create_account_governance2(
     program_id: &Pubkey,
     // Accounts
@@ -606,7 +607,7 @@ pub fn create_account_governance2(
     governed_account: &Pubkey,
     token_owner_record: &Pubkey,
     payer: &Pubkey,
-    voter_weight: Option<Pubkey>,
+    voter_weight_record: Option<Pubkey>,
     voter_weight_addin: Option<Pubkey>,
     // Args
     config: GovernanceConfig,
@@ -624,7 +625,7 @@ pub fn create_account_governance2(
         AccountMeta::new_readonly(sysvar::rent::id(), false),
     ];
 
-    if let Some(voter_weight_record) = voter_weight {
+    if let Some(voter_weight_record) = voter_weight_record {
         accounts.push(AccountMeta::new(voter_weight_record, false));
         accounts.push(AccountMeta::new_readonly(
             voter_weight_addin.unwrap(),

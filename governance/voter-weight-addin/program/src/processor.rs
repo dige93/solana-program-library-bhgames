@@ -53,7 +53,7 @@ pub fn process_deposit(
     let governance_program_info = next_account_info(account_info_iter)?; // 0
     let realm_info = next_account_info(account_info_iter)?; // 1
     let governing_token_owner_info = next_account_info(account_info_iter)?; // 2
-    let voter_weight_info = next_account_info(account_info_iter)?; // 3
+    let voter_weight_record_info = next_account_info(account_info_iter)?; // 3
     let payer_info = next_account_info(account_info_iter)?; // 4
     let system_info = next_account_info(account_info_iter)?; // 5
 
@@ -68,7 +68,7 @@ pub fn process_deposit(
     // TODO: Custom deposit logic goes here
     // Note: Assert realm community mint and the deposit mint match
 
-    let voter_weight_data = VoterWeightRecord {
+    let voter_weight_record_data = VoterWeightRecord {
         account_type: VoterWeightAccountType::VoterWeightRecord,
         governing_token_owner: governing_token_owner_data.governing_token_owner,
         voter_weight: amount,
@@ -79,8 +79,8 @@ pub fn process_deposit(
 
     create_and_serialize_account(
         payer_info,
-        voter_weight_info,
-        &voter_weight_data,
+        voter_weight_record_info,
+        &voter_weight_record_data,
         program_id,
         system_info,
     )?;
