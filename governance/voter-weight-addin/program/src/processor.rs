@@ -5,10 +5,7 @@ use spl_governance::{
     addins::voter_weight::{VoterWeightAccountType, VoterWeightRecord},
     state::{
         realm::get_realm_data,
-        token_owner_record::{
-            get_token_owner_record_data_for_realm,
-            get_token_owner_record_data_for_realm_and_governing_mint,
-        },
+        token_owner_record::get_token_owner_record_data_for_realm_and_governing_mint,
     },
 };
 // TODO: Move to shared governance tools
