@@ -335,7 +335,6 @@ async fn test_execute_upgrade_program_instruction() {
 }
 
 #[tokio::test]
-#[ignore]
 async fn test_execute_instruction_with_invalid_state_errors() {
     // Arrange
     let mut governance_test = GovernanceProgramTest::start_new().await;
@@ -498,7 +497,6 @@ async fn test_execute_instruction_with_invalid_state_errors() {
 }
 
 #[tokio::test]
-#[ignore]
 async fn test_execute_instruction_for_other_proposal_error() {
     // Arrange
     let mut governance_test = GovernanceProgramTest::start_new().await;
@@ -564,6 +562,8 @@ async fn test_execute_instruction_for_other_proposal_error() {
         .await
         .unwrap();
 
+    governance_test.advance_clock().await;
+
     // Act
     let err = governance_test
         .execute_instruction(&proposal_cookie2, &proposal_instruction_cookie)
@@ -579,7 +579,6 @@ async fn test_execute_instruction_for_other_proposal_error() {
 }
 
 #[tokio::test]
-#[ignore]
 async fn test_execute_mint_instruction_twice_error() {
     // Arrange
     let mut governance_test = GovernanceProgramTest::start_new().await;
